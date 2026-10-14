@@ -1,0 +1,34 @@
+# secrets and local config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# generated data, logs and eval outputs (regenerate with the scripts; never commit real records)
+logs/
+*/data/generated/
+*/evals/results/
+*.sqlite
+*.db
+
+# node (review UIs)
+node_modules/
+*/ui/dist/
+
+# editors and OS
+.vscode/
+.idea/
+.DS_Store
