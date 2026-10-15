@@ -1,5 +1,7 @@
 # New-matter intake agent with scoped tools and approval gates
 
+[![ci](https://github.com/iamkevinstreet/intake-conflicts-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/iamkevinstreet/intake-conflicts-agent/actions/workflows/ci.yml) [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+
 An agent reads an intake email, searches clients and adverse parties with read-only tools, writes a draft to
 staging, and asks a person to approve. It cannot open a matter. The only code path that opens one checks for an
 approval record written by an approver, and the agent has no tool that can write that record.
