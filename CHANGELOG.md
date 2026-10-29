@@ -29,7 +29,8 @@ the fixes made after v0.1.0.
   past 60 lines below it: the web app's three pages, its shell and the intake form were split into
   hooks and smaller components, and render exactly as before. ruff's annotation rules, ESLint's doc
   block rules, explicit return types, `kds/param-defaults`, `max-lines-per-function` and
-  `kds-standards` keep it that way.
+  `kds-standards` keep it that way. The API schema still describes each route by its summary
+  alone: the Args and Returns sections are for readers of the code.
 - **Utils:** every `kds-*` package pins utils v0.4.2 (`62a38c5a3ecf667e3e227b18412abd77759c38d5`),
   and kds-args joins them. With it, the first retry after a provider error waits up to half a
   second, not a whole one, and a missing key's message points at `config/.env`.
