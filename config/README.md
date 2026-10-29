@@ -29,6 +29,7 @@ a tenant id and an audience.
 | `[llm] temperature` | `0.0` | 0 keeps runs repeatable |
 | `[llm] max_retries` | `3` | Retries for model failures that can succeed later |
 | `[llm] timeout_s` | `60.0` | How long one model call may take |
+| `[azure_openai] endpoint` | unset | The Azure OpenAI resource; only for the `azure` provider |
 | `[azure_openai] api_version` | `2024-10-21` | Only for the `azure` provider |
 | `[eval] budget_usd` | `5.0` | A process stops calling the model once it has spent this |
 | `[log] dir` | `logs` | Where the daily JSON log files go |
@@ -65,7 +66,7 @@ a tenant id and an audience.
 | `[api] allowed_origins` | `http://localhost:5173` | Browser origins allowed to call the API |
 | `[api] allowed_hosts` | `localhost`, `127.0.0.1` | Host names requests may be addressed to |
 | `[api] min_reason_chars` | `10` | The shortest reason for approving past a flagged check |
-| `[api] max_note_chars` | `500` | The longest decision note |
+| `[api] max_note_chars` | `500` | The longest decision note, at most 2,000; the web app holds the same 500 |
 | `[auth] mode` | `dev` | `dev`: trusted headers, this machine only; `entra`: Entra ID tokens |
 | `[entra] tenant_id` | empty | The directory (tenant) id, a GUID |
 | `[entra] audience` | empty | The API's application (client) id, which tokens must be issued for |

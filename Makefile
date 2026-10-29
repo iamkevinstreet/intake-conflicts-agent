@@ -58,8 +58,8 @@ test-backend:
 test-frontend:
 	$(NPM) test
 
-eval:  ## The offline evaluation: the stand-in plays the agent; no key, no network
-	$(UV) python -m intake_agent.evals.run --name offline
+eval:  ## The offline evaluation: the stand-in plays the agent, whatever .env says; no key, no network
+	LLM_PROVIDER=fake $(UV) python -m intake_agent.evals.run --name offline
 
 audit: audit-backend audit-frontend  ## Known vulnerabilities in every locked dependency
 

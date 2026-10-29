@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+- **Live results:** with `claude-sonnet-5-5` as the agent on all 20 scenarios, every planted record
+  was found (13 of 13), no clean scenario was shown as a conflict, all 3 ambiguous scenarios were
+  marked review, all 6 failures were handled, and no matter was opened, at $0.025 a scenario. Every
+  target set before the run was met.
+- **Outages:** a provider failure that outlasts the retries now ends the run with "the model could
+  not be reached", recognised by kind, instead of as an unplanned error.
+- **Edge:** a request body that does not declare its length is refused (411) rather than read
+  unmeasured; every reply, including a refused host name and an unplanned error, carries the
+  request id and the security headers; an unplanned error is a plain 500.
+- **Notes:** `[api] max_note_chars` now limits a decision note in the API, and the web app reads
+  its limit from its config.
+- **Evaluation:** `make eval` runs the offline stand-in whatever `.env` says, so its results are
+  always the offline baseline.
+
 ## v0.1.0, Oct 29, 2026
 
 A rebuild to one code standard, with the gate held in three places and an evaluation you can
@@ -21,7 +37,8 @@ repeat.
   role only. Approving past a flagged check needs a written reason. Drafts are hashed, and the
   approval is bound to the hash.
 - **Audit:** one record per run and per model and tool call, with redacted arguments and a SHA-256 of
-  each result; the email is kept only as a hash. Triggers make the records append-only.
+  each result; the audit keeps the email only as a hash, and the draft keeps its text for the
+  approver. Triggers make the records append-only.
 - **Identity:** Microsoft Entra ID access tokens checked in the API against the tenant's signing keys
   (RS256 only; issuer, audience, expiry, tenant), with app roles mapped to requester and approver.
   Dev sign-in trusts headers and refuses to listen beyond this machine. The scaffold's stub, which

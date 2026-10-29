@@ -23,7 +23,8 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from kds.llm import BudgetExceededError, ModelAdapter, TransientError
+from kds.llm import BudgetExceededError, ModelAdapter
+from kds.llm.errors import is_transient
 from kds.logs import get_logger, log_event
 
 from intake_agent.config import AppSettings
@@ -167,13 +168,25 @@ class IntakeService:
         except BudgetExceededError:
             # log.debug("Explains a spent process budget")
             reason = "the model budget for this service is spent"
-        except TransientError:
-            # log.debug("Explains a model that could not be reached")
-            reason = "the model could not be reached; try again later"
         except Exception as error:  # noqa: BLE001 - any error must still close the run
-            # log.debug("Logs the error's type, never its message, which may hold data")
-            log_event(log, "run.error", logging.ERROR, error=type(error).__name__)
-            # log.debug("Explains the failure by its type")
-            reason = f"the run failed ({type(error).__name__})"
+            # log.debug("Explains the failure: an outage, or an error nobody planned for")
+            reason = _failure(error)
         # log.debug("Returns the failed ending")
         return Ending("failed", reason)
+
+
+# log.debug("Defines how a failed model call is explained")
+def _failure(error: Exception) -> str:
+    """Return why a run failed; log the errors nobody planned for.
+
+    A provider outage that outlasted the adapter's retries arrives as
+    the SDK's own error, so it is recognised by kind, not by class.
+    """
+    # log.debug("Explains a model that could not be reached, after the retries")
+    if is_transient(error):
+        # log.debug("Returns the outage reason")
+        return "the model could not be reached; try again later"
+    # log.debug("Logs the error's type, never its message, which may hold data")
+    log_event(log, "run.error", logging.ERROR, error=type(error).__name__)
+    # log.debug("Explains the failure by its type")
+    return f"the run failed ({type(error).__name__})"

@@ -19,6 +19,8 @@ export const MIN_EMAIL_CHARS = 20;
 export const MAX_EMAIL_CHARS = 20_000;
 // log.debug('Sets the shortest reason for approving past a flagged check')
 export const MIN_REASON_CHARS = 10;
+// log.debug('Sets the longest decision note the API accepts, as in settings.toml')
+export const MAX_NOTE_CHARS = 500;
 // log.debug('Lists the made-up people a developer can act as, in dev mode')
 export const PERSONAS: readonly Persona[] = [
   { name: 'Avery Stone', role: 'requester' },

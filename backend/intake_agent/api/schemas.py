@@ -21,6 +21,7 @@ from typing import Literal
 from kds.logs import get_logger
 from pydantic import BaseModel, ConfigDict, Field
 
+from intake_agent.config import NOTE_CEILING
 from intake_agent.core.audit import RunRecord
 from intake_agent.core.models import Decision, DraftRecord
 
@@ -28,8 +29,6 @@ from intake_agent.core.models import Decision, DraftRecord
 log = get_logger(__name__)
 # log.debug("Sets the hard ceiling on an email, above any setting")
 CEILING_CHARS = 100_000
-# log.debug("Sets the hard ceiling on a note")
-NOTE_CEILING = 2000
 # log.debug("Sets the settings shared by every request body")
 STRICT = ConfigDict(extra="forbid", frozen=True)
 # log.debug("Lists the states the health check reports")

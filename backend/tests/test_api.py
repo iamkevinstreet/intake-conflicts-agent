@@ -211,11 +211,76 @@ def test_security_headers_and_request_id(client: TestClient) -> None:
 
 # log.debug("Defines the host test")
 def test_requests_for_another_host_are_refused(client: TestClient) -> None:
-    """A page that rebinds its name to this machine gets 400."""
+    """A rebinding page gets 400, still with the headers."""
     # log.debug("Asks with a foreign Host header")
     response = client.get("/api/v1/health", headers={"Host": "attacker.example"})
+    # log.debug("Checks the refusal still carries the request id and headers")
+    assert (
+        response.status_code,
+        "X-Request-ID" in response.headers,
+        response.headers.get("X-Frame-Options"),
+    ) == (400, True, "DENY")
+
+
+# log.debug("Defines the test for a body that hides its length")
+def test_a_body_without_a_declared_length_is_refused(client: TestClient) -> None:
+    """A chunked body cannot be measured unread, so it gets 411."""
+    # log.debug("Sends the email as a stream, which has no Content-Length")
+    response = client.post(
+        "/api/v1/intake",
+        content=iter([b'{"email": "', b"x" * 50, b'"}']),
+        headers={**AVERY, "Content-Type": "application/json"},
+    )
     # log.debug("Checks the refusal")
-    assert response.status_code == 400
+    assert response.status_code == 411
+
+
+# log.debug("Defines the test for an error nobody planned for")
+def test_an_unplanned_error_is_a_plain_500_with_headers(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The reply says nothing about the error and keeps the headers."""
+
+    # log.debug("Defines a failing read of the runs")
+    def broken(**_: Any) -> Any:
+        """Fail.
+
+        Raises:
+            RuntimeError: Always.
+        """
+        # log.debug("Raises the failure")
+        raise RuntimeError("disk on fire")
+
+    # log.debug("Takes the app the client serves")
+    app: Any = client.app
+    # log.debug("Makes listing runs fail")
+    monkeypatch.setattr(app.state.services.runlog, "runs", broken)
+    # log.debug("Asks for the runs")
+    response = client.get("/api/v1/runs", headers=AVERY)
+    # log.debug("Checks the reply")
+    assert (
+        response.status_code,
+        response.json(),
+        "X-Request-ID" in response.headers,
+    ) == (500, {"detail": "internal error"}, True)
+
+
+# log.debug("Defines the note limit test")
+def test_a_note_over_the_limit_is_refused(client: TestClient, settings: AppSettings) -> None:
+    """The setting, not a hard-coded number, limits a decision note."""
+    # log.debug("Runs the intake")
+    draft_id = _intake(client)["draft"]["draft"]["id"]
+    # log.debug("Approves with a note one character over the setting")
+    response = client.post(
+        f"/api/v1/drafts/{draft_id}/decision",
+        json={"decision": "approved", "note": "x" * (settings.api_max_note_chars + 1)},
+        headers=JORDAN,
+    )
+    # log.debug("Checks the refusal names the limit")
+    assert (response.status_code, str(settings.api_max_note_chars) in response.text) == (
+        422,
+        True,
+    )
 
 
 # log.debug("Defines the examples test")

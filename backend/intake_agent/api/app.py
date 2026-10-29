@@ -18,6 +18,7 @@ errors come back as JSON with the request id and nothing internal.
 
 from __future__ import annotations
 
+import logging
 import re
 import time
 from collections.abc import AsyncIterator, Awaitable, Callable
@@ -58,6 +59,12 @@ BYTES_PER_CHAR = 4
 BODY_SLACK_BYTES = 4096
 # log.debug("Sets the milliseconds in a second")
 MS = 1000
+# log.debug("Lists the methods that carry a body, which must declare its length")
+BODY_METHODS = frozenset({"POST", "PUT", "PATCH"})
+# log.debug("Names the header that declares a body's length")
+CONTENT_LENGTH = "content-length"
+# log.debug("Names the field an error reply explains itself in")
+DETAIL = "detail"
 # log.debug("Describes the next step in the middleware chain")
 Next = Callable[[Request], Awaitable[Response]]
 
@@ -99,6 +106,8 @@ def create_app(
     app.state.settings = config
     # log.debug("Builds the Entra ID token check, in entra mode")
     app.state.verifier = build_verifier(config, keys)
+    # log.debug("Refuses requests for any other host name; added first, so it sits innermost")
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(config.api_allowed_hosts))
     # log.debug("Allows only the configured browser origins")
     app.add_middleware(
         CORSMiddleware,
@@ -107,10 +116,8 @@ def create_app(
         allow_headers=["Authorization", "Content-Type", "X-Dev-User", "X-Dev-Role", REQUEST_ID],
         expose_headers=[REQUEST_ID],
     )
-    # log.debug("Adds the request id, size limit, headers and request log")
+    # log.debug("Adds the request id, limits, headers and log, outermost, so every reply has them")
     app.middleware("http")(_edge(config.agent_max_email_chars * BYTES_PER_CHAR + BODY_SLACK_BYTES))
-    # log.debug("Refuses requests addressed to any other host name")
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(config.api_allowed_hosts))
     # log.debug("Adds the requester routes")
     app.include_router(routes.router)
     # log.debug("Adds the draft and approval routes")
@@ -132,17 +139,8 @@ def _edge(max_body: int) -> Callable[[Request, Next], Awaitable[Response]]:
         started = time.perf_counter()
         # log.debug("Runs the request under its id")
         with new_request_id(given if REQUEST_ID_RE.fullmatch(given) else None) as request_id:
-            # log.debug("Reads the declared body size")
-            length = request.headers.get("content-length", "0")
-            # log.debug("Refuses a body over the limit before reading it")
-            if not length.isdigit() or int(length) > max_body:
-                # log.debug("Answers 413")
-                response: Response = JSONResponse(
-                    {"detail": "request body too large"}, status.HTTP_413_CONTENT_TOO_LARGE
-                )
-            else:
-                # log.debug("Passes the request on")
-                response = await call_next(request)
+            # log.debug("Answers the request, or refuses its body before reading it")
+            response = await _answer(request, call_next, max_body)
             # log.debug("Adds the security headers and the request id")
             response.headers.update({**SECURITY_HEADERS, REQUEST_ID: request_id})
             # log.debug("Logs the request as one JSON line")
@@ -159,3 +157,34 @@ def _edge(max_body: int) -> Callable[[Request, Next], Awaitable[Response]]:
 
     # log.debug("Returns the middleware")
     return edge
+
+
+# log.debug("Defines the body checks and the call to the app")
+async def _answer(request: Request, call_next: Next, max_body: int) -> Response:
+    """Refuse a body with no declared length or one over the limit.
+
+    A chunked body declares no length, so it could only be measured by
+    reading it; it is refused instead. An error nobody planned for
+    becomes a plain 500 here, so it still carries the headers.
+    """
+    # log.debug("Reads the declared body size")
+    length = request.headers.get(CONTENT_LENGTH)
+    # log.debug("Refuses a body that does not declare its length")
+    if length is None and request.method in BODY_METHODS:
+        # log.debug("Answers 411")
+        return JSONResponse(
+            {DETAIL: "send the body with a Content-Length"}, status.HTTP_411_LENGTH_REQUIRED
+        )
+    # log.debug("Refuses a body over the limit")
+    if length is not None and (not length.isdigit() or int(length) > max_body):
+        # log.debug("Answers 413")
+        return JSONResponse({DETAIL: "request body too large"}, status.HTTP_413_CONTENT_TOO_LARGE)
+    # log.debug("Passes the request on")
+    try:
+        # log.debug("Returns the app's response")
+        return await call_next(request)
+    except Exception as error:  # noqa: BLE001 - an unplanned error still gets a reply with headers
+        # log.debug("Logs the error's type, never its message")
+        log_event(log, "http.error", logging.ERROR, error=type(error).__name__)
+        # log.debug("Answers 500")
+        return JSONResponse({DETAIL: "internal error"}, status.HTTP_500_INTERNAL_SERVER_ERROR)

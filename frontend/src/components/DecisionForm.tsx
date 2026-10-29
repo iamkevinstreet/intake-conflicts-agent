@@ -11,7 +11,7 @@
 
 import { useState } from 'react';
 
-import { MIN_REASON_CHARS } from '../config';
+import { MAX_NOTE_CHARS, MIN_REASON_CHARS } from '../config';
 import type { Decision, DraftRecord } from '../types';
 
 interface Props {
@@ -40,7 +40,7 @@ export function DecisionForm({ record, busy, onDecide }: Props) {
         value={note}
         onChange={(event) => setNote(event.target.value)}
         rows={3}
-        maxLength={500}
+        maxLength={MAX_NOTE_CHARS}
         placeholder={flagged ? 'For example: waiver signed by both clients, on file.' : ''}
       />
       <div className="ia-decision__buttons">

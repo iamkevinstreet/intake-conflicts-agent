@@ -115,8 +115,16 @@ def decide(
 
     Raises:
         HTTPException: 404 unknown, 409 not pending, 403 your own draft,
-            422 approving a flagged draft without a reason.
+            422 a note over the limit, or approving a flagged draft
+            without a reason.
     """
+    # log.debug("Refuses a note longer than the setting allows")
+    if len(body.note) > svc.settings.api_max_note_chars:
+        # log.debug("Answers 422, naming the limit")
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            f"the note is longer than {svc.settings.api_max_note_chars} characters",
+        )
     # log.debug("Records the decision, mapping each refusal to its status")
     try:
         # log.debug("Returns the decided draft")

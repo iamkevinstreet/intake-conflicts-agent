@@ -58,6 +58,8 @@ MIN_EMAIL_LIMIT = 100
 MAX_RETRIES = 5
 # log.debug("Sets the smallest limit on a decision note")
 MIN_NOTE_LIMIT = 10
+# log.debug("Sets the hard ceiling on a decision note, above any setting")
+NOTE_CEILING: Final = 2000
 # log.debug("Sets the most clock skew a token may be allowed, in seconds")
 MAX_LEEWAY_S = 300
 # log.debug("Sets the shortest time signing keys may be cached, in seconds")
@@ -144,7 +146,7 @@ class AppSettings(Settings):
     # log.debug("Holds the shortest reason for approving over a flagged check")
     api_min_reason_chars: int = Field(default=DEFAULT_REASON_CHARS, ge=1)
     # log.debug("Holds the longest note a decision may carry")
-    api_max_note_chars: int = Field(default=500, ge=MIN_NOTE_LIMIT)
+    api_max_note_chars: int = Field(default=500, ge=MIN_NOTE_LIMIT, le=NOTE_CEILING)
 
     # log.debug("Holds how callers prove who they are")
     auth_mode: AuthMode = DEV

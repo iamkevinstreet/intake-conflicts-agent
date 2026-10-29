@@ -13,6 +13,8 @@ from __future__ import annotations
 
 from typing import Any
 
+import anthropic
+import httpx2
 import pytest
 from kds.llm import ModelAdapter, TransientError
 from kds.llm.fake import FakeProvider
@@ -111,23 +113,33 @@ def test_the_tool_call_limit(settings: AppSettings, store: Store) -> None:
     assert (result.run.outcome, result.run.tool_calls) == ("failed", 0)
 
 
+# log.debug("Lists the outages to try: the fakes' kind, and a real SDK's after its retries")
+OUTAGES = (
+    TransientError("down"),
+    anthropic.APIConnectionError(request=httpx2.Request("POST", "https://api.anthropic.com")),
+)
+
+
 # log.debug("Defines the model-outage test")
-def test_a_model_outage_fails_the_run_cleanly(settings: AppSettings, store: Store) -> None:
+@pytest.mark.parametrize("outage", OUTAGES, ids=["fake", "sdk"])
+def test_a_model_outage_fails_the_run_cleanly(
+    settings: AppSettings, store: Store, outage: Exception
+) -> None:
     """An unreachable model ends the run as failed, record closed."""
 
     # log.debug("Defines a provider that is always down")
     class Down(FakeProvider):
-        """Raises a transient error on every call."""
+        """Raises the outage on every call."""
 
         # log.debug("Defines the failing call")
         def complete(self, **_: Any) -> Any:
             """Raise.
 
             Raises:
-                TransientError: Always.
+                Exception: The outage, always.
             """
             # log.debug("Raises the outage")
-            raise TransientError("down")
+            raise outage
 
     # log.debug("Builds an adapter that never waits between retries")
     adapter = ModelAdapter(Down(), model="fake-model", settings=settings, sleep=lambda _: None)

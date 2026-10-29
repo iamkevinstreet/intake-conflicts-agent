@@ -7,7 +7,7 @@ Run every command from the repository root, where `config/` and `data/` are.
 make install          # the locked dependencies, hashes checked
 make api              # the service on http://127.0.0.1:8000
 make check-backend    # ruff, mypy (strict), kds-standards
-make test-backend     # 149 tests, offline
+make test-backend     # 153 tests, offline
 make eval             # the 20 scenarios with the offline stand-in
 ```
 
