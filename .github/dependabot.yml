@@ -21,3 +21,8 @@ updates:
     directory: /frontend
     schedule:
       interval: weekly
+    ignore:
+      # typescript-eslint supports TypeScript below 6.1, and its strict rules are required;
+      # raise this when a typescript-eslint release supports a newer TypeScript.
+      - dependency-name: typescript
+        versions: [">=6.1"]
