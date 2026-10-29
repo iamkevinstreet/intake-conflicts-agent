@@ -7,10 +7,10 @@ start if a secret is written here.
 ## How a value is chosen
 
 Highest first: an environment variable, then `.env`, then this file, then the default in
-[`backend/intake_agent/config.py`](../backend/intake_agent/config.py). Each key's environment name is
-its section and key joined by an underscore, in capitals: `[match] likely` is `MATCH_LIKELY`.
-`SETTINGS_FILE` points the service at a different file. Every setting is logged at startup, secrets
-masked, in the `service.start` event.
+[`backend/src/intake_agent/config.py`](../backend/src/intake_agent/config.py). Each key's
+environment name is its section and key joined by an underscore, in capitals: `[match] likely` is
+`MATCH_LIKELY`. `SETTINGS_FILE` points the service at a different file. Every setting is logged at
+startup, secrets masked, in the `service.start` event.
 
 A test (`backend/tests/test_config.py`) keeps this file equal to the defaults in code, so the two
 cannot drift. Settings that contradict each other stop the service at startup: a possible threshold

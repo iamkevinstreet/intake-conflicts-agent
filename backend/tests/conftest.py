@@ -20,7 +20,6 @@ from kds.settings import get_settings
 
 from intake_agent.config import AppSettings, get_app_settings
 from intake_agent.core.store import Store
-
 from support import REPO, seeded_store
 
 # Module constants

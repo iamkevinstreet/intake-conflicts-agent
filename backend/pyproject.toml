@@ -54,11 +54,15 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
+where = ["src"]
 include = ["intake_agent*"]
 
 [tool.ruff]
 line-length = 99
 target-version = "py312"
+# The package lives in src/ and the tests import their own helpers, so isort reads both as
+# first-party code.
+src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "N", "UP", "B", "BLE", "S", "C90", "PL", "RUF", "G", "D"]
@@ -75,7 +79,6 @@ max-positional-args = 5
 
 [tool.ruff.lint.isort]
 known-first-party = ["intake_agent"]
-known-local-folder = ["support"]
 
 [tool.ruff.lint.per-file-ignores]
 # Tests assert, repeat expected values inline, and hold made-up tokens.
@@ -88,4 +91,5 @@ addopts = "-q"
 [tool.mypy]
 python_version = "3.12"
 strict = true
-packages = ["intake_agent"]
+mypy_path = "src"
+files = ["src", "tests"]

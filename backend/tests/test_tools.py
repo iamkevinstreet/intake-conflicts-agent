@@ -23,7 +23,6 @@ from intake_agent.core.firm import SqliteDirectory
 from intake_agent.core.store import Store
 from intake_agent.core.tools import Toolbox, unique
 from intake_agent.evals.scenarios import TimeoutDirectory
-
 from support import CONFLICT_EMAIL, REQUESTER, draft_args
 
 # Module constants

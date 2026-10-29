@@ -17,7 +17,7 @@ Everything here is made up. No name, matter or email belongs to a real person or
   `kind`, the `status` (`open` or `closed`) and the `adverse` parties.
 - `reserved`: names the scenarios use for parties the firm has never dealt with, and for senders.
 
-The generator (`backend/intake_agent/core/seed.py`) adds made-up clients, matters and adverse
+The generator (`backend/src/intake_agent/core/seed.py`) adds made-up clients, matters and adverse
 parties from the seed in `[seed] random` until the counts in settings: about 500 names in all.
 About a fifth of its adverse parties are a made-up client's name as a careless intake types it
 ("Westbrook Cosulting" beside the client "Westbrook Consulting LLP", "Apex-Industries" beside "Apex
@@ -56,7 +56,7 @@ findings are exactly the planted records, at the expected verdict, before any mo
 ## How a run is scored
 
 Every measure is a count a reader can repeat from the results JSON
-(`backend/intake_agent/evals/score.py`):
+(`backend/src/intake_agent/evals/score.py`):
 
 - **Conflict recall:** planted records that appear in the draft's findings.
 - **False positives:** clean scenarios shown to the approver as a conflict.

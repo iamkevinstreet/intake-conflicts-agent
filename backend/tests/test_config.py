@@ -18,7 +18,6 @@ from kds.logs import get_logger
 from kds.settings.toml import flatten, is_secret
 
 from intake_agent.config import AppSettings
-
 from support import REPO
 
 # Module constants

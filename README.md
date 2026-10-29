@@ -71,7 +71,7 @@ and `ANTHROPIC_API_KEY` there.
 | `request_approval` | Send this run's draft to a person; the run ends |
 | `open_matter` | Gated: refused without the approver role and an approval record |
 
-The rules for a match, in [`core/conflicts.py`](backend/intake_agent/core/conflicts.py):
+The rules for a match, in [`core/conflicts.py`](backend/src/intake_agent/core/conflicts.py):
 
 | Party in the new matter | Matches | Severity |
 | --- | --- | --- |
@@ -210,16 +210,16 @@ requests for any other host name are refused. Report a vulnerability privately a
 
 ```text
 intake-conflicts-agent/
-├── backend/            the service and the evaluation (Python 3.12, uv)
-│   ├── intake_agent/   config.py, core/ (rules, tools, agent), api/ (FastAPI), evals/
-│   └── tests/          153 tests, offline
-├── frontend/           the web app (React, TypeScript, Vite)
-│   ├── src/            pages/, components/, styles/, the API client
-│   └── tests/          8 tests
-├── config/             settings.toml: every setting at its default
-├── data/               samples/ (the planted firm records), evals/ (scenarios, results)
-├── docs/               diagrams.toml and the two SVGs it draws
-└── .github/            CI, CodeQL, the live evaluation, Dependabot
+├── backend/               the service and the evaluation (Python 3.12, uv)
+│   ├── src/intake_agent/  config.py, core/ (rules, tools, agent), api/ (FastAPI), evals/
+│   └── tests/             153 tests, offline
+├── frontend/              the web app (React, TypeScript, Vite)
+│   ├── src/               pages/, components/, styles/, the API client
+│   └── tests/             8 tests
+├── config/                settings.toml: every setting at its default
+├── data/                  samples/ (the planted firm records), evals/ (scenarios, results)
+├── docs/                  diagrams.toml and the two SVGs it draws
+└── .github/               CI, CodeQL, the live evaluation, Dependabot
 ```
 
 ## Changelog and license

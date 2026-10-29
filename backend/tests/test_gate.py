@@ -31,7 +31,6 @@ from intake_agent.core.drafts import (
 )
 from intake_agent.core.models import Actor, DraftRecord
 from intake_agent.core.store import Store
-
 from support import (
     APPROVER,
     BOTH,

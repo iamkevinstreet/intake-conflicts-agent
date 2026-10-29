@@ -9,7 +9,7 @@
 ########################################################################
 # Each key's name is its section and key joined: [match] likely is match_likely, and the
 # environment variable MATCH_LIKELY overrides it. backend/tests/test_config.py keeps this file
-# equal to the defaults in backend/intake_agent/config.py and the shared kds settings.
+# equal to the defaults in backend/src/intake_agent/config.py and the shared kds settings.
 
 [llm]
 provider = "fake"                         # anthropic | openai | azure | fake (offline stand-in)

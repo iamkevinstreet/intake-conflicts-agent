@@ -27,7 +27,6 @@ from intake_agent.core.firm import SqliteDirectory
 from intake_agent.core.store import Store
 from intake_agent.evals.run import run_eval, to_markdown
 from intake_agent.evals.scenarios import Scenario, load_scenarios
-
 from support import REPO
 
 # Module constants

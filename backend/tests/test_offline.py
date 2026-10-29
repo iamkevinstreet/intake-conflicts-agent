@@ -16,7 +16,6 @@ from kds.logs import get_logger
 from intake_agent.config import AppSettings
 from intake_agent.core.offline import adapter_for, parties
 from intake_agent.core.store import Store
-
 from support import CONFLICT_EMAIL, REQUESTER, service
 
 # Module constants

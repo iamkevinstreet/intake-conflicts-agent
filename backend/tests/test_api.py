@@ -21,7 +21,6 @@ from kds.logs import get_logger
 
 from intake_agent.api.app import create_app
 from intake_agent.config import AppSettings
-
 from support import CONFLICT_EMAIL, good_turns, scripted, submit
 
 # Module constants

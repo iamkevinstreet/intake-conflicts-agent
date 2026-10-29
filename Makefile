@@ -42,7 +42,7 @@ check: check-backend check-frontend  ## Every linter, formatter, type check and 
 check-backend:
 	$(UV) ruff check backend
 	$(UV) ruff format --check backend
-	cd backend && uv run --no-sync mypy intake_agent tests
+	cd backend && uv run --no-sync mypy
 	$(UV) kds-standards check .
 
 check-frontend:

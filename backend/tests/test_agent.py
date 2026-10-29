@@ -24,7 +24,6 @@ from intake_agent.config import AppSettings
 from intake_agent.core.audit import RunLog
 from intake_agent.core.store import Store
 from intake_agent.evals.scenarios import TimeoutDirectory
-
 from support import (
     CONFLICT_EMAIL,
     REQUESTER,

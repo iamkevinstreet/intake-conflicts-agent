@@ -15,7 +15,7 @@ make eval             # the 20 scenarios with the offline stand-in
 
 | Path | What it does |
 | --- | --- |
-| `intake_agent/config.py` | Every setting, typed and validated, read from `config/settings.toml` and `.env` |
+| `src/intake_agent/config.py` | Every setting, typed and validated, read from `config/settings.toml` and `.env` |
 | `core/names.py` | Plain forms of names and how alike two are |
 | `core/conflicts.py` | The searches and the conflicts rules: severities and verdicts |
 | `core/firm.py` | `Directory`: the only, read-only view of the firm the searches get |
