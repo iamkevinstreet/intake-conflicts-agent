@@ -10,7 +10,7 @@
 
 [project]
 name = "intake-conflicts-agent"
-version = "0.1.0"
+version = "0.2.0"
 description = "New-matter intake agent with scoped tools and an approval gate it cannot pass."
 readme = "README.md"
 requires-python = ">=3.12"

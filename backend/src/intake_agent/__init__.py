@@ -28,4 +28,4 @@ log = get_logger(__name__)
 #                           Local constants                            #
 ########################################################################
 # log.debug("Sets the release, reported by the health check")
-__version__ = "0.1.0"
+__version__ = "0.2.0"

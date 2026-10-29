@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.2.0, Oct 29, 2026
 
 The code moves to the updated code standard: a new place for the package and the settings, and a new
 layout for every file. The API, the evaluation's numbers and the published results stay the same,
