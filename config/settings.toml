@@ -1,0 +1,91 @@
+########################################################################
+#                         config/settings.toml                         #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-29                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           Every setting the service reads, at its default. #
+#                     No secrets: those go in .env.                    #
+########################################################################
+# Each key's name is its section and key joined: [match] likely is match_likely, and the
+# environment variable MATCH_LIKELY overrides it. backend/tests/test_config.py keeps this file
+# equal to the defaults in backend/intake_agent/config.py and the shared kds settings.
+
+[llm]
+provider = "fake"                         # anthropic | openai | azure | fake (offline stand-in)
+model = "claude-sonnet-5-5"               # the model that plays the agent
+judge_model = "claude-sonnet-5-5"         # unused here: runs are scored by fixed checks
+embedding_model = "text-embedding-3-small"  # unused here: names are matched without embeddings
+max_tokens = 2048                         # unused here: [agent] max_tokens limits each call
+temperature = 0.0                         # 0 keeps runs repeatable
+max_retries = 3                           # retries for model failures that can succeed later
+timeout_s = 60.0                          # how long one model call may take
+
+[azure_openai]
+api_version = "2024-10-21"
+
+[eval]
+budget_usd = 5.0                          # one process stops calling the model past this spend
+
+[log]
+dir = "logs"                              # one YYYY-MM-DD.jsonl file per day
+level = "INFO"                            # DEBUG | INFO | WARNING | ERROR
+redact = true                             # remove emails, phone numbers and IDs from logs
+trace = false                             # print logger lines as HH:MM:SS traces
+
+[data]
+firm = "data/samples/firm.json"           # the planted records the database is built around
+database = "data/generated/firm.sqlite"   # the made-up firm database, built when missing
+scenarios = "data/evals/scenarios.jsonl"  # the twenty evaluation scenarios
+results = "data/evals/results"            # where evaluation results are written
+
+[seed]
+random = 11                               # the same seed always builds the same database
+clients = 300                             # clients, planted ones included
+matters = 180                             # existing matters
+adverse_parties = 200                     # parties the firm has been against
+near_duplicate_share = 0.2                # made-up adverse parties that are a client, mistyped
+former_share = 0.25                       # made-up clients the firm no longer acts for
+closed_share = 0.35                       # made-up matters that are closed
+
+[match]
+likely = 92                               # from this score two names are likely one party
+possible = 80                             # from this score a person must decide
+limit = 5                                 # the most matches one search returns
+
+[agent]
+max_steps = 10                            # the most model calls one run may make
+max_tool_calls = 30                       # the most tool calls one run may make
+max_tokens = 1500                         # the most tokens one model call may write
+run_budget_usd = 0.5                      # one run stops calling the model past this spend
+min_email_chars = 20                      # the shortest intake email accepted
+max_email_chars = 20000                   # the longest intake email accepted
+max_parties = 10                          # the most adverse parties one draft may name
+
+[store]
+timeout_s = 2.0                           # how long a query waits on a locked database
+retries = 2                               # how many times a search retries a timed-out read
+backoff_s = 0.2                           # the first wait between retries; it doubles
+
+[api]
+host = "127.0.0.1"                        # listen on this machine only
+port = 8000
+intakes_per_minute = 6                    # per person; each intake calls the model
+allowed_origins = ["http://localhost:5173"]  # browser origins allowed to call the API
+allowed_hosts = ["localhost", "127.0.0.1"]   # host names requests may be addressed to
+min_reason_chars = 10                     # the shortest reason for approving past a flag
+max_note_chars = 500                      # the longest decision note
+
+[auth]
+mode = "dev"                              # dev: trusted headers, this machine only | entra
+
+[entra]
+tenant_id = ""                            # the directory (tenant) id, a GUID
+audience = ""                             # the API's application (client) id
+requester_role = "Intake.Requester"       # the app role that may run intakes
+approver_role = "Intake.Approver"         # the app role that may approve and open matters
+leeway_s = 60                             # clock skew allowed on token times
+keys_cache_s = 3600                       # how long the tenant's signing keys are cached
+
+[ui]
+examples = ["s04", "s09", "s13", "s18"]   # scenario ids the web app offers to try

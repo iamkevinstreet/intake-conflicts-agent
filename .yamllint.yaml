@@ -1,0 +1,18 @@
+########################################################################
+#                            .yamllint.yaml                            #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-29                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           yamllint rules: the defaults, a 99-column        #
+#                     margin, and GitHub's unquoted "on" key allowed.  #
+########################################################################
+extends: default
+rules:
+  line-length:
+    max: 99
+  document-start: disable
+  truthy:
+    check-keys: false
+  comments:
+    min-spaces-from-content: 1

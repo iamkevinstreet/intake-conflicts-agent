@@ -1,3 +1,13 @@
+########################################################################
+#                       .github/workflows/ci.yml                       #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-14                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           Every push and pull request: secrets scan, lint, #
+#                     types, the code standard, tests, offline eval,   #
+#                     audits.                                          #
+########################################################################
 name: ci
 
 on:
@@ -8,44 +18,82 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  checks:
+  backend:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
-      LLM_PROVIDER: fake
-      LLM_MODEL: fake-model
+      GITLEAKS_VERSION: 8.30.1
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # the secrets scan and the header dates read all of history
+          persist-credentials: false
 
       - name: Secrets scan (whole history)
         run: |
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz \
-            | tar xz -C /tmp gitleaks
+          archive="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfL -o "/tmp/${archive}" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${archive}"
+          echo "${GITLEAKS_SHA256}  /tmp/${archive}" | sha256sum --check --strict
+          tar -xzf "/tmp/${archive}" -C /tmp gitleaks
           /tmp/gitleaks git . --no-banner --redact --exit-code 1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
           python-version: "3.12"
 
-      - name: Install
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          version: "0.13.6"
 
-      - name: Lint
-        run: ruff check . && ruff format --check .
+      - name: Install the locked backend (hashes checked)
+        run: uv sync --project backend --locked
+
+      - name: Lint, format, strict types and the code standard
+        run: make check-backend
 
       - name: Tests
-        run: pytest
+        run: make test-backend
 
-      - name: Smoke evaluation (offline)
-        run: |
-          python -m intake_agent.evals.run --cases intake_agent/evals/cases/sample.jsonl --fake
+      - name: Offline evaluation (no key, no network; fails if the gate ever opens)
+        run: make eval
+        env:
+          DATA_RESULTS: ${{ runner.temp }}/results
 
-      - name: Upload evaluation results
-        uses: actions/upload-artifact@v4
+      - name: Known vulnerabilities in Python dependencies
+        run: make audit-backend
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          name: eval-results
-          path: intake_agent/evals/results/*.md
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
+        with:
+          node-version-file: frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install the locked frontend
+        run: npm --prefix frontend ci
+
+      - name: Lint, format and types
+        run: make check-frontend
+
+      - name: Tests
+        run: make test-frontend
+
+      - name: Production build
+        run: make build
+
+      - name: Known vulnerabilities in npm dependencies
+        run: make audit-frontend

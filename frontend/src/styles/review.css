@@ -1,0 +1,171 @@
+/*
+########################################################################
+#                    frontend/src/styles/review.css                    #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-29                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           The approver's page and the audit log: draft     #
+#                     list, detail, decision, gate, runs.              #
+########################################################################
+*/
+
+/* The approver's page and the audit log: the list of drafts beside the one
+   being reviewed, the decision, the gate, and the runs table. */
+
+.ia-review__grid {
+  display: grid;
+  gap: var(--ia-space-8);
+}
+
+@media (width >= 64rem) {
+  .ia-review__grid {
+    grid-template-columns: minmax(18rem, 1fr) minmax(0, 2.4fr);
+    align-items: start;
+  }
+}
+
+.ia-filter {
+  display: inline-flex;
+  margin: 0 0 var(--ia-space-3);
+  border: 1px solid var(--ia-edge);
+  border-radius: var(--ia-radius-control);
+  overflow: hidden;
+}
+
+.ia-filter__option {
+  padding: var(--ia-space-1) var(--ia-space-3);
+  border: 0;
+  background: transparent;
+  color: var(--ia-slate);
+  font: inherit;
+  font-size: var(--ia-text-sm);
+  cursor: pointer;
+}
+
+.ia-filter__option[aria-pressed='true'] {
+  background: var(--ia-action);
+  color: var(--ia-on-action);
+}
+
+.ia-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ia-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ia-list__item {
+  display: grid;
+  gap: var(--ia-space-1);
+  justify-items: start;
+  width: 100%;
+  padding: var(--ia-space-3) var(--ia-space-4);
+  border: 1px solid var(--ia-rule);
+  border-radius: var(--ia-radius-control);
+  background: var(--ia-sheet);
+  color: var(--ia-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ia-list__item:hover {
+  border-color: var(--ia-edge);
+}
+
+.ia-list__item[aria-current='true'] {
+  border-color: var(--ia-action);
+  box-shadow: inset 3px 0 0 var(--ia-action);
+}
+
+.ia-list__client {
+  font-weight: 700;
+}
+
+.ia-list__matter,
+.ia-list__meta,
+.ia-list__none {
+  color: var(--ia-slate);
+}
+
+.ia-list__meta {
+  font-size: var(--ia-text-sm);
+}
+
+.ia-review__detail {
+  padding: var(--ia-space-6);
+  border: 1px solid var(--ia-rule);
+  border-radius: var(--ia-radius-control);
+  background: var(--ia-sheet);
+}
+
+.ia-decision {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ia-space-2);
+  margin-top: var(--ia-space-8);
+  padding-top: var(--ia-space-6);
+  border-top: 1px solid var(--ia-rule);
+}
+
+.ia-decision__note {
+  padding: var(--ia-space-2) var(--ia-space-3);
+  border: 1px solid var(--ia-edge);
+  border-radius: var(--ia-radius-control);
+  background: var(--ia-paper);
+  color: var(--ia-ink);
+  font: inherit;
+  resize: vertical;
+}
+
+.ia-decision__buttons {
+  display: flex;
+  gap: var(--ia-space-3);
+}
+
+.ia-gate {
+  margin-top: var(--ia-space-6);
+  padding-top: var(--ia-space-6);
+  border-top: 1px solid var(--ia-rule);
+}
+
+.ia-gate__status {
+  margin: 0 0 var(--ia-space-2);
+}
+
+.ia-gate__record,
+.ia-gate__hint {
+  max-width: 60ch;
+  color: var(--ia-slate);
+  font-size: var(--ia-text-sm);
+}
+
+.ia-gate__opened {
+  padding: var(--ia-space-3) var(--ia-space-4);
+  border-radius: var(--ia-radius-control);
+  background: var(--ia-clear-wash);
+  color: var(--ia-clear);
+}
+
+.ia-audit__when {
+  display: block;
+  color: var(--ia-slate);
+  font-size: var(--ia-text-sm);
+}
+
+.ia-audit__detail {
+  margin-top: var(--ia-space-8);
+}
+
+.ia-audit__reason {
+  margin: 0 0 var(--ia-space-2);
+}
+
+.ia-audit__hash {
+  color: var(--ia-slate);
+  font-size: var(--ia-text-sm);
+  overflow-wrap: anywhere;
+}

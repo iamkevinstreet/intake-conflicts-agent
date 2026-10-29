@@ -1,0 +1,205 @@
+########################################################################
+#                          docs/diagrams.toml                          #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-29                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           The README diagrams as data. Redraw them with    #
+#                     make diagrams; never edit the SVGs by hand.      #
+########################################################################
+# Boxes are [left, top, width, height] in pixels; arrow points are [x, y].
+
+[[diagram]]
+file = "architecture.svg"
+width = 1000
+height = 800
+title = "The intake agent at a glance"
+subtitle = "The agent can search and draft. Only a person can approve, and only an approval opens a matter."
+caption = "Grey arrows: what moves between parts. Blue: the one path that leaves your machine. Dashed boxes: where each part runs and who may act there."
+
+[[diagram.zone]]
+box = [28, 150, 420, 132]
+title = "Browser"
+rule = "requesters and approvers"
+
+[[diagram.component]]
+box = [48, 190, 380, 76]
+name = "Web app"
+details = ["React and TypeScript: intake, approvals, audit", "acts as a made-up person on localhost"]
+note = "Entra sign-in to build"
+
+[[diagram.component]]
+box = [612, 170, 360, 80]
+name = "Model provider"
+details = ["outside your machine: Anthropic by default", "sees the rules, the fenced email, results"]
+
+[[diagram.zone]]
+box = [28, 320, 944, 168]
+title = "Service"
+rule = "your machine, localhost by default"
+
+[[diagram.component]]
+box = [48, 360, 208, 108]
+name = "API"
+details = ["FastAPI, /api/v1", "Entra ID or dev roles", "limits, hosts, headers"]
+
+[[diagram.component]]
+box = [280, 360, 208, 108]
+name = "Agent loop"
+details = ["steps, calls, $ capped", "requester role only", "stand-in when offline"]
+
+[[diagram.component]]
+box = [512, 360, 208, 108]
+name = "Toolbox"
+details = ["five tools, args checked", "drafts need searches", "findings from searches"]
+
+[[diagram.component]]
+box = [744, 360, 208, 108]
+name = "Drafts and gate"
+details = ["approval: four eyes", "open: approval needed", "checked again in SQL"]
+
+[[diagram.arrow]]
+points = [[256, 414], [280, 414]]
+
+[[diagram.arrow]]
+points = [[488, 414], [512, 414]]
+
+[[diagram.arrow]]
+points = [[720, 414], [744, 414]]
+
+[[diagram.arrow]]
+points = [[238, 266], [238, 316]]
+label = "emails, drafts, decisions"
+at = [246, 296]
+
+[[diagram.arrow]]
+points = [[440, 358], [440, 302], [792, 302], [792, 252]]
+label = "prompt out, tool calls back"
+at = [600, 294]
+accent = true
+
+[[diagram.zone]]
+box = [512, 520, 460, 130]
+title = "Firm data"
+rule = "the agent only reads it"
+
+[[diagram.component]]
+box = [532, 560, 208, 74]
+name = "Firm records"
+details = ["about 500 made-up names", "near duplicates planted"]
+
+[[diagram.component]]
+box = [752, 560, 200, 74]
+name = "Drafts and audit"
+details = ["SQLite, append-only", "every run and call"]
+
+[[diagram.arrow]]
+points = [[616, 468], [616, 516]]
+label = "reads"
+at = [626, 500]
+
+[[diagram.arrow]]
+points = [[848, 468], [848, 516]]
+label = "writes"
+at = [858, 500]
+
+[[diagram.zone]]
+box = [28, 520, 460, 130]
+title = "Evaluation"
+rule = "offline in CI, live by hand"
+
+[[diagram.component]]
+box = [48, 560, 208, 74]
+name = "20 scenarios"
+details = ["planted conflicts", "a timeout, injections"]
+
+[[diagram.component]]
+box = [268, 560, 200, 74]
+name = "Scorers"
+details = ["recall, escalation", "gate, time and cost"]
+
+[[diagram.arrow]]
+points = [[384, 518], [384, 490]]
+label = "runs every scenario"
+at = [392, 508]
+
+[[diagram.band]]
+box = [28, 680, 944, 92]
+title = "Foundation"
+lines = [
+  "config/settings.toml holds every setting, .env holds secrets only · kds settings, logs, llm, evals, synthetic",
+  "JSON logs with request ids, never email text · CI: tests, offline eval, CodeQL, gitleaks, audits",
+]
+
+[[diagram]]
+file = "flow.svg"
+width = 1000
+height = 560
+title = "How an intake runs"
+subtitle = "Every step is checked by the service, so a model that misbehaves still cannot open a matter."
+caption = "Steps in reading order. Blue: the requests that leave your machine."
+
+[[diagram.component]]
+box = [28, 160, 272, 80]
+name = "1. Check the email"
+details = ["20 to 20,000 characters", "a limit per person; orders flagged"]
+
+[[diagram.component]]
+box = [364, 160, 272, 80]
+name = "2. Read and search"
+details = ["the model names every party", "two searches, both read only"]
+
+[[diagram.component]]
+box = [700, 160, 272, 80]
+name = "3. Draft the matter"
+details = ["refused until all are searched", "findings come from the searches"]
+
+[[diagram.component]]
+box = [28, 300, 272, 80]
+name = "4. Ask for approval"
+details = ["only this run's own draft", "the agent's work ends here"]
+
+[[diagram.component]]
+box = [364, 300, 272, 80]
+name = "5. A person decides"
+details = ["an approver, not the requester", "a reason to approve past a flag"]
+
+[[diagram.component]]
+box = [700, 300, 272, 80]
+name = "6. Open the matter"
+details = ["only with an approval record", "the agent is always refused"]
+
+[[diagram.arrow]]
+points = [[300, 200], [364, 200]]
+
+[[diagram.arrow]]
+points = [[636, 200], [700, 200]]
+
+[[diagram.arrow]]
+points = [[836, 240], [836, 270], [164, 270], [164, 300]]
+
+[[diagram.arrow]]
+points = [[300, 340], [364, 340]]
+
+[[diagram.arrow]]
+points = [[636, 340], [700, 340]]
+
+[[diagram.component]]
+box = [28, 440, 272, 80]
+name = "Model provider"
+details = ["outside your machine"]
+note = "external"
+
+[[diagram.arrow]]
+points = [[164, 380], [164, 438]]
+label = "steps 2 to 4 ask the model"
+at = [174, 414]
+accent = true
+
+[[diagram.band]]
+box = [336, 440, 636, 80]
+title = "Every run leaves"
+lines = [
+  "a run record: who asked, the email's hash, the outcome, tokens, cost, time",
+  "each model call and tool call: arguments redacted, the result hashed",
+]

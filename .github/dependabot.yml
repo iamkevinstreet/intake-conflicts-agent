@@ -1,0 +1,23 @@
+########################################################################
+#                        .github/dependabot.yml                        #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-29                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           Weekly pull requests that update the pinned      #
+#                     Actions, the uv lockfile and the npm lockfile.   #
+########################################################################
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: uv
+    directory: /backend
+    schedule:
+      interval: weekly
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly

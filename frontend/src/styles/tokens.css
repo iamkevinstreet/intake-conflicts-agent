@@ -1,0 +1,67 @@
+/*
+########################################################################
+#                    frontend/src/styles/tokens.css                    #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-29                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           Design tokens: colour for light and dark with    #
+#                     three verdict colours, type, space, shape.       #
+########################################################################
+*/
+
+/* Design tokens. File paper and navy ink, the same family as the other law
+   projects; three verdict colours, each with a wash for its background:
+   red for a conflict, amber for a person to decide, green for clear. The
+   system speaks in Public Sans, emails and drafts in Source Serif 4. Every
+   colour is written once, for light and dark. */
+
+:root {
+  color-scheme: light dark;
+
+  /* Colour */
+  --ia-paper: light-dark(#f3f4f1, #0e1520);
+  --ia-sheet: light-dark(#fcfcfa, #162030);
+  --ia-ink: light-dark(#17202e, #e4e8ee);
+  --ia-slate: light-dark(#505a6b, #a5afbd);
+  --ia-rule: light-dark(#d4d8de, #2a3546);
+  --ia-edge: light-dark(#7d8695, #6f7b8f);
+  --ia-action: light-dark(#1f3a68, #a9c1ec);
+  --ia-on-action: light-dark(#fff, #0e1520);
+  --ia-alert: light-dark(#8a2c16, #f0a58f);
+  --ia-conflict: light-dark(#9b1c1c, #f4a3a3);
+  --ia-conflict-wash: light-dark(#fbeaea, #3a1c20);
+  --ia-review: light-dark(#7a4f00, #f2c46b);
+  --ia-review-wash: light-dark(#fdf3dc, #3a2f17);
+  --ia-clear: light-dark(#1d6b3c, #8fd6a6);
+  --ia-clear-wash: light-dark(#e6f4ea, #15301f);
+  --ia-shadow: light-dark(rgb(23 32 46 / 12%), rgb(0 0 0 / 45%));
+
+  /* Type: a 1.25 scale on a 17px body */
+  --ia-sans: 'Public Sans Variable', system-ui, sans-serif;
+  --ia-serif: 'Source Serif 4 Variable', georgia, serif;
+  --ia-mono: ui-monospace, 'SFMono-Regular', menlo, monospace;
+  --ia-text-sm: 0.875rem;
+  --ia-text-base: 1.0625rem;
+  --ia-text-lg: 1.25rem;
+  --ia-text-xl: 1.5625rem;
+  --ia-text-2xl: 2.25rem;
+
+  /* Space, on a 4px grid */
+  --ia-space-1: 0.25rem;
+  --ia-space-2: 0.5rem;
+  --ia-space-3: 0.75rem;
+  --ia-space-4: 1rem;
+  --ia-space-6: 1.5rem;
+  --ia-space-8: 2rem;
+  --ia-space-12: 3rem;
+  --ia-space-16: 4rem;
+
+  /* Shape: controls round a little, chips fully, paper not at all */
+  --ia-radius-control: 6px;
+  --ia-radius-chip: 999px;
+  --ia-radius-sheet: 2px;
+
+  /* Measure */
+  --ia-width: 82rem;
+}

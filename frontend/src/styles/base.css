@@ -1,0 +1,314 @@
+/*
+########################################################################
+#                     frontend/src/styles/base.css                     #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-29                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           The frame every page shares: page, bar, footer,  #
+#                     controls, verdict badges, tables, focus.         #
+########################################################################
+*/
+
+/* The frame every page shares: page, top bar, footer, controls, tables,
+   focus, and the screen-reader helpers. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ia-paper);
+  color: var(--ia-ink);
+  font-family: var(--ia-sans);
+  font-size: var(--ia-text-base);
+  line-height: 1.55;
+}
+
+a {
+  color: var(--ia-action);
+  text-underline-offset: 0.18em;
+}
+
+code {
+  font-family: var(--ia-mono);
+  font-size: 0.85em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ia-action);
+  outline-offset: 2px;
+}
+
+.ia-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.ia-skip {
+  position: absolute;
+  top: var(--ia-space-2);
+  left: -100vw;
+  padding: var(--ia-space-2) var(--ia-space-4);
+  background: var(--ia-sheet);
+}
+
+.ia-skip:focus {
+  left: var(--ia-space-4);
+}
+
+.ia-app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.ia-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ia-space-4) var(--ia-space-8);
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+  max-width: var(--ia-width);
+  margin: 0 auto;
+  padding: var(--ia-space-6);
+  border-bottom: 1px solid var(--ia-rule);
+}
+
+.ia-bar__name {
+  color: var(--ia-ink);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.ia-bar__nav {
+  display: flex;
+  flex: 1;
+  gap: var(--ia-space-6);
+}
+
+.ia-bar__link {
+  color: var(--ia-slate);
+  text-decoration: none;
+}
+
+.ia-bar__link[aria-current='page'] {
+  color: var(--ia-ink);
+  text-decoration: underline 2px;
+  text-underline-offset: 0.45em;
+}
+
+.ia-main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--ia-width);
+  margin: 0 auto;
+  padding: var(--ia-space-12) var(--ia-space-6) var(--ia-space-16);
+}
+
+.ia-foot {
+  width: 100%;
+  max-width: var(--ia-width);
+  margin: 0 auto;
+  padding: var(--ia-space-6);
+  border-top: 1px solid var(--ia-rule);
+  color: var(--ia-slate);
+  font-size: var(--ia-text-sm);
+}
+
+.ia-intro__title {
+  max-width: 22ch;
+  margin: 0 0 var(--ia-space-3);
+  font-size: var(--ia-text-2xl);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.ia-intro__lede {
+  max-width: 52ch;
+  margin: 0 0 var(--ia-space-6);
+  color: var(--ia-slate);
+  font-size: var(--ia-text-lg);
+  line-height: 1.45;
+}
+
+.ia-section__title {
+  margin: 0 0 var(--ia-space-4);
+  font-size: var(--ia-text-lg);
+}
+
+.ia-button {
+  padding: 0.7rem 1.25rem;
+  border: 0;
+  border-radius: var(--ia-radius-control);
+  background: var(--ia-action);
+  color: var(--ia-on-action);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ia-button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.ia-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ia-action);
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  cursor: pointer;
+}
+
+.ia-status {
+  max-width: 52rem;
+  margin: 0 0 var(--ia-space-6);
+  padding: var(--ia-space-3) var(--ia-space-4);
+  border-left: 3px solid var(--ia-edge);
+  color: var(--ia-slate);
+}
+
+.ia-status--error {
+  border-left-color: var(--ia-alert);
+  color: var(--ia-alert);
+}
+
+.ia-notice {
+  max-width: 46rem;
+  margin: 0 0 var(--ia-space-6);
+  padding: var(--ia-space-3) var(--ia-space-4);
+  border: 1px solid var(--ia-rule);
+  border-radius: var(--ia-radius-control);
+  background: var(--ia-sheet);
+  color: var(--ia-slate);
+  font-size: var(--ia-text-sm);
+}
+
+.ia-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--ia-text-sm);
+}
+
+.ia-table th {
+  padding: var(--ia-space-2) var(--ia-space-3) var(--ia-space-2) 0;
+  border-bottom: 2px solid var(--ia-rule);
+  font-weight: 600;
+  text-align: left;
+}
+
+.ia-table td {
+  padding: var(--ia-space-3) var(--ia-space-3) var(--ia-space-3) 0;
+  border-bottom: 1px solid var(--ia-rule);
+  vertical-align: top;
+}
+
+.ia-table__num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+q {
+  quotes: '"' '"' "'" "'";
+}
+
+.ia-button--quiet {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--ia-edge);
+  color: var(--ia-action);
+}
+
+.ia-chip {
+  padding: var(--ia-space-1) var(--ia-space-3);
+  border: 1px solid var(--ia-rule);
+  border-radius: var(--ia-radius-chip);
+  background: var(--ia-sheet);
+  color: var(--ia-ink);
+  font: inherit;
+  font-size: var(--ia-text-sm);
+  cursor: pointer;
+}
+
+.ia-chip:hover {
+  border-color: var(--ia-action);
+}
+
+.ia-identity {
+  display: flex;
+  gap: var(--ia-space-2);
+  align-items: center;
+  font-size: var(--ia-text-sm);
+}
+
+.ia-identity--note {
+  max-width: 32ch;
+  margin: 0;
+  color: var(--ia-slate);
+}
+
+.ia-identity__label {
+  color: var(--ia-slate);
+}
+
+.ia-identity__select {
+  padding: var(--ia-space-1) var(--ia-space-2);
+  border: 1px solid var(--ia-edge);
+  border-radius: var(--ia-radius-control);
+  background: var(--ia-sheet);
+  color: var(--ia-ink);
+  font: inherit;
+}
+
+.ia-verdict {
+  display: inline-flex;
+  gap: var(--ia-space-2);
+  align-items: baseline;
+  padding: 0.15rem 0.65rem;
+  border-radius: var(--ia-radius-chip);
+  font-size: var(--ia-text-sm);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.ia-verdict--conflict {
+  background: var(--ia-conflict-wash);
+  color: var(--ia-conflict);
+}
+
+.ia-verdict--review {
+  background: var(--ia-review-wash);
+  color: var(--ia-review);
+}
+
+.ia-verdict--clear {
+  background: var(--ia-clear-wash);
+  color: var(--ia-clear);
+}
+
+.ia-verdict__label {
+  color: var(--ia-slate);
+  font-weight: 400;
+}
+
+.ia-table-wrap {
+  overflow-x: auto;
+}

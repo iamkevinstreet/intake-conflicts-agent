@@ -1,0 +1,92 @@
+########################################################################
+#                   .github/workflows/eval-live.yml                    #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-29                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           Started by hand: the twenty scenarios with a     #
+#                     real model as the agent, results to a branch.    #
+########################################################################
+name: eval-live
+
+# The model plays the agent on all twenty scenarios, using the ANTHROPIC_API_KEY repository secret,
+# which never appears in logs (kds.logs redacts, and the adapter stops at the budget). Results are
+# committed to the eval-results branch and uploaded as an artifact; merging that branch into main
+# publishes them.
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: Model id (priced in kds.llm's pricing table)
+        type: string
+        default: claude-sonnet-5-5
+      budget_usd:
+        description: Stop calling the model once this much has been spent
+        type: string
+        default: "5"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: eval-live
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      LLM_PROVIDER: anthropic
+      LLM_MODEL: ${{ inputs.model }}
+      EVAL_BUDGET_USD: ${{ inputs.budget_usd }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      LOG_REDACT: "true"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          version: "0.13.6"
+
+      - name: Install the locked backend (hashes checked)
+        run: uv sync --project backend --locked
+
+      - name: Check the key is present
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "ANTHROPIC_API_KEY is not set as a repository secret"; exit 1; fi
+
+      - name: The twenty scenarios with the model as the agent
+        run: uv run --project backend --no-sync python -m intake_agent.evals.run --name live
+
+      - name: Job summary
+        run: cat data/evals/results/live-latest.md >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: eval-results
+          path: data/evals/results/
+
+      - name: Commit results to the eval-results branch
+        run: |
+          git config user.name "Kevin Street"
+          git config user.email "747156+iamkevinstreet@users.noreply.github.com"
+          cp -r data/evals/results "${RUNNER_TEMP}/results"
+          git stash --include-untracked --quiet
+          git fetch origin eval-results:eval-results 2>/dev/null || true
+          if git show-ref --verify --quiet refs/heads/eval-results; then
+            git checkout eval-results
+          else
+            git checkout -b eval-results
+          fi
+          mkdir -p data/evals/results
+          cp -r "${RUNNER_TEMP}/results/." data/evals/results/
+          git add data/evals/results
+          git commit -m "Evaluation: ${LLM_MODEL}" || echo "nothing to commit"
+          git push origin eval-results

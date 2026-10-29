@@ -1,0 +1,28 @@
+########################################################################
+#                            .editorconfig                             #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-29                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           Editor settings every IDE reads: the 99-column   #
+#                     margin, LF endings, a final newline, UTF-8.      #
+########################################################################
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+max_line_length = 99
+
+[*.{ts,tsx,js,json,css,html,yml,yaml,toml,md}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab

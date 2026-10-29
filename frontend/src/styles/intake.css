@@ -1,0 +1,379 @@
+/*
+########################################################################
+#                    frontend/src/styles/intake.css                    #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-29                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           The requester's page: form, outcome, verdicts,   #
+#                     meter, findings, draft and steps.                #
+########################################################################
+*/
+
+/* The requester's page: the form, the outcome, the verdicts, the findings,
+   the draft and the steps. The form stays in view on wide screens while
+   the result scrolls beside it. */
+
+.ia-intake__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ia-space-8);
+}
+
+@media (width >= 64rem) {
+  .ia-intake__grid {
+    grid-template-columns: minmax(22rem, 2fr) minmax(0, 3fr);
+    align-items: start;
+  }
+
+  .ia-form {
+    position: sticky;
+    top: var(--ia-space-6);
+  }
+}
+
+.ia-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ia-space-3);
+  padding: var(--ia-space-6);
+  border: 1px solid var(--ia-rule);
+  border-radius: var(--ia-radius-control);
+  background: var(--ia-sheet);
+}
+
+.ia-form__label {
+  font-weight: 600;
+}
+
+.ia-form__email {
+  min-height: 16rem;
+  padding: var(--ia-space-3);
+  border: 1px solid var(--ia-edge);
+  border-radius: var(--ia-radius-control);
+  background: var(--ia-paper);
+  color: var(--ia-ink);
+  font-family: var(--ia-serif);
+  font-size: var(--ia-text-base);
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.ia-form__hint {
+  margin: 0;
+  color: var(--ia-slate);
+  font-size: var(--ia-text-sm);
+}
+
+.ia-form__examples-title {
+  margin: 0 0 var(--ia-space-2);
+  color: var(--ia-slate);
+  font-size: var(--ia-text-sm);
+}
+
+.ia-form__examples ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ia-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ia-outcome {
+  margin: 0 0 var(--ia-space-6);
+  padding: var(--ia-space-4) var(--ia-space-6);
+  border-left: 4px solid var(--ia-edge);
+  background: var(--ia-sheet);
+}
+
+.ia-outcome--submitted {
+  border-left-color: var(--ia-action);
+}
+
+.ia-outcome--incomplete,
+.ia-outcome--failed {
+  border-left-color: var(--ia-alert);
+}
+
+.ia-outcome__title {
+  margin: 0;
+  font-size: var(--ia-text-lg);
+  font-weight: 700;
+}
+
+.ia-outcome__reason {
+  margin: var(--ia-space-1) 0;
+}
+
+.ia-outcome__numbers {
+  margin: 0;
+  color: var(--ia-slate);
+  font-size: var(--ia-text-sm);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.ia-verdicts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ia-space-4) var(--ia-space-8);
+  align-items: center;
+  margin: 0 0 var(--ia-space-8);
+}
+
+.ia-verdicts__shown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ia-space-1);
+  margin: 0;
+  padding-right: var(--ia-space-8);
+  border-right: 1px solid var(--ia-rule);
+}
+
+.ia-verdicts__shown .ia-verdict {
+  padding: var(--ia-space-1) var(--ia-space-4);
+  font-size: var(--ia-text-lg);
+}
+
+.ia-verdicts__label {
+  color: var(--ia-slate);
+  font-size: var(--ia-text-sm);
+}
+
+.ia-verdicts__sources {
+  display: flex;
+  gap: var(--ia-space-6);
+  margin: 0;
+}
+
+.ia-verdicts__sources dt {
+  color: var(--ia-slate);
+  font-size: var(--ia-text-sm);
+}
+
+.ia-verdicts__sources dd {
+  margin: 0;
+}
+
+.ia-verdicts__note {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--ia-slate);
+  font-size: var(--ia-text-sm);
+}
+
+.ia-meter {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--ia-space-1);
+  min-width: 8rem;
+}
+
+.ia-meter__bar {
+  position: relative;
+  display: block;
+  height: 0.5rem;
+  border-radius: var(--ia-radius-chip);
+  background: var(--ia-rule);
+  overflow: hidden;
+}
+
+.ia-meter__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--ia-review);
+}
+
+.ia-meter__bar--likely .ia-meter__fill,
+.ia-meter__bar--exact .ia-meter__fill {
+  background: var(--ia-conflict);
+}
+
+.ia-meter__mark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--ia-sheet);
+}
+
+.ia-meter__text {
+  color: var(--ia-slate);
+  font-size: var(--ia-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.ia-findings__party {
+  display: block;
+  font-weight: 600;
+}
+
+.ia-findings__side,
+.ia-findings__why {
+  display: block;
+  color: var(--ia-slate);
+  font-size: var(--ia-text-sm);
+}
+
+.ia-findings__why {
+  margin-top: var(--ia-space-1);
+}
+
+.ia-findings__none {
+  padding: var(--ia-space-3) var(--ia-space-4);
+  border-radius: var(--ia-radius-control);
+  background: var(--ia-clear-wash);
+  color: var(--ia-clear);
+}
+
+@media (width < 40rem) {
+  .ia-findings thead {
+    display: none;
+  }
+
+  .ia-findings tr {
+    display: grid;
+    gap: var(--ia-space-2);
+    padding: var(--ia-space-3) 0;
+    border-bottom: 1px solid var(--ia-rule);
+  }
+
+  .ia-findings td {
+    padding: 0;
+    border: 0;
+  }
+}
+
+.ia-draft {
+  margin-top: var(--ia-space-6);
+}
+
+.ia-draft__facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--ia-space-3) var(--ia-space-6);
+  margin: 0 0 var(--ia-space-6);
+}
+
+.ia-draft__facts dt {
+  color: var(--ia-slate);
+  font-size: var(--ia-text-sm);
+}
+
+.ia-draft__facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.ia-draft__warning {
+  margin: 0 0 var(--ia-space-6);
+  padding: var(--ia-space-3) var(--ia-space-4);
+  border: 1px solid var(--ia-review);
+  border-radius: var(--ia-radius-control);
+  background: var(--ia-review-wash);
+}
+
+.ia-draft__warning-title {
+  margin: 0 0 var(--ia-space-2);
+  color: var(--ia-review);
+  font-weight: 600;
+}
+
+.ia-draft__warning ul {
+  margin: 0;
+  padding-left: var(--ia-space-6);
+  font-family: var(--ia-serif);
+}
+
+.ia-draft__heading {
+  margin: var(--ia-space-4) 0 var(--ia-space-1);
+  font-size: var(--ia-text-base);
+}
+
+.ia-draft__prose {
+  max-width: 68ch;
+  margin: 0;
+  font-family: var(--ia-serif);
+}
+
+.ia-draft__email {
+  margin-top: var(--ia-space-6);
+}
+
+.ia-draft__email summary {
+  color: var(--ia-action);
+  cursor: pointer;
+}
+
+.ia-draft__email-text {
+  max-width: 72ch;
+  padding: var(--ia-space-4);
+  border: 1px solid var(--ia-rule);
+  border-radius: var(--ia-radius-sheet);
+  background: var(--ia-paper);
+  font-family: var(--ia-serif);
+  font-size: var(--ia-text-base);
+  white-space: pre-wrap;
+}
+
+.ia-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ia-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ia-steps__step {
+  padding-left: var(--ia-space-4);
+  border-left: 2px solid var(--ia-rule);
+}
+
+.ia-steps__model {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ia-space-2);
+  justify-content: space-between;
+  margin: 0 0 var(--ia-space-2);
+}
+
+.ia-steps__label {
+  font-weight: 600;
+}
+
+.ia-steps__numbers {
+  color: var(--ia-slate);
+  font-size: var(--ia-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.ia-steps__calls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ia-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ia-steps__call {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ia-space-2);
+  align-items: baseline;
+  font-size: var(--ia-text-sm);
+}
+
+.ia-steps__call--refused .ia-steps__tool,
+.ia-steps__error {
+  color: var(--ia-conflict);
+}
+
+.ia-steps__hash {
+  margin-left: auto;
+  color: var(--ia-slate);
+  font-family: var(--ia-mono);
+  font-size: 0.75rem;
+}

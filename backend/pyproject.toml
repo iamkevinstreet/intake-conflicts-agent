@@ -1,0 +1,91 @@
+########################################################################
+#                        backend/pyproject.toml                        #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-29                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           Packages the intake service and sets ruff, mypy  #
+#                     and pytest to the code standard.                 #
+########################################################################
+[project]
+name = "intake-conflicts-agent"
+version = "0.1.0"
+description = "New-matter intake agent with scoped tools and an approval gate it cannot pass."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
+dependencies = [
+  "kds-settings>=0.3.0,<0.4",
+  "kds-logs>=0.3.0,<0.4",
+  "kds-llm>=0.3.0,<0.4",
+  "kds-evals>=0.3.0,<0.4",
+  "kds-synthetic>=0.3.0,<0.4",
+  "fastapi>=0.115",
+  "uvicorn>=0.32",
+  "rapidfuzz>=3.9",
+  "pyjwt[crypto]>=2.10",
+]
+
+[dependency-groups]
+dev = [
+  "httpx>=0.28",
+  "mypy>=1.13",
+  "pip-audit>=2.7",
+  "pytest>=8.3",
+  "ruff==0.17.3",
+  "kds-standards>=0.3.0,<0.4",
+  "kds-diagrams>=0.3.0,<0.4",
+]
+
+# Our own packages come from the utils repository at one reviewed commit; none
+# of them is on PyPI, so a same-named public package can never be installed.
+[tool.uv.sources]
+kds-settings = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "settings", rev = "1b67de07d6de8006f4d6f0ee7ea5668277e411f7" }
+kds-logs = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "logs", rev = "1b67de07d6de8006f4d6f0ee7ea5668277e411f7" }
+kds-llm = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "llm", rev = "1b67de07d6de8006f4d6f0ee7ea5668277e411f7" }
+kds-evals = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "evals", rev = "1b67de07d6de8006f4d6f0ee7ea5668277e411f7" }
+kds-synthetic = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "synthetic", rev = "1b67de07d6de8006f4d6f0ee7ea5668277e411f7" }
+kds-standards = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "standards", rev = "1b67de07d6de8006f4d6f0ee7ea5668277e411f7" }
+kds-diagrams = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "diagrams", rev = "1b67de07d6de8006f4d6f0ee7ea5668277e411f7" }
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["intake_agent*"]
+
+[tool.ruff]
+line-length = 99
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "N", "UP", "B", "BLE", "S", "C90", "PL", "RUF", "G", "D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-args = 8
+max-positional-args = 5
+
+[tool.ruff.lint.isort]
+known-first-party = ["intake_agent"]
+known-local-folder = ["support"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests assert, repeat expected values inline, and hold made-up tokens.
+"tests/**" = ["S101", "S105", "S106", "PLR2004", "D"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["intake_agent"]

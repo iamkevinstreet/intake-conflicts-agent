@@ -1,0 +1,123 @@
+{
+  "about": "Made-up firm records planted for the evaluation. Every name is fictional. The generator adds made-up clients, matters and adverse parties around these until the database holds about 500 names, and keeps every generated name below the possible-match score against every name here, so the evaluation's expected findings cannot be disturbed by chance.",
+  "clients": [
+    { "name": "ACME Logistics LLC", "status": "current" },
+    { "name": "Ironwood Builders Inc.", "status": "current" },
+    { "name": "Priya Castillo", "status": "current" },
+    { "name": "Meridian Fresh Foods Inc.", "status": "current" },
+    { "name": "Keystone Medical Supply Co.", "status": "current" },
+    { "name": "Northgate Staffing Partners LLC", "status": "former" },
+    { "name": "Rowan Ellison", "status": "current" },
+    { "name": "Marlow Hartley", "status": "current" },
+    { "name": "Harborview Dental Group", "status": "current" },
+    { "name": "Pinnacle Foods Corp.", "status": "current" },
+    { "name": "Granite Roofing Co.", "status": "current" },
+    { "name": "Bennett Analytics Inc.", "status": "former" },
+    { "name": "Whitaker Plumbing LLC", "status": "current" },
+    { "name": "Lakeside Electric Co.", "status": "current" }
+  ],
+  "matters": [
+    {
+      "number": "M-1001",
+      "client": "Granite Roofing Co.",
+      "kind": "non-solicitation dispute",
+      "status": "open",
+      "adverse": ["Summit Ridge Properties LLC"]
+    },
+    {
+      "number": "M-1002",
+      "client": "Bennett Analytics Inc.",
+      "kind": "trade secret dispute",
+      "status": "closed",
+      "adverse": ["Westbrook Transport Inc."]
+    },
+    {
+      "number": "M-1003",
+      "client": "Whitaker Plumbing LLC",
+      "kind": "non-compete enforcement",
+      "status": "open",
+      "adverse": ["Okafor Holdings Group"]
+    },
+    {
+      "number": "M-1004",
+      "client": "Rowan Ellison",
+      "kind": "executive separation agreement",
+      "status": "open",
+      "adverse": ["Quarry Hill Partners LLC"]
+    },
+    {
+      "number": "M-1005",
+      "client": "ACME Logistics LLC",
+      "kind": "wage and hour class action",
+      "status": "open",
+      "adverse": ["Casey Brandt"]
+    },
+    {
+      "number": "M-1006",
+      "client": "Harborview Dental Group",
+      "kind": "discrimination charge",
+      "status": "closed",
+      "adverse": ["Imani Okoro"]
+    },
+    {
+      "number": "M-1007",
+      "client": "Priya Castillo",
+      "kind": "executive compensation dispute",
+      "status": "open",
+      "adverse": ["Evergreen Analytics Inc."]
+    },
+    {
+      "number": "M-1008",
+      "client": "Lakeside Electric Co.",
+      "kind": "OSHA citation",
+      "status": "open",
+      "adverse": []
+    }
+  ],
+  "reserved": [
+    "Falcon Ridge Supply LLC",
+    "Dana Whitfield",
+    "Theo Marchetti",
+    "Nadia Brooks",
+    "Saffron Lane Bakery LLC",
+    "Ruth Abernathy-Cole",
+    "Juniper Hollow Farms LLC",
+    "Tobias Renner",
+    "Harriet Vane",
+    "Bramblewood Catering LLC",
+    "Felix Ostrowski",
+    "Selin Arda",
+    "Gwen Adeyemi",
+    "Ashgrove Home Health LLC",
+    "Lucia Ferraro",
+    "Marcus Bell",
+    "Tidewater Packaging Inc.",
+    "Elena Sokolova",
+    "Lena Brightman",
+    "Silverpine Dental Studio PLLC",
+    "Arjun Mehta",
+    "Lakeview Fence & Gate LLC",
+    "Pembrook Landscaping Co.",
+    "Calvin Reyes",
+    "Copperline Cabinetry LLC",
+    "Gideon Mwangi",
+    "Tess Halvorsen",
+    "Brightwater Seafood Co.",
+    "Harbor Point Cold Storage",
+    "Oscar Lindgren",
+    "Sunfield Grocers Inc.",
+    "Ironwood Bakery Co.",
+    "Ines Varga",
+    "Maureen Tolliver",
+    "Marigold Childcare Centers LLC",
+    "Hollis Grant",
+    "Bea Castellanos",
+    "Clearwater Orthodontics PLLC",
+    "Dr. Simone Okafor-Reid",
+    "Thornbury Wholesale Foods LLC",
+    "Graham Pike",
+    "Riverside Auto Glass LLC",
+    "Cormac Doyle",
+    "Kelsey Moran"
+  ]
+}

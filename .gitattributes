@@ -1,0 +1,19 @@
+########################################################################
+#                            .gitattributes                            #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-29                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           LF line endings everywhere, and the generated    #
+#                     files GitHub and the checker should skip.        #
+########################################################################
+* text=auto eol=lf
+
+*.png binary
+*.woff2 binary
+
+# Generated: regenerate rather than edit.
+docs/*.svg linguist-generated
+backend/uv.lock linguist-generated
+frontend/package-lock.json linguist-generated
+data/evals/results/* linguist-generated

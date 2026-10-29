@@ -1,34 +1,51 @@
-# secrets and local config
+########################################################################
+#                              .gitignore                              #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-14                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           Keeps secrets, keys, caches, builds, logs,       #
+#                     generated data and databases out of git.         #
+########################################################################
+# Secrets and keys: never committed
 .env
 .env.*
 !.env.example
 *.pem
 *.key
+*.p12
+*.pfx
+id_*
+secrets/
 
-# python
+# Python
 __pycache__/
 *.py[cod]
 .venv/
-venv/
 *.egg-info/
 build/
-dist/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+.coverage
+htmlcov/
 
-# generated data, logs and eval outputs (regenerate with the scripts; never commit real records)
+# Node
+node_modules/
+dist/
+coverage/
+
+# Runtime logs: kds.logs writes <log_dir>/YYYY-MM-DD.jsonl
 logs/
-*/data/generated/
-*/evals/results/
+*.log
+
+# Generated data, caches and databases: the made-up firm database and its audit log
+data/generated/
+.cache/
 *.sqlite
 *.db
 
-# node (review UIs)
-node_modules/
-*/ui/dist/
-
-# editors and OS
-.vscode/
+# Editors and operating systems
 .idea/
+.vscode/
 .DS_Store
