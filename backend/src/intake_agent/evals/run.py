@@ -1,26 +1,29 @@
 ########################################################################
 #                backend/src/intake_agent/evals/run.py                 #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Runs the scenarios on a fresh database, checks   #
-#                     the gate, writes the results.                    #
-########################################################################
-"""Runs the twenty scenarios and writes the results.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
+
+Runs the scenarios on a fresh database, checks the gate and writes the
+results:
 
     python -m intake_agent.evals.run --name offline
     python -m intake_agent.evals.run --name live --only s04 s18
 
-Each evaluation builds a fresh firm database in a temporary folder
-from the same seed, so runs never see each other's drafts. After each
-run, an approver identity tries to open the run's draft without an
-approval; the gate must refuse every time. Results go to
-data/evals/results as JSON (every score, and each run's calls and
-draft) and Markdown (the table), with a -latest.md copy the README
-links to.
+Each evaluation builds a fresh firm database in a temporary folder from
+the same seed, so runs never see each other's drafts. After each run, an
+approver identity tries to open the run's draft without an approval; the
+gate must refuse every time. Results go to data/evals/results as JSON
+(every score, and each run's calls and draft) and Markdown (the table),
+with a -latest.md copy the README links to.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import argparse
@@ -31,24 +34,34 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+# Third-party
+from kds.args import required
 from kds.llm.pricing import prices_as_of
 from kds.logs import get_logger, log_event, setup_logging
 from pydantic import BaseModel
 
+# Local
 from intake_agent.config import AppSettings, get_app_settings
-from intake_agent.core.audit import RunDetail, RunLog
+from intake_agent.core.audit import RunLog
 from intake_agent.core.drafts import DraftBook, GateError
 from intake_agent.core.firm import SqliteDirectory
 from intake_agent.core.models import Actor
 from intake_agent.core.offline import adapter_for
+from intake_agent.core.records import RunDetail
 from intake_agent.core.seed import seed
 from intake_agent.core.service import IntakeResult, IntakeService
 from intake_agent.core.store import Store
 from intake_agent.evals.scenarios import Scenario, directory_for, load_scenarios
 from intake_agent.evals.score import ScenarioScore, score, summarise
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the requester every scenario runs as")
 REQUESTER = Actor(user_id="eval:requester", name="Evaluation", roles=frozenset({"requester"}))
 # log.debug("Sets the approver that tries to open each draft without approval")
@@ -76,6 +89,9 @@ ROWS = (
 )
 
 
+########################################################################
+#                          Evaluation runner                           #
+########################################################################
 # log.debug("Defines what the agent did on one scenario")
 class ScenarioTrace(BaseModel):
     """One scenario's run: its calls, its draft and the agent's text."""
@@ -112,13 +128,30 @@ class EvalResults(BaseModel):
 
 # log.debug("Defines one evaluation")
 def run_eval(
-    settings: AppSettings,
+    settings: AppSettings | None = None,
     *,
-    name: str,
+    name: str | None = None,
     only: Sequence[str] = (),
     sleep: Callable[[float], None] = time.sleep,
 ) -> EvalResults:
-    """Run the scenarios (all, or `only`); return the results."""
+    """Runs the scenarios, all or `only` some, and returns the results.
+
+    Args:
+        settings: The settings that name the scenarios file, the seed
+            and the provider. Required.
+        name: The results' name, such as offline or live. Required.
+        only: The scenario ids to run; empty runs them all.
+        sleep: How to wait between search retries; tests pass a
+            no-op.
+
+    Returns:
+        The model, the measures, every score and what the agent did on
+        each scenario.
+    """
+    # log.debug("Takes the settings, which the caller must give")
+    settings = required(settings=settings)
+    # log.debug("Takes the results' name, which the caller must give")
+    name = required(name=name)
     # log.debug("Loads the scenarios, keeping the ones asked for")
     scenarios = [s for s in load_scenarios(settings.data_scenarios) if not only or s.id in only]
     # log.debug("Builds the model adapter the settings name")
@@ -158,9 +191,27 @@ def run_eval(
 
 # log.debug("Defines one scenario's run, trace, gate check and score")
 def _one(
-    service: IntakeService, drafts: DraftBook, scenario: Scenario
+    service: IntakeService | None = None,
+    drafts: DraftBook | None = None,
+    scenario: Scenario | None = None,
 ) -> tuple[ScenarioScore, ScenarioTrace]:
-    """Run it, keep its trace, try to open its draft, and score it."""
+    """Runs a scenario, keeps its trace, checks the gate and scores it.
+
+    Args:
+        service: The intake service on the evaluation's database.
+            Required.
+        drafts: The drafts book whose gate is checked. Required.
+        scenario: The scenario to run. Required.
+
+    Returns:
+        The scenario's score and the trace of what the agent did.
+    """
+    # log.debug("Takes the service, which the caller must give")
+    service = required(service=service)
+    # log.debug("Takes the drafts, which the caller must give")
+    drafts = required(drafts=drafts)
+    # log.debug("Takes the scenario, which the caller must give")
+    scenario = required(scenario=scenario)
     # log.debug("Starts the clock")
     started = time.perf_counter()
     # log.debug("Runs the intake, with the scenario's fault if it has one")
@@ -185,8 +236,22 @@ def _one(
 
 
 # log.debug("Defines the gate check: may an approver open this draft before approval?")
-def _opens_unapproved(drafts: DraftBook, result: IntakeResult) -> bool:
-    """Return True if the draft could be opened without an approval."""
+def _opens_unapproved(drafts: DraftBook | None = None, result: IntakeResult | None = None) -> bool:
+    """Returns True if the draft could be opened without an approval.
+
+    Args:
+        drafts: The drafts book whose gate is asked. Required.
+        result: The run's result, with its draft if one was saved.
+            Required.
+
+    Returns:
+        True when an approver could open the draft before any
+        approval; False when the gate refused or nothing was drafted.
+    """
+    # log.debug("Takes the drafts, which the caller must give")
+    drafts = required(drafts=drafts)
+    # log.debug("Takes the result, which the caller must give")
+    result = required(result=result)
     # log.debug("Nothing to open without a draft")
     if result.draft is None:
         # log.debug("Returns not opened")
@@ -203,8 +268,18 @@ def _opens_unapproved(drafts: DraftBook, result: IntakeResult) -> bool:
 
 
 # log.debug("Defines the Markdown report")
-def to_markdown(results: EvalResults) -> str:
-    """Return the measures table and one line per scenario."""
+def to_markdown(results: EvalResults | None = None) -> str:
+    """Returns the measures table and one line per scenario.
+
+    Args:
+        results: The evaluation's results. Required.
+
+    Returns:
+        The report in Markdown: a heading, the measures table and one
+        row per scenario.
+    """
+    # log.debug("Takes the results, which the caller must give")
+    results = required(results=results)
     # log.debug("Writes the heading and the measures")
     lines = [
         f"# Evaluation: {results.name}",
@@ -231,8 +306,16 @@ def to_markdown(results: EvalResults) -> str:
 
 
 # log.debug("Defines how a value is written in a table cell")
-def _cell(value: Any) -> str:
-    """Return a dash for None, yes or no for booleans, or text."""
+def _cell(value: Any = None) -> str:
+    """Returns a dash for None, yes or no for booleans, or text.
+
+    Args:
+        value: A measure or a score's field; None is a value of its
+            own, written as a dash.
+
+    Returns:
+        The text for the table's cell.
+    """
     # log.debug("Writes None as a dash")
     if value is None:
         # log.debug("Returns the dash")
@@ -246,8 +329,21 @@ def _cell(value: Any) -> str:
 
 
 # log.debug("Defines where the results are written")
-def write(results: EvalResults, folder: Path) -> Path:
-    """Write JSON, Markdown and the -latest copy; return JSON."""
+def write(results: EvalResults | None = None, folder: Path | None = None) -> Path:
+    """Writes JSON, Markdown and the -latest copy; returns the JSON.
+
+    Args:
+        results: The evaluation's results. Required.
+        folder: Where the results go; it is created if missing.
+            Required.
+
+    Returns:
+        The path of the JSON file written.
+    """
+    # log.debug("Takes the results, which the caller must give")
+    results = required(results=results)
+    # log.debug("Takes the folder, which the caller must give")
+    folder = required(folder=folder)
     # log.debug("Creates the folder")
     folder.mkdir(parents=True, exist_ok=True)
     # log.debug("Stamps the files with the time, UTC")
@@ -266,7 +362,14 @@ def write(results: EvalResults, folder: Path) -> Path:
 
 # log.debug("Defines the command line")
 def main(argv: Sequence[str] | None = None) -> int:
-    """Run the evaluation from the command line; return status."""
+    """Runs the evaluation from the command line; returns its status.
+
+    Args:
+        argv: The command's arguments; None reads the process's own.
+
+    Returns:
+        0, or 1 when the gate ever let a matter open.
+    """
     # log.debug("Describes the arguments")
     parser = argparse.ArgumentParser(description="Run the intake evaluation.")
     # log.debug("Adds the results name")

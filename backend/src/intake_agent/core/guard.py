@@ -1,29 +1,39 @@
 ########################################################################
 #                backend/src/intake_agent/core/guard.py                #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Finds lines in an intake email that give orders  #
-#                     to the agent, for the approver to see.           #
-########################################################################
-"""The email guard: finds lines in an intake email that give orders.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
-An intake email is data. A line in it that addresses the agent ("skip
-the approval step", "ignore your instructions") is a prompt injection.
-The guard does not block the run, because the approval gate does not
-depend on the model behaving; it copies the lines into the draft so
-the approver sees exactly what the email tried.
+Finds lines in an intake email that give orders to the agent, for the
+approver to see. An intake email is data. A line in it that addresses
+the agent ("skip the approval step", "ignore your instructions") is a
+prompt injection. The guard does not block the run, because the approval
+gate does not depend on the model behaving; it copies the lines into the
+draft so the approver sees exactly what the email tried.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import re
 
+# Third-party
+from kds.args import required
 from kds.logs import get_logger
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Lists patterns of text that gives orders to an agent or a system")
 PATTERNS = tuple(
     re.compile(pattern, re.IGNORECASE)
@@ -48,9 +58,22 @@ PATTERNS = tuple(
 SHOWN_CHARS = 200
 
 
+########################################################################
+#                           Injection check                            #
+########################################################################
 # log.debug("Defines the check that finds order-giving lines")
-def flag(text: str) -> list[str]:
-    """Return each line of `text` that gives the agent orders."""
+def flag(text: str | None = None) -> list[str]:
+    """Returns each line of `text` that gives the agent orders.
+
+    Args:
+        text: The intake email. Required.
+
+    Returns:
+        Each line that matches a pattern, trimmed and cut to
+        SHOWN_CHARS characters, in the email's order.
+    """
+    # log.debug("Takes the text, which the caller must give")
+    text = required(text=text)
     # log.debug("Returns every matching line, trimmed and shortened")
     return [
         line.strip()[:SHOWN_CHARS]

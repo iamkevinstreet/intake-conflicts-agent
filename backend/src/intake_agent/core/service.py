@@ -1,48 +1,60 @@
 ########################################################################
 #               backend/src/intake_agent/core/service.py               #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           One intake end to end, the path the API and the  #
-#                     evaluation share.                                #
-########################################################################
-"""One intake, end to end: the path the API and the evaluation share.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
-It opens the run's audit record, flags order-giving lines in the
-email, gives the agent a toolbox scoped to this run, runs the loop,
-and closes the record with how the run ended and what it cost, even
-when the model fails part way. The email is checked here as well as
-at the API, so the evaluation meets the same limits.
+Runs one intake end to end, the path the API and the evaluation share.
+It opens the run's audit record, flags order-giving lines in the email,
+gives the agent a toolbox scoped to this run, runs the loop, and closes
+the record with how the run ended and what it cost, even when the model
+fails part way. The email is checked here as well as at the API, so the
+evaluation meets the same limits.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Final
 
+# Third-party
+from kds.args import required
 from kds.llm import BudgetExceededError, ModelAdapter
 from kds.llm.errors import is_transient
 from kds.logs import get_logger, log_event
 
-from intake_agent.config import AppSettings
+# Local
+from intake_agent.config import SETTINGS, AppSettings
 from intake_agent.core.agent import Ending, IntakeAgent, Meter
-from intake_agent.core.audit import RunLog, RunRecord, RunTotals
+from intake_agent.core.audit import RunLog
 from intake_agent.core.drafts import DraftBook
 from intake_agent.core.firm import Directory
 from intake_agent.core.guard import flag
 from intake_agent.core.models import Actor, DraftRecord
+from intake_agent.core.records import RunRecord, RunTotals
 from intake_agent.core.store import new_id
 from intake_agent.core.tools import Toolbox
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
-# log.debug("Sets the milliseconds in a second")
-MS = 1000
+# log.debug("Takes the milliseconds in a second, from the config")
+MS: Final = SETTINGS.units_ms_per_second
 
 
+########################################################################
+#                            Intake service                            #
+########################################################################
 # log.debug("Defines the result of one intake")
 @dataclass(frozen=True)
 class IntakeResult:
@@ -78,20 +90,33 @@ class IntakeService:
 
     # log.debug("Defines one intake")
     def run(
-        self, email: str, requester: Actor, *, directory: Directory | None = None
+        self,
+        email: str | None = None,
+        requester: Actor | None = None,
+        *,
+        directory: Directory | None = None,
     ) -> IntakeResult:
-        """Run one intake for `requester` and return how it ended.
+        """Runs one intake for `requester` and returns how it ended.
 
         Args:
-            email: The pasted intake email.
+            email: The pasted intake email. Required.
             requester: Who asked; the agent acts for them, as a
-                requester only.
-            directory: A stand-in for the firm's records; the
-                evaluation passes one that times out.
+                requester only. Required.
+            directory: A stand-in for the firm's records; the evaluation
+                passes one that times out.
+
+        Returns:
+            The finished run's audit record, its draft if one was
+            saved, the model's last words and how often the agent
+            tried to open a matter.
 
         Raises:
             ValueError: The email is shorter or longer than allowed.
         """
+        # log.debug("Takes the email, which the caller must give")
+        email = required(email=email)
+        # log.debug("Takes the requester, which the caller must give")
+        requester = required(requester=requester)
         # log.debug("Checks the email's length before anything is recorded")
         self._check(email)
         # log.debug("Names the run")
@@ -135,13 +160,18 @@ class IntakeService:
         return IntakeResult(record, draft, ending.text, toolbox.open_attempts)
 
     # log.debug("Defines the length check")
-    def _check(self, email: str) -> None:
-        """Refuse an email outside the configured length.
+    def _check(self, email: str | None = None) -> None:
+        """Refuses an email outside the configured length.
+
+        Args:
+            email: The pasted intake email. Required.
 
         Raises:
             ValueError: Too short or too long; the message gives the
                 limits.
         """
+        # log.debug("Takes the email, which the caller must give")
+        email = required(email=email)
         # log.debug("Measures the email without surrounding space")
         length = len(email.strip())
         # log.debug("Refuses one outside the limits")
@@ -159,8 +189,27 @@ class IntakeService:
             raise ValueError(msg)
 
     # log.debug("Defines the guarded run of the agent")
-    def _attempt(self, email: str, toolbox: Toolbox, meter: Meter) -> Ending:
-        """Run the agent; any model failure becomes a failed ending."""
+    def _attempt(
+        self, email: str | None = None, toolbox: Toolbox | None = None, meter: Meter | None = None
+    ) -> Ending:
+        """Runs the agent; any model failure becomes a failed ending.
+
+        Args:
+            email: The pasted intake email. Required.
+            toolbox: The tools scoped to this run. Required.
+            meter: Counts what the run spends, which the caller reads
+                even when the run fails. Required.
+
+        Returns:
+            How the run ended: the agent's own ending, or failed with
+            the reason a model call failed.
+        """
+        # log.debug("Takes the email, which the caller must give")
+        email = required(email=email)
+        # log.debug("Takes the toolbox, which the caller must give")
+        toolbox = required(toolbox=toolbox)
+        # log.debug("Takes the meter, which the caller must give")
+        meter = required(meter=meter)
         # log.debug("Runs the agent")
         try:
             # log.debug("Returns how it ended")
@@ -176,12 +225,21 @@ class IntakeService:
 
 
 # log.debug("Defines how a failed model call is explained")
-def _failure(error: Exception) -> str:
-    """Return why a run failed; log the errors nobody planned for.
+def _failure(error: Exception | None = None) -> str:
+    """Returns why a run failed, logging the errors nobody planned for.
 
     A provider outage that outlasted the adapter's retries arrives as
     the SDK's own error, so it is recognised by kind, not by class.
+
+    Args:
+        error: The error the agent's run raised. Required.
+
+    Returns:
+        The reason the run's record gives: an outage, or the error's
+        type.
     """
+    # log.debug("Takes the error, which the caller must give")
+    error = required(error=error)
     # log.debug("Explains a model that could not be reached, after the retries")
     if is_transient(error):
         # log.debug("Returns the outage reason")

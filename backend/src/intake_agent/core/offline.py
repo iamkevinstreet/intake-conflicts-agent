@@ -1,16 +1,14 @@
 ########################################################################
 #               backend/src/intake_agent/core/offline.py               #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           The offline stand-in: fixed rules that play the  #
-#                     agent with no model or key.                      #
-########################################################################
-"""The offline stand-in: fixed rules that play the agent with no model.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
-It makes the service run with no key and gives the evaluation a
-baseline a model must beat. The rules are simple on purpose:
+Plays the agent offline, with fixed rules and no model or key. It makes
+the service run with no key and gives the evaluation a baseline a model
+must beat. The rules are simple on purpose:
 
 - not an intake: an automatic reply, or no words asking for legal work
 - the client: the last company named in the signature (the last four
@@ -22,28 +20,49 @@ baseline a model must beat. The rules are simple on purpose:
 - the verdict: the firm's rules applied to the matches, as the prompt
   states them
 
-It misses companies written without a legal form and people named
-any other way. The evaluation reports how much that costs.
+It misses companies written without a legal form and people named any
+other way. The evaluation reports how much that costs.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import json
 import re
-from typing import Any
+from typing import Any, Final
 
+# Third-party
+from kds.args import required
 from kds.llm import Message, ModelAdapter
 from kds.llm.fake import FakeProvider
 from kds.logs import get_logger
 
-from intake_agent.config import AppSettings
+# Local
+from intake_agent.config import SETTINGS, AppSettings
 from intake_agent.core import prompt
 from intake_agent.core.guard import flag
 from intake_agent.core.models import DraftArgs, Recommendation, SearchArgs, SubmitArgs
 from intake_agent.core.names import normalize
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+# log.debug("Takes the bands the firm's rules treat as strong, from the config")
+STRONG: Final = SETTINGS.match_strong_bands
+# log.debug("Takes the verdict for a match that blocks the matter, from the config")
+CONFLICT: Final = SETTINGS.verdicts_conflict
+# log.debug("Takes the verdict for a match a person must weigh, from the config")
+REVIEW: Final = SETTINGS.verdicts_review
+# log.debug("Takes the verdict when no record matched, from the config")
+CLEAR: Final = SETTINGS.verdicts_clear
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Names the model the stand-in reports; it is priced at zero")
 STAND_IN = "fake-model"
 # log.debug("Lists legal forms that end a company name")
@@ -76,12 +95,6 @@ LEADING = frozenset("The A An Our We Since After When Yesterday Last In On Hello
 SIGNATURE_LINES = 4
 # log.debug("Matches a parenthetical, dropped from a party field")
 ASIDE_RE = re.compile(r"\s*\(.*?\)")
-# log.debug("Lists the bands the firm's rules treat as strong")
-STRONG = frozenset({"exact", "likely"})
-# log.debug("Names the verdict for a match that blocks the matter")
-CONFLICT: Recommendation = "conflict"
-# log.debug("Names the verdict for a match a person must weigh")
-REVIEW: Recommendation = "review"
 # log.debug("Names the key a scripted turn lists its tool calls under")
 TOOL_CALLS = "tool_calls"
 # log.debug("Sets the words of a refusal to draft")
@@ -90,9 +103,23 @@ NOT_INTAKE = "This is not a request for new legal work, so there is nothing to c
 CHECK_FAILED = "The conflicts check could not be completed: the database did not answer."
 
 
+########################################################################
+#                           Offline stand-in                           #
+########################################################################
 # log.debug("Defines the stand-in's reply to the conversation so far")
-def respond(messages: list[Message]) -> str | dict[str, Any]:
-    """Return the next move: tool calls as a dict, or final words."""
+def respond(messages: list[Message] | None = None) -> str | dict[str, Any]:
+    """Returns the next move: tool calls as a dict, or final words.
+
+    Args:
+        messages: The conversation so far, the fenced email first.
+            Required.
+
+    Returns:
+        The next turn's tool calls, as the stand-in provider expects
+        them, or the closing words.
+    """
+    # log.debug("Takes the messages, which the caller must give")
+    messages = required(messages=messages)
     # log.debug("Takes the email out of its fence")
     email = prompt.email_from(messages[0].content)
     # log.debug("Reads every tool result so far, by call id")
@@ -124,8 +151,18 @@ def respond(messages: list[Message]) -> str | dict[str, Any]:
 
 
 # log.debug("Defines the parties the rules can find")
-def parties(email: str) -> tuple[str | None, list[str]]:
-    """Return the client, or None, and the parties on the other side."""
+def parties(email: str | None = None) -> tuple[str | None, list[str]]:
+    """Returns the client, or None, and the parties on the other side.
+
+    Args:
+        email: The intake email. Required.
+
+    Returns:
+        The client the rules find, or None, and every other party the
+        email names, each once and never the client.
+    """
+    # log.debug("Takes the email, which the caller must give")
+    email = required(email=email)
     # log.debug("Finds the client in the signature, else after a cue")
     client = _client(email)
     # log.debug("Collects every company, person and party field in the body")
@@ -153,8 +190,18 @@ def parties(email: str) -> tuple[str | None, list[str]]:
 
 
 # log.debug("Defines the first move: the searches")
-def _searches(email: str) -> str | dict[str, Any]:
-    """Return a search for every party, or why there is none."""
+def _searches(email: str | None = None) -> str | dict[str, Any]:
+    """Returns a search for every party, or why there is none.
+
+    Args:
+        email: The intake email. Required.
+
+    Returns:
+        One turn with a search for each party, the client first, or
+        why the email is not an intake.
+    """
+    # log.debug("Takes the email, which the caller must give")
+    email = required(email=email)
     # log.debug("Refuses an automatic reply or an email that asks for nothing")
     if AUTO_REPLY_RE.search(email) or not ASK_RE.search(email):
         # log.debug("Returns the refusal")
@@ -177,8 +224,28 @@ def _searches(email: str) -> str | dict[str, Any]:
 
 
 # log.debug("Defines the second move: the draft")
-def _draft(email: str, calls: list[Any], results: dict[str | None, Any]) -> str | dict[str, Any]:
-    """Return the draft_matter call with the rules' verdict."""
+def _draft(
+    email: str | None = None,
+    calls: list[Any] | None = None,
+    results: dict[str | None, Any] | None = None,
+) -> str | dict[str, Any]:
+    """Returns the draft_matter call with the rules' verdict.
+
+    Args:
+        email: The intake email. Required.
+        calls: Every tool call made so far. Required.
+        results: Each call's result, by call id. Required.
+
+    Returns:
+        One turn with the draft_matter call and the rules' verdict, or
+        why there is nothing to draft.
+    """
+    # log.debug("Takes the email, which the caller must give")
+    email = required(email=email)
+    # log.debug("Takes the calls so far, which the caller must give")
+    calls = required(calls=calls)
+    # log.debug("Takes the results so far, which the caller must give")
+    results = required(results=results)
     # log.debug("Finds the parties again")
     client, adverse = parties(email)
     # log.debug("Refuses to draft without a client; the first move already checked")
@@ -188,7 +255,7 @@ def _draft(email: str, calls: list[Any], results: dict[str | None, Any]) -> str 
     # log.debug("Applies the firm's rules to every match")
     verdicts = [_judge(call.name, m) for call in calls for m in results[call.id]["matches"]]
     # log.debug("Takes the most serious")
-    recommendation = CONFLICT if CONFLICT in verdicts else REVIEW if verdicts else "clear"
+    recommendation = CONFLICT if CONFLICT in verdicts else REVIEW if verdicts else CLEAR
     # log.debug("Returns the call, its arguments checked as the tool will check them")
     return _turn(
         _call(
@@ -208,8 +275,24 @@ def _draft(email: str, calls: list[Any], results: dict[str | None, Any]) -> str 
 
 
 # log.debug("Defines the third move: the request for approval")
-def _request(email: str, saved: dict[str, Any]) -> str | dict[str, Any]:
-    """Return request_approval, or why the draft was refused."""
+def _request(
+    email: str | None = None, saved: dict[str, Any] | None = None
+) -> str | dict[str, Any]:
+    """Returns request_approval, or why the draft was refused.
+
+    Args:
+        email: The intake email, checked for order-giving lines.
+            Required.
+        saved: The draft_matter call's result. Required.
+
+    Returns:
+        One turn with the request_approval call, whose note flags any
+        order-giving lines, or why the draft was refused.
+    """
+    # log.debug("Takes the email, which the caller must give")
+    email = required(email=email)
+    # log.debug("Takes the draft's result, which the caller must give")
+    saved = required(saved=saved)
     # log.debug("Reports a refused draft")
     if prompt.DRAFT_ID_KEY not in saved:
         # log.debug("Returns the refusal")
@@ -228,21 +311,59 @@ def _request(email: str, saved: dict[str, Any]) -> str | dict[str, Any]:
 
 # log.debug("Defines a scripted turn of tool calls")
 def _turn(*calls: dict[str, Any]) -> dict[str, Any]:
-    """Return a turn that makes the tool calls and says nothing."""
+    """Returns a turn that makes the tool calls and says nothing.
+
+    Args:
+        *calls: The tool calls the turn makes, in order.
+
+    Returns:
+        The turn, with no words and the calls.
+    """
     # log.debug("Returns the turn in the stand-in provider's shape")
     return {"text": "", TOOL_CALLS: list(calls)}
 
 
 # log.debug("Defines one scripted tool call")
-def _call(call_id: str, name: str, arguments: dict[str, Any]) -> dict[str, Any]:
-    """Return one tool call: its id, the tool and the arguments."""
+def _call(
+    call_id: str | None = None, name: str | None = None, arguments: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    """Returns one tool call: its id, the tool and the arguments.
+
+    Args:
+        call_id: The call's id, which its result comes back under.
+            Required.
+        name: The tool to call. Required.
+        arguments: The tool's arguments. Required.
+
+    Returns:
+        The call as the stand-in provider expects it.
+    """
+    # log.debug("Takes the call id, which the caller must give")
+    call_id = required(call_id=call_id)
+    # log.debug("Takes the tool's name, which the caller must give")
+    name = required(name=name)
+    # log.debug("Takes the arguments, which the caller must give")
+    arguments = required(arguments=arguments)
     # log.debug("Returns the call")
     return {"id": call_id, "name": name, "arguments": arguments}
 
 
 # log.debug("Defines the firm's rule for one match")
-def _judge(tool: str, match: dict[str, Any]) -> Recommendation:
-    """Return conflict or review for one match, as the prompt states."""
+def _judge(tool: str | None = None, match: dict[str, Any] | None = None) -> Recommendation:
+    """Returns conflict or review for one match, as the prompt states.
+
+    Args:
+        tool: The search that found the match. Required.
+        match: The match as the search returned it. Required.
+
+    Returns:
+        conflict for a strong match with a current client or in an
+        open matter, else review.
+    """
+    # log.debug("Takes the search's name, which the caller must give")
+    tool = required(tool=tool)
+    # log.debug("Takes the match, which the caller must give")
+    match = required(match=match)
     # log.debug("Notes a strong match")
     strong = match["band"] in STRONG
     # log.debug("Reads the client's or the matter's status")
@@ -256,8 +377,18 @@ def _judge(tool: str, match: dict[str, Any]) -> Recommendation:
 
 
 # log.debug("Defines how the client is found")
-def _client(email: str) -> str | None:
-    """Return the signature's company, else one after a cue."""
+def _client(email: str | None = None) -> str | None:
+    """Returns the signature's company, else one after a cue.
+
+    Args:
+        email: The intake email. Required.
+
+    Returns:
+        The last company in the signature, else the first company
+        named right after a cue, else None.
+    """
+    # log.debug("Takes the email, which the caller must give")
+    email = required(email=email)
     # log.debug("Takes the signature: the last few non-empty lines")
     signature = "\n".join([line for line in email.splitlines() if line.strip()][-SIGNATURE_LINES:])
     # log.debug("Finds the companies in it; a signature names the sender's last")
@@ -277,8 +408,17 @@ def _client(email: str) -> str | None:
 
 
 # log.debug("Defines how a matched company name is tidied")
-def _trim(name: str) -> str:
-    """Drop sentence words before the name."""
+def _trim(name: str | None = None) -> str:
+    """Returns the name without the sentence words in front of it.
+
+    Args:
+        name: A company name as the pattern matched it. Required.
+
+    Returns:
+        The name from its first word that does not start a sentence.
+    """
+    # log.debug("Takes the name, which the caller must give")
+    name = required(name=name)
     # log.debug("Splits the name into words")
     words = name.split()
     # log.debug("Drops leading words that start sentences")
@@ -290,15 +430,35 @@ def _trim(name: str) -> str:
 
 
 # log.debug("Defines how a number of matches is written")
-def _count(matches: int) -> str:
-    """Return "1 match" or "3 matches"."""
+def _count(matches: int | None = None) -> str:
+    """Returns "1 match" or "3 matches".
+
+    Args:
+        matches: How many matches. Required.
+
+    Returns:
+        The count with the right noun.
+    """
+    # log.debug("Takes the number of matches, which the caller must give")
+    matches = required(matches=matches)
     # log.debug("Returns the count with the right noun")
     return f"{matches} match" if matches == 1 else f"{matches} matches"
 
 
 # log.debug("Defines the adapter the settings call for")
-def adapter_for(settings: AppSettings) -> ModelAdapter:
-    """Return the stand-in for the fake provider, else the real one."""
+def adapter_for(settings: AppSettings | None = None) -> ModelAdapter:
+    """Returns the stand-in for the fake provider, else the real one.
+
+    Args:
+        settings: The settings that name the provider and model.
+            Required.
+
+    Returns:
+        The adapter that plays the agent: the stand-in, priced at
+        zero, for the fake provider, else the configured one.
+    """
+    # log.debug("Takes the settings, which the caller must give")
+    settings = required(settings=settings)
     # log.debug("Returns the stand-in, priced at zero, when the provider is fake")
     if settings.llm_provider == "fake":
         # log.debug("Returns it")

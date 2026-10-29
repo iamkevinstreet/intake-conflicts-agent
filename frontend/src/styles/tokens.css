@@ -2,20 +2,25 @@
 ########################################################################
 #                    frontend/src/styles/tokens.css                    #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Design tokens: colour for light and dark with    #
-#                     three verdict colours, type, space, shape.       #
+*/
+/*
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Sets the design tokens every stylesheet uses: file paper and navy
+ * ink, the same family as the other law projects; three verdict
+ * colours, each with a wash for its background: red for a conflict,
+ * amber for a person to decide, green for clear. The system speaks in
+ * Public Sans, emails and drafts in Source Serif 4. Every colour is
+ * written once, for light and dark.
+ */
+
+/*
+########################################################################
+#                           Global constants                           #
 ########################################################################
 */
-
-/* Design tokens. File paper and navy ink, the same family as the other law
-   projects; three verdict colours, each with a wash for its background:
-   red for a conflict, amber for a person to decide, green for clear. The
-   system speaks in Public Sans, emails and drafts in Source Serif 4. Every
-   colour is written once, for light and dark. */
-
 :root {
   color-scheme: light dark;
 

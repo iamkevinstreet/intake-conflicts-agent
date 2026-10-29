@@ -1,21 +1,24 @@
 ########################################################################
 #                backend/src/intake_agent/core/store.py                #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           The SQLite database: schema, migrations, and     #
-#                     triggers that hold the gate and the audit rules. #
-########################################################################
-"""The SQLite database: one file, its schema, and the rules it enforces.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
-The schema carries the rules that must hold even if the Python above it
-has a bug: a new matter cannot be inserted without an approval record,
-a requester cannot approve their own draft, a draft's text cannot
-change once saved, and the audit records cannot be edited or deleted.
-Schema changes arrive only as numbered migrations.
+Opens the SQLite database and keeps its schema, migrations and the
+triggers that hold the gate and the audit rules. The schema carries the
+rules that must hold even if the Python above it has a bug: a new matter
+cannot be inserted without an approval record, a requester cannot
+approve their own draft, a draft's text cannot change once saved, and
+the audit records cannot be edited or deleted. Schema changes arrive
+only as numbered migrations.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import sqlite3
@@ -25,10 +28,18 @@ from contextlib import closing, contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 
+# Third-party
+from kds.args import required
 from kds.logs import get_logger, log_event
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Lists the migrations in order; the database records how many have run")
 MIGRATIONS: tuple[str, ...] = (
     """
@@ -170,16 +181,33 @@ MIGRATIONS: tuple[str, ...] = (
 )
 
 
+########################################################################
+#                            Firm database                             #
+########################################################################
 # log.debug("Defines the clock every record is stamped with: UTC, to the second")
 def utc_now() -> str:
-    """Return the time now in UTC, as ISO 8601 to the second."""
+    """Returns the time now in UTC, as ISO 8601 to the second.
+
+    Returns:
+        The time, such as 2026-10-29T14:49:59+00:00.
+    """
     # log.debug("Returns the time")
     return datetime.now(UTC).isoformat(timespec="seconds")
 
 
 # log.debug("Defines record ids: a prefix and ten random hex digits")
-def new_id(prefix: str) -> str:
-    """Return a new id such as D-3f9a1c0b7e, unguessable and short."""
+def new_id(prefix: str | None = None) -> str:
+    """Returns a new id such as D-3f9a1c0b7e, unguessable and short.
+
+    Args:
+        prefix: The letter that says what the id names: D for a draft,
+            R for a run. Required.
+
+    Returns:
+        The prefix, a hyphen and ten random hex digits.
+    """
+    # log.debug("Takes the prefix, which the caller must give")
+    prefix = required(prefix=prefix)
     # log.debug("Returns the prefix and the first ten hex digits of a random UUID")
     return f"{prefix}-{uuid.uuid4().hex[:10]}"
 
@@ -194,13 +222,19 @@ class Store:
     """One SQLite file. Each unit of work opens its own connection."""
 
     # log.debug("Defines the constructor")
-    def __init__(self, path: Path, *, timeout_s: float) -> None:
-        """Open (or create) the database at `path` and migrate it.
+    def __init__(self, path: Path | None = None, *, timeout_s: float | None = None) -> None:
+        """Opens or creates the database at `path` and migrates it.
 
         Args:
             path: The database file; its folder is created if missing.
+                Required.
             timeout_s: How long a query waits on a locked database.
+                Required.
         """
+        # log.debug("Takes the path, which the caller must give")
+        path = required(path=path)
+        # log.debug("Takes the wait for a locked database, which the caller must give")
+        timeout_s = required(timeout_s=timeout_s)
         # log.debug("Keeps the path")
         self.path = path
         # log.debug("Keeps the wait for a locked database")
@@ -213,7 +247,11 @@ class Store:
     # log.debug("Defines a unit of work: one connection, committed or rolled back")
     @contextmanager
     def connect(self) -> Iterator[sqlite3.Connection]:
-        """Yield a connection; commit on success, roll back on error.
+        """Yields a connection; commits on success, rolls back on error.
+
+        Yields:
+            The open connection, its rows readable by column name and
+            its foreign keys on.
 
         Raises:
             StoreTimeoutError: The database stayed locked past the
@@ -241,7 +279,7 @@ class Store:
 
     # log.debug("Defines the migration step")
     def _migrate(self) -> None:
-        """Run each migration this file lacks, each atomically."""
+        """Runs each migration this file lacks, each atomically."""
         # log.debug("Opens the database for the schema change")
         with self.connect() as connection:
             # log.debug("Lets readers work while a writer writes")

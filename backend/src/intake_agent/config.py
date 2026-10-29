@@ -1,22 +1,28 @@
 ########################################################################
 #                  backend/src/intake_agent/config.py                  #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Every setting the service reads, typed and       #
-#                     validated, with the checks that need more than   #
-#                     one setting.                                     #
-########################################################################
-"""Settings for the intake service.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
-Each field is a `[section] key` in config/settings.toml, joined by an
-underscore: `[match] likely` is `match_likely`, which the environment
-variable MATCH_LIKELY overrides. This service adds no secrets: Entra ID
-tokens are checked with the tenant's public keys, so the model key in
-.env is the only secret it reads.
+Reads every setting the service uses, typed and validated, with the
+checks that need more than one setting. Each field is a `[section] key`
+in config/config.toml, joined by an underscore: `[match] likely` is
+`match_likely`, which the environment variable MATCH_LIKELY overrides.
+
+SETTINGS holds the settings loaded once at import: modules bind the
+values they share from it in their global constants. Functions that take
+settings as an argument keep doing so, so tests pass their own. This
+service adds no secrets: Entra ID tokens are checked with the tenant's
+public keys, so the model key in config/.env is the only secret it
+reads.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import re
@@ -24,12 +30,22 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Final, Literal, Self
 
+# Third-party
 from kds.logs import get_logger
 from kds.settings import Settings
 from pydantic import Field, model_validator
 
-# Module constants
+# Local
+from intake_agent.core.names import Band
+
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Names the sign-in mode that trusts headers, for this machine only")
 DEV: Final = "dev"
 # log.debug("Names the sign-in mode that checks Entra ID tokens")
@@ -74,11 +90,34 @@ DEFAULT_PARTIES = 10
 DEFAULT_REASON_CHARS = 10
 # log.debug("Sets the default first wait between search retries, in seconds")
 DEFAULT_BACKOFF_S = 0.2
+# log.debug("Sets the default number of drafts or runs a list returns")
+DEFAULT_LIST = 50
+# log.debug("Sets the default most drafts or runs a list may be asked for")
+DEFAULT_MAX_LIST = 200
+# log.debug("Sets the shape of a draft id: D- and ten hex digits")
+DRAFT_ID: Final = r"^D-[0-9a-f]{10}$"
+# log.debug("Sets the shape of a run id: R- and ten hex digits")
+RUN_ID: Final = r"^R-[0-9a-f]{10}$"
+# log.debug("Names the role that runs intakes")
+REQUESTER: Final = "requester"
+# log.debug("Names the role that decides drafts and opens matters")
+APPROVER: Final = "approver"
+# log.debug("Names the verdict for an intake no record touches")
+CLEAR: Final = "clear"
+# log.debug("Names the verdict a person must decide")
+REVIEW: Final = "review"
+# log.debug("Names the verdict for a conflict")
+CONFLICT: Final = "conflict"
+# log.debug("Sets the milliseconds in a second")
+MS_PER_SECOND: Final = 1000
 
 
+########################################################################
+#                           Service settings                           #
+########################################################################
 # log.debug("Defines the service's settings on top of the shared ones")
 class AppSettings(Settings):
-    """Intake settings; config/settings.toml lists and explains each."""
+    """Intake settings; config/config.toml lists and explains each."""
 
     # log.debug("Holds the planted firm records the database is built around")
     data_firm: Path = Path("data/samples/firm.json")
@@ -110,6 +149,8 @@ class AppSettings(Settings):
     match_possible: int = Field(default=80, ge=1, le=TOP_SCORE)
     # log.debug("Holds the most matches one search returns")
     match_limit: int = Field(default=5, ge=1, le=MAX_PARTIES)
+    # log.debug("Holds the bands that count as the same party: likely counts as exact")
+    match_strong_bands: tuple[Band, ...] = ("exact", "likely")
 
     # log.debug("Holds the most model calls one run may make")
     agent_max_steps: int = Field(default=DEFAULT_STEPS, ge=1, le=MAX_STEPS)
@@ -137,6 +178,10 @@ class AppSettings(Settings):
     api_host: str = LOCALHOST
     # log.debug("Holds the port the server listens on")
     api_port: int = Field(default=8000, ge=1, le=MAX_PORT)
+    # log.debug("Holds the path every route lives under, with its version")
+    api_prefix: str = "/api/v1"
+    # log.debug("Holds the header that carries a request's id, both ways")
+    api_request_id_header: str = "X-Request-ID"
     # log.debug("Holds how many intakes one person may run a minute")
     api_intakes_per_minute: int = Field(default=6, ge=1)
     # log.debug("Holds the browser origins allowed to call the API")
@@ -147,6 +192,30 @@ class AppSettings(Settings):
     api_min_reason_chars: int = Field(default=DEFAULT_REASON_CHARS, ge=1)
     # log.debug("Holds the longest note a decision may carry")
     api_max_note_chars: int = Field(default=500, ge=MIN_NOTE_LIMIT, le=NOTE_CEILING)
+    # log.debug("Holds how many drafts or runs a list returns when none is asked for")
+    api_list_limit: int = Field(default=DEFAULT_LIST, ge=1)
+    # log.debug("Holds the most drafts or runs a list may be asked for")
+    api_max_list_limit: int = Field(default=DEFAULT_MAX_LIST, ge=1)
+
+    # log.debug("Holds the shape of a draft id, D- and ten hex digits, which is fixed")
+    ids_draft_pattern: Literal[r"^D-[0-9a-f]{10}$"] = DRAFT_ID
+    # log.debug("Holds the shape of a run id, R- and ten hex digits, which is fixed")
+    ids_run_pattern: Literal[r"^R-[0-9a-f]{10}$"] = RUN_ID
+
+    # log.debug("Holds the name of the role that runs intakes, which is fixed")
+    roles_requester: Literal["requester"] = REQUESTER
+    # log.debug("Holds the name of the role that decides drafts, which is fixed")
+    roles_approver: Literal["approver"] = APPROVER
+
+    # log.debug("Holds the verdict for an intake no record touches, which is fixed")
+    verdicts_clear: Literal["clear"] = CLEAR
+    # log.debug("Holds the verdict a person must decide, which is fixed")
+    verdicts_review: Literal["review"] = REVIEW
+    # log.debug("Holds the verdict for a conflict, which is fixed")
+    verdicts_conflict: Literal["conflict"] = CONFLICT
+
+    # log.debug("Holds the milliseconds in a second, for timings in logs and on screen")
+    units_ms_per_second: Literal[1000] = MS_PER_SECOND
 
     # log.debug("Holds how callers prove who they are")
     auth_mode: AuthMode = DEV
@@ -169,17 +238,26 @@ class AppSettings(Settings):
     # log.debug("Defines the checks that need more than one setting")
     @model_validator(mode="after")
     def _consistent(self) -> Self:
-        """Refuse settings that contradict each other or are unsafe.
+        """Refuses settings that contradict each other or are unsafe.
+
+        Returns:
+            The settings, unchanged, once every check passes.
 
         Raises:
-            ValueError: The thresholds are out of order, dev sign-in
-                would listen beyond this machine, or Entra ID is on
-                without its tenant and audience.
+            ValueError: The thresholds or list limits are out of order,
+                dev sign-in would listen beyond this machine, or Entra
+                ID is on without its tenant and audience.
         """
         # log.debug("Refuses a possible threshold above the likely one")
         if self.match_possible >= self.match_likely:
             # log.debug("Raises with both values")
             msg = f"[match] possible ({self.match_possible}) must be below likely"
+            # log.debug("Stops the service")
+            raise ValueError(msg)
+        # log.debug("Refuses a default list longer than the most a list may hold")
+        if self.api_list_limit > self.api_max_list_limit:
+            # log.debug("Names the two limits")
+            msg = f"[api] list_limit ({self.api_list_limit}) must not exceed max_list_limit"
             # log.debug("Stops the service")
             raise ValueError(msg)
         # log.debug("Refuses dev sign-in on an address other machines can reach")
@@ -206,6 +284,17 @@ class AppSettings(Settings):
 # log.debug("Defines the loader every module calls")
 @lru_cache(maxsize=1)
 def get_app_settings() -> AppSettings:
-    """Return the service's settings, built and validated once."""
+    """Returns the service's settings, built and validated once.
+
+    Tests that change the environment call
+    `get_app_settings.cache_clear()`.
+
+    Returns:
+        The settings, frozen.
+    """
     # log.debug("Builds and validates the settings")
     return AppSettings()
+
+
+# log.debug("Loads the settings once, for the values modules share")
+SETTINGS: Final = get_app_settings()

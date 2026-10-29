@@ -1,24 +1,42 @@
 // ########################################################################
 // #              frontend/src/components/FindingsTable.tsx               #
 // ########################################################################
-// #  Author:            Kevin Street                                     #
-// #  Created on:        2026-10-29                                       #
-// #  Last modified on:  2026-10-29                                       #
-// #  Purpose:           Every match the searches found for the draft's   #
-// #                     parties, the firm record, and why it matters.    #
-// ########################################################################
-/** Every match the run's searches found for the draft's parties, and why it matters. */
+/**
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Shows every match the run's searches found for the draft's parties:
+ * the firm's record, how alike the names are, and why it matters.
+ */
 
+// ########################################################################
+// #                               Imports                                #
+// ########################################################################
+// Local
+import { required } from '../lib/required';
 import type { Finding } from '../types';
 import { MatchMeter } from './MatchMeter';
 import { VerdictBadge } from './VerdictBadge';
 
+// ########################################################################
+// #                            Findings table                            #
+// ########################################################################
 interface Props {
-  findings: Finding[];
+  findings?: Finding[];
 }
 
 // log.debug('Defines how a matched record is described')
-function record(finding: Finding): string {
+/**
+ * Returns what the firm's record is, in a few words.
+ *
+ * @param finding - The finding whose record to describe. Required.
+ * @returns A client's standing, or the matter an adverse party was in,
+ *   its status and the firm's client there.
+ */
+function record(finding: Finding | null = null): string {
+  // log.debug('Takes the finding, which the caller must give')
+  finding = required({ finding });
   // log.debug('Describes a client by its standing')
   if (finding.match.kind === 'client') {
     // log.debug('Returns current or former client')
@@ -31,7 +49,15 @@ function record(finding: Finding): string {
 }
 
 // log.debug('Defines the findings table')
-export function FindingsTable({ findings }: Props) {
+/**
+ * Shows every finding: the party, the firm's record, the name match and
+ * what it means.
+ *
+ * @param props - The table's props.
+ * @param props.findings - The draft's findings; none shows a note.
+ * @returns The table, or a note that the searches found nothing.
+ */
+export function FindingsTable({ findings = [] }: Props = {}): React.JSX.Element {
   // log.debug('Says so plainly when the searches found nothing')
   if (findings.length === 0) {
     // log.debug('Returns the empty state')

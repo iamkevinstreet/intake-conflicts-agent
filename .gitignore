@@ -1,13 +1,14 @@
 ########################################################################
 #                              .gitignore                              #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Keeps secrets, keys, caches, builds, logs,       #
-#                     generated data and databases out of git.         #
-########################################################################
-# Secrets and keys: never committed
+# Author:            Kevin Street
+# Created on:        2026-10-14
+# Last modified on:  2026-10-29
+#
+# Keeps secrets, keys, caches, builds, logs, generated data and
+# databases out of git.
+
+# Secrets and keys: never committed (config/.env holds the secrets)
 .env
 .env.*
 !.env.example

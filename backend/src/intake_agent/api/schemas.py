@@ -1,32 +1,42 @@
 ########################################################################
 #               backend/src/intake_agent/api/schemas.py                #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           The HTTP request and response bodies, validated  #
-#                     at the edge.                                     #
-########################################################################
-"""The HTTP request and response bodies.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
-Requests are validated here, at the edge: the email's
-size, the decision's choices and the note's length. Responses reuse the
-core models, so the API returns exactly what the core recorded.
+Defines the HTTP request and response bodies. Requests are validated
+here, at the edge: the email's size, the decision's choices and the
+note's length. Responses reuse the core models, so the API returns
+exactly what the core recorded.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 from typing import Literal
 
+# Third-party
 from kds.logs import get_logger
 from pydantic import BaseModel, ConfigDict, Field
 
+# Local
 from intake_agent.config import NOTE_CEILING
-from intake_agent.core.audit import RunRecord
 from intake_agent.core.models import Decision, DraftRecord
+from intake_agent.core.records import RunRecord
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the hard ceiling on an email, above any setting")
 CEILING_CHARS = 100_000
 # log.debug("Sets the settings shared by every request body")
@@ -35,6 +45,9 @@ STRICT = ConfigDict(extra="forbid", frozen=True)
 Status = Literal["ok"]
 
 
+########################################################################
+#                             HTTP bodies                              #
+########################################################################
 # log.debug("Defines an intake request")
 class IntakeRequest(BaseModel):
     """The pasted intake email; settings set the exact length limits."""

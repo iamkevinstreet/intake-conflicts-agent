@@ -1,25 +1,36 @@
 // ########################################################################
 // #                  frontend/tests/IntakePage.test.tsx                  #
 // ########################################################################
-// #  Author:            Kevin Street                                     #
-// #  Created on:        2026-10-29                                       #
-// #  Last modified on:  2026-10-29                                       #
-// #  Purpose:           Tests the requester's page end to end against a  #
-// #                     stubbed API.                                     #
-// ########################################################################
-/** Tests the requester's page end to end against a stubbed API. */
+/**
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Tests the requester's page end to end against a stubbed API.
+ */
 
+// ########################################################################
+// #                               Imports                                #
+// ########################################################################
+// Third-party
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
+// Local
 import { api } from '../src/api';
 import { IntakePage } from '../src/pages/IntakePage';
 import { DETAIL, EXAMPLES, SUBMITTED } from './fixtures';
 
+// ########################################################################
+// #                           Local constants                            #
+// ########################################################################
 // log.debug('Sets the requester the page acts as')
 const AVERY = { name: 'Avery Stone', role: 'requester' } as const;
 
+// ########################################################################
+// #                          Intake page tests                           #
+// ########################################################################
 // log.debug('Describes the intake page')
 describe('IntakePage', () => {
   // log.debug('Checks a run shows its outcome, the overruled verdict and the steps')

@@ -1,27 +1,62 @@
 // ########################################################################
 // #               frontend/src/components/DecisionForm.tsx               #
 // ########################################################################
-// #  Author:            Kevin Street                                     #
-// #  Created on:        2026-10-29                                       #
-// #  Last modified on:  2026-10-29                                       #
-// #  Purpose:           The approver's decision: approve or reject, with #
-// #                     the reason a flagged draft needs.                #
-// ########################################################################
-/** The approver's decision: approve or reject, with a note. */
+/**
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Shows the approver's decision: approve or reject, with the reason a
+ * flagged draft needs before it can be approved.
+ */
 
+// ########################################################################
+// #                               Imports                                #
+// ########################################################################
+// Third-party
 import { useState } from 'react';
 
-import { MAX_NOTE_CHARS, MIN_REASON_CHARS } from '../config';
+// Local
+import { CONFIG } from '../config';
+import { required } from '../lib/required';
 import type { Decision, DraftRecord } from '../types';
 
+// ########################################################################
+// #                           Global constants                           #
+// ########################################################################
+// log.debug('Takes the shortest reason for approving past a flag, from the config')
+const MIN_REASON_CHARS = CONFIG.api.min_reason_chars;
+// log.debug('Takes the longest decision note the API accepts, from the config')
+const MAX_NOTE_CHARS = CONFIG.api.max_note_chars;
+
+// ########################################################################
+// #                            Decision form                             #
+// ########################################################################
 interface Props {
-  record: DraftRecord;
-  busy: boolean;
-  onDecide: (decision: Decision, note: string) => void;
+  record?: DraftRecord | null;
+  busy?: boolean;
+  onDecide?: ((decision: Decision, note: string) => void) | null;
 }
 
 // log.debug('Defines the decision form')
-export function DecisionForm({ record, busy, onDecide }: Props) {
+/**
+ * Shows the note and the approve and reject buttons for one draft.
+ *
+ * @param props - The form's props.
+ * @param props.record - The draft to decide. Required.
+ * @param props.busy - Whether a decision is on its way.
+ * @param props.onDecide - Sends the decision and the note. Required.
+ * @returns The form.
+ */
+export function DecisionForm({
+  record = null,
+  busy = false,
+  onDecide = null,
+}: Props = {}): React.JSX.Element {
+  // log.debug('Takes the draft, which the caller must give')
+  record = required({ record });
+  // log.debug('Takes the decision handler, which the caller must give')
+  onDecide = required({ onDecide });
   // log.debug('Keeps the note being written')
   const [note, setNote] = useState('');
   // log.debug('Notes whether the checks or the agent flagged anything')

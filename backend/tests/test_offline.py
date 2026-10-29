@@ -1,27 +1,39 @@
 ########################################################################
 #                    backend/tests/test_offline.py                     #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests the offline stand-in: what its rules find, #
-#                     and the blind spot it documents.                 #
-########################################################################
-"""Tests for the offline stand-in: what it finds and misses."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Tests the offline stand-in: what its rules find, and the blind spot it
+documents.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
+# Third-party
 from kds.logs import get_logger
 
+# Local
 from intake_agent.config import AppSettings
 from intake_agent.core.offline import adapter_for, parties
 from intake_agent.core.store import Store
 from support import CONFLICT_EMAIL, REQUESTER, service
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
 
 
+########################################################################
+#                        Offline stand-in tests                        #
+########################################################################
 # log.debug("Defines the extraction test")
 def test_the_signature_names_the_client() -> None:
     """The signature's company is the client; others are adverse."""
@@ -31,7 +43,7 @@ def test_the_signature_names_the_client() -> None:
 
 # log.debug("Defines the person test")
 def test_a_person_set_off_by_commas_is_found() -> None:
-    """ "our former bookkeeper, Ann Lee, took" names Ann Lee."""
+    """Ann Lee in "our former bookkeeper, Ann Lee, took" is found."""
     # log.debug("Builds an email")
     email = "Our former bookkeeper, Ann Lee, took funds.\n\nRuth Cole\nSaffron Lane Bakery LLC"
     # log.debug("Checks the person was found")
@@ -49,7 +61,12 @@ def test_a_company_without_a_legal_form_is_missed() -> None:
 
 # log.debug("Defines the end-to-end test")
 def test_the_stand_in_runs_an_intake_for_free(settings: AppSettings, store: Store) -> None:
-    """Searches, drafts and submits for free, finding the conflict."""
+    """Searches, drafts and submits for free, finding the conflict.
+
+    Args:
+        settings: The test's settings, from conftest.
+        store: The seeded firm database, from conftest.
+    """
     # log.debug("Runs the intake with the stand-in")
     result = service(settings, store, adapter_for(settings)).run(CONFLICT_EMAIL, REQUESTER)
     # log.debug("Checks the outcome, the verdict and the cost")
@@ -62,7 +79,12 @@ def test_the_stand_in_runs_an_intake_for_free(settings: AppSettings, store: Stor
 
 # log.debug("Defines the automatic-reply test")
 def test_an_automatic_reply_is_not_an_intake(settings: AppSettings, store: Store) -> None:
-    """Out-of-office text ends the run with no searches and no draft."""
+    """Out-of-office text ends the run with no searches and no draft.
+
+    Args:
+        settings: The test's settings, from conftest.
+        store: The seeded firm database, from conftest.
+    """
     # log.debug("Runs an automatic reply")
     result = service(settings, store, adapter_for(settings)).run(
         "Automatic reply: I am out of the office until Monday.", REQUESTER

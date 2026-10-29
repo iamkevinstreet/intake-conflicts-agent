@@ -1,23 +1,32 @@
 // ########################################################################
 // #                frontend/tests/ApprovalsPage.test.tsx                 #
 // ########################################################################
-// #  Author:            Kevin Street                                     #
-// #  Created on:        2026-10-29                                       #
-// #  Last modified on:  2026-10-29                                       #
-// #  Purpose:           Tests the approver's page: the reason rule, the  #
-// #                     decision and the gate.                           #
-// ########################################################################
-/** Tests the approver's page: the reason rule, the decision, the gate. */
+/**
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Tests the approver's page: the reason rule, the decision and the
+ * gate.
+ */
 
+// ########################################################################
+// #                               Imports                                #
+// ########################################################################
+// Third-party
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
+// Local
 import { ApiError, api } from '../src/api';
 import { ApprovalsPage } from '../src/pages/ApprovalsPage';
 import type { DraftRecord } from '../src/types';
 import { PENDING } from './fixtures';
 
+// ########################################################################
+// #                           Local constants                            #
+// ########################################################################
 // log.debug('Sets the approver the page acts as')
 const JORDAN = { name: 'Jordan Reyes', role: 'approver' } as const;
 // log.debug('Sets a reason long enough to approve past the flag')
@@ -31,6 +40,9 @@ const APPROVAL = {
   decided_at: '2026-10-29T12:05:00+00:00',
 } as const;
 
+// ########################################################################
+// #                         Approvals page tests                         #
+// ########################################################################
 // log.debug('Describes the approvals page')
 describe('ApprovalsPage', () => {
   // log.debug('Checks the gate stays shut until approval, then opens')

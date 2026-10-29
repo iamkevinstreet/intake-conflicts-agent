@@ -1,23 +1,44 @@
 // ########################################################################
 // #              frontend/src/components/OfflineNotice.tsx               #
 // ########################################################################
-// #  Author:            Kevin Street                                     #
-// #  Created on:        2026-10-29                                       #
-// #  Last modified on:  2026-10-29                                       #
-// #  Purpose:           A notice that fixed rules, not a model, are      #
-// #                     playing the agent, and what they miss.           #
-// ########################################################################
-/** A notice that the offline stand-in, not a model, is playing the agent. */
+/**
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Shows a notice that fixed rules, not a model, are playing the agent,
+ * and what they miss.
+ */
 
-import { OFFLINE_PROVIDER } from '../config';
+// ########################################################################
+// #                               Imports                                #
+// ########################################################################
+// Local
 import type { Health } from '../types';
 
+// ########################################################################
+// #                           Local constants                            #
+// ########################################################################
+// log.debug('Names the provider that means the offline stand-in')
+const OFFLINE_PROVIDER = 'fake';
+
+// ########################################################################
+// #                            Offline notice                            #
+// ########################################################################
 interface Props {
-  health: Health | null;
+  health?: Health | null;
 }
 
 // log.debug('Defines the notice')
-export function OfflineNotice({ health }: Props) {
+/**
+ * Shows the offline notice while the stand-in plays the agent.
+ *
+ * @param props - The notice's props.
+ * @param props.health - The service's health report; null until it
+ *   arrives.
+ * @returns The notice, or nothing when a model is in use.
+ */
+export function OfflineNotice({ health = null }: Props = {}): React.JSX.Element | null {
   // log.debug('Shows nothing unless the stand-in is running')
   if (health?.provider !== OFFLINE_PROVIDER) {
     // log.debug('Returns nothing')

@@ -17,7 +17,7 @@ Everything here is made up. No name, matter or email belongs to a real person or
   `kind`, the `status` (`open` or `closed`) and the `adverse` parties.
 - `reserved`: names the scenarios use for parties the firm has never dealt with, and for senders.
 
-The generator (`backend/src/intake_agent/core/seed.py`) adds made-up clients, matters and adverse
+The generator (`backend/src/intake_agent/core/plan.py`) adds made-up clients, matters and adverse
 parties from the seed in `[seed] random` until the counts in settings: about 500 names in all.
 About a fifth of its adverse parties are a made-up client's name as a careless intake types it
 ("Westbrook Cosulting" beside the client "Westbrook Consulting LLP", "Apex-Industries" beside "Apex

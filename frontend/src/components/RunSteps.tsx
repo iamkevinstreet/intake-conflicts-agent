@@ -1,23 +1,41 @@
 // ########################################################################
 // #                 frontend/src/components/RunSteps.tsx                 #
 // ########################################################################
-// #  Author:            Kevin Street                                     #
-// #  Created on:        2026-10-29                                       #
-// #  Last modified on:  2026-10-29                                       #
-// #  Purpose:           A run's audit trail: each model call and the     #
-// #                     tool calls it asked for.                         #
-// ########################################################################
-/** A run's audit trail: each model call, and the tool calls it asked for. */
+/**
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Shows a run's audit trail: each model call and the tool calls it
+ * asked for.
+ */
 
+// ########################################################################
+// #                               Imports                                #
+// ########################################################################
+// Local
 import { argumentsLine, money, seconds } from '../format';
+import { required } from '../lib/required';
 import type { RunDetail } from '../types';
 
+// ########################################################################
+// #                              Run steps                               #
+// ########################################################################
 interface Props {
-  detail: RunDetail;
+  detail?: RunDetail | null;
 }
 
 // log.debug('Defines the steps list')
-export function RunSteps({ detail }: Props) {
+/**
+ * Lists a run's model calls, each with the tool calls it asked for.
+ *
+ * @param props - The list's props.
+ * @param props.detail - The run with every call it made. Required.
+ * @returns The list.
+ */
+export function RunSteps({ detail = null }: Props = {}): React.JSX.Element {
+  // log.debug('Takes the run, which the caller must give')
+  detail = required({ detail });
   // log.debug('Returns one item per model call, with its tool calls beneath')
   return (
     <ol className="ia-steps">

@@ -1,22 +1,40 @@
 // ########################################################################
 // #               frontend/src/components/DraftSummary.tsx               #
 // ########################################################################
-// #  Author:            Kevin Street                                     #
-// #  Created on:        2026-10-29                                       #
-// #  Last modified on:  2026-10-29                                       #
-// #  Purpose:           The agent's reading of the email: parties,       #
-// #                     matter, timing, warnings, reasons, the email.    #
-// ########################################################################
-/** The agent's reading of the email: parties, matter, timing, its reasons. */
+/**
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Shows the agent's reading of the email: the parties, the matter, the
+ * timing, any warnings, its reasons and the email itself.
+ */
 
+// ########################################################################
+// #                               Imports                                #
+// ########################################################################
+// Local
+import { required } from '../lib/required';
 import type { DraftRecord } from '../types';
 
+// ########################################################################
+// #                            Draft summary                             #
+// ########################################################################
 interface Props {
-  record: DraftRecord;
+  record?: DraftRecord | null;
 }
 
 // log.debug('Defines the draft summary')
-export function DraftSummary({ record }: Props) {
+/**
+ * Shows the agent's reading of the email, its reasons and the email.
+ *
+ * @param props - The summary's props.
+ * @param props.record - The draft to show. Required.
+ * @returns The summary.
+ */
+export function DraftSummary({ record = null }: Props = {}): React.JSX.Element {
+  // log.debug('Takes the draft, which the caller must give')
+  record = required({ record });
   // log.debug('Takes the draft')
   const { draft } = record;
   // log.debug('Returns the reading, any warnings, the reasons and the email')

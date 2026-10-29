@@ -1,12 +1,13 @@
 ########################################################################
 #                     .github/workflows/codeql.yml                     #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           CodeQL code scanning of the Python and the       #
-#                     TypeScript on every push, pull request and week. #
-########################################################################
+# Author:            Kevin Street
+# Created on:        2026-10-29
+# Last modified on:  2026-10-29
+#
+# Scans the Python and the TypeScript with CodeQL on every push, on
+# every pull request and once a week.
+
 name: codeql
 
 on:

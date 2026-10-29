@@ -1,26 +1,40 @@
 ########################################################################
 #                     backend/tests/test_store.py                      #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests the database rules: migrations once, and   #
-#                     triggers that hold the gate and audit.           #
-########################################################################
-"""Tests for the database: migrations and the schema's rules."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Tests the database rules: migrations run once, and the triggers that
+hold the gate and the audit.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
 
+# Third-party
 import pytest
+from kds.args import required
 from kds.logs import get_logger
 
+# Local
 from intake_agent.core.store import MIGRATIONS, Store
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the insert of a draft row")
 INSERT_DRAFT = (
     "INSERT INTO drafts (id, run_id, requester, created_at, body, sha256, status) "
@@ -33,9 +47,25 @@ INSERT_APPROVAL = (
 )
 
 
+########################################################################
+#                         Database rule tests                          #
+########################################################################
 # log.debug("Defines a store with one draft in a given state")
-def _store_with_draft(tmp_path: Path, status: str) -> Store:
-    """Return a fresh store holding draft D-1 in `status`."""
+def _store_with_draft(tmp_path: Path | None = None, status: str | None = None) -> Store:
+    """Returns a fresh store holding draft D-1 in `status`.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+            Required.
+        status: The draft's status. Required.
+
+    Returns:
+        A fresh store holding draft D-1 in that status.
+    """
+    # log.debug("Takes the temporary folder, which the caller must give")
+    tmp_path = required(tmp_path=tmp_path)
+    # log.debug("Takes the status, which the caller must give")
+    status = required(status=status)
     # log.debug("Opens the store")
     store = Store(tmp_path / "t.sqlite", timeout_s=1)
     # log.debug("Writes the draft")
@@ -48,7 +78,11 @@ def _store_with_draft(tmp_path: Path, status: str) -> Store:
 
 # log.debug("Defines the migration test")
 def test_migrations_run_once(tmp_path: Path) -> None:
-    """Reopening a migrated database changes nothing."""
+    """Reopening a migrated database changes nothing.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+    """
     # log.debug("Opens the store twice")
     Store(tmp_path / "t.sqlite", timeout_s=1)
     # log.debug("Opens it again")
@@ -63,7 +97,11 @@ def test_migrations_run_once(tmp_path: Path) -> None:
 
 # log.debug("Defines the database's own gate test")
 def test_no_matter_without_an_approval_record(tmp_path: Path) -> None:
-    """Even a direct insert, past the Python, is refused."""
+    """Even a direct insert, past the Python, is refused.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+    """
     # log.debug("Builds a store with an approved-status draft but no approval row")
     store = _store_with_draft(tmp_path, "approved")
     # log.debug("Expects the trigger to refuse the matter")
@@ -79,7 +117,11 @@ def test_no_matter_without_an_approval_record(tmp_path: Path) -> None:
 
 # log.debug("Defines the rejected-draft gate test")
 def test_no_matter_after_a_rejection(tmp_path: Path) -> None:
-    """A rejection record is not an approval."""
+    """A rejection record is not an approval.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+    """
     # log.debug("Builds a store with a pending draft")
     store = _store_with_draft(tmp_path, "pending")
     # log.debug("Records a rejection, then tries to open")
@@ -107,7 +149,15 @@ def test_no_matter_after_a_rejection(tmp_path: Path) -> None:
 def test_approval_rules(
     tmp_path: Path, status: str, approver: str, sha: str, message: str
 ) -> None:
-    """Pending only, not by the requester, bound to the hash."""
+    """Pending only, not by the requester, bound to the hash.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+        status: The draft's status when the approval is tried.
+        approver: Who approves.
+        sha: The draft hash the approval is bound to.
+        message: The refusal the trigger gives.
+    """
     # log.debug("Builds the store")
     store = _store_with_draft(tmp_path, status)
     # log.debug("Expects the refusal")
@@ -127,7 +177,13 @@ def test_approval_rules(
     ],
 )
 def test_a_saved_draft_cannot_be_rewritten_or_deleted(tmp_path: Path, statement: str) -> None:
-    """The text an approver approves is the text that was saved."""
+    """The text an approver approves is the text that was saved.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+        statement: A statement that would change or delete the saved
+            draft.
+    """
     # log.debug("Builds the store")
     store = _store_with_draft(tmp_path, "pending")
     # log.debug("Expects the refusal")
@@ -140,7 +196,11 @@ def test_a_saved_draft_cannot_be_rewritten_or_deleted(tmp_path: Path, statement:
 
 # log.debug("Defines the audit-record tests")
 def test_audit_records_are_append_only(tmp_path: Path) -> None:
-    """A finished run cannot change; tool calls cannot change at all."""
+    """A finished run cannot change; tool calls cannot change at all.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+    """
     # log.debug("Opens a store")
     store = Store(tmp_path / "t.sqlite", timeout_s=1)
     # log.debug("Writes a finished run and one tool call")

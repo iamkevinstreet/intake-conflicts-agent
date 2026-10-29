@@ -1,15 +1,16 @@
 ########################################################################
 #                       .pre-commit-config.yaml                        #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Checks before every commit: secrets, ruff, YAML, #
-#                     header dates, the code standard, and the         #
-#                     frontend lint.                                   #
-########################################################################
-# Install once per clone: pre-commit install
-# Hook versions are pinned to commit SHAs; the tag is in the comment.
+# Author:            Kevin Street
+# Created on:        2026-10-14
+# Last modified on:  2026-10-29
+#
+# Runs the checks before every commit: secrets, ruff, YAML, header
+# dates, the code standard, and the frontend lint.
+#
+# Install once per clone with pre-commit install. Hook versions are
+# pinned to commit SHAs; the tag is in the comment.
+
 repos:
   - repo: https://github.com/gitleaks/gitleaks
     rev: 83d9cd684c87d95d656c1458ef04895a7f1cbd8e  # frozen: v8.30.1

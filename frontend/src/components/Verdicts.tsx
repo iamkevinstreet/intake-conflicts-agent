@@ -1,23 +1,41 @@
 // ########################################################################
 // #                 frontend/src/components/Verdicts.tsx                 #
 // ########################################################################
-// #  Author:            Kevin Street                                     #
-// #  Created on:        2026-10-29                                       #
-// #  Last modified on:  2026-10-29                                       #
-// #  Purpose:           The verdict shown beside the two it comes from:  #
-// #                     the agent's and the checks'.                     #
-// ########################################################################
-/** The verdict shown, and the two it comes from: the agent and the checks. */
+/**
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Shows the verdict the approver sees beside the two it comes from: the
+ * agent's and the checks'.
+ */
 
+// ########################################################################
+// #                               Imports                                #
+// ########################################################################
+// Local
+import { required } from '../lib/required';
 import type { Draft } from '../types';
 import { VerdictBadge } from './VerdictBadge';
 
+// ########################################################################
+// #                          Verdict comparison                          #
+// ########################################################################
 interface Props {
-  draft: Draft;
+  draft?: Draft | null;
 }
 
 // log.debug('Defines the verdicts block')
-export function Verdicts({ draft }: Props) {
+/**
+ * Shows the verdict an approver sees, and the agent's and the checks'.
+ *
+ * @param props - The block's props.
+ * @param props.draft - The draft whose verdicts to show. Required.
+ * @returns The block, with a note when the checks overruled the agent.
+ */
+export function Verdicts({ draft = null }: Props = {}): React.JSX.Element {
+  // log.debug('Takes the draft, which the caller must give')
+  draft = required({ draft });
   // log.debug('Notes whether the checks overruled a milder agent')
   const overruled = draft.recommendation !== draft.agent_recommendation;
   // log.debug('Returns the shown verdict, then its two sources')

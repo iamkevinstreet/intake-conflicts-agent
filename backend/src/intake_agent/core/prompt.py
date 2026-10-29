@@ -1,32 +1,43 @@
 ########################################################################
 #               backend/src/intake_agent/core/prompt.py                #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           The agent's rules and its five tools as the      #
-#                     model sees them, schemas from the models.        #
-########################################################################
-"""The agent's instructions and its five tools, as the model sees them.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
-The rules are fixed in the system message; the email goes in the user
+Writes the agent's rules and its five tools as the model sees them. The
+rules are fixed in the system message; the email goes in the user
 message inside <email> tags, with any such tags in it removed first so
 it cannot close its own fence. Each tool's argument schema is generated
 from the pydantic model that validates it, so what the model is shown
 and what the tools accept cannot drift apart.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import re
 
+# Third-party
+from kds.args import required
 from kds.llm import ToolSpec
 from kds.logs import get_logger
 
+# Local
 from intake_agent.core.models import DraftArgs, OpenArgs, SearchArgs, SubmitArgs
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the prompt's version, recorded with every run")
 VERSION = "2026-10-29"
 # log.debug("Sets the rules the agent works by")
@@ -75,6 +86,8 @@ FENCE_RE = re.compile(r"</?\s*email\b[^>]*>?", re.IGNORECASE)
 ERROR_KEY = "error"
 # log.debug("Names the key a saved draft's id comes back under")
 DRAFT_ID_KEY = "draft_id"
+# log.debug("Names the key that tells the model what to do next")
+NEXT_KEY = "next"
 # log.debug("Names the tool that searches clients")
 SEARCH_CLIENTS = "search_clients"
 # log.debug("Names the tool that searches adverse parties")
@@ -133,16 +146,39 @@ TOOLS: tuple[ToolSpec, ...] = (
 )
 
 
+########################################################################
+#                             Agent prompt                             #
+########################################################################
 # log.debug("Defines the user message: the fenced email")
-def user_message(email: str) -> str:
-    """Return the email inside <email> tags, any such tags removed."""
+def user_message(email: str | None = None) -> str:
+    """Returns the email inside <email> tags, any such tags removed.
+
+    Args:
+        email: The intake email as the requester pasted it. Required.
+
+    Returns:
+        The user message: a heading, then the email between <email>
+        tags.
+    """
+    # log.debug("Takes the email, which the caller must give")
+    email = required(email=email)
     # log.debug("Returns the fenced email")
     return f"Intake email:\n<email>\n{FENCE_RE.sub('', email).strip()}\n</email>"
 
 
 # log.debug("Defines the reverse: the email back out of its fence")
-def email_from(message: str) -> str:
-    """Return the email a user message fences, or the message itself."""
+def email_from(message: str | None = None) -> str:
+    """Returns the email a user message fences, or the message itself.
+
+    Args:
+        message: A user message, as user_message writes it. Required.
+
+    Returns:
+        The text between the <email> tags, or the whole message when
+        it has none.
+    """
+    # log.debug("Takes the message, which the caller must give")
+    message = required(message=message)
     # log.debug("Finds the fenced text")
     fenced = FENCED_RE.search(message)
     # log.debug("Returns it, or the whole message when there is no fence")

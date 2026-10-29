@@ -1,37 +1,49 @@
 ########################################################################
 #                backend/src/intake_agent/core/agent.py                #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           The agent loop: model calls and tool calls       #
-#                     within step, tool-call and budget limits.        #
-########################################################################
-"""The agent loop: the model reads, calls tools and stops, in limits.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
-Each step is one model call. The model may ask for several tool calls
-in a step; each runs through the toolbox, and the results go back in
-the next step. The loop ends when the draft is sent for approval, when
-the model stops calling tools, or at a limit: steps, tool calls or the
-run's budget. Everything the loop spends is counted on a meter the
-caller holds, so a run that fails part way still reports its cost.
+Runs the agent loop: model calls and tool calls within step, tool-call
+and budget limits. Each step is one model call. The model may ask for
+several tool calls in a step; each runs through the toolbox, and the
+results go back in the next step. The loop ends when the draft is sent
+for approval, when the model stops calling tools, or at a limit: steps,
+tool calls or the run's budget. Everything the loop spends is counted on
+a meter the caller holds, so a run that fails part way still reports its
+cost.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import json
 from dataclasses import dataclass
 
+# Third-party
+from kds.args import required
 from kds.llm import Completion, Message, ModelAdapter
 from kds.logs import get_logger
 
+# Local
 from intake_agent.config import AppSettings
 from intake_agent.core import prompt
 from intake_agent.core.models import Outcome
 from intake_agent.core.tools import Toolbox
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the longest stretch of the model's last words kept as a reason")
 REASON_CHARS = 300
 # log.debug("Names the outcome of a run that hit a limit or an error")
@@ -40,6 +52,9 @@ FAILED: Outcome = "failed"
 INCOMPLETE: Outcome = "incomplete"
 
 
+########################################################################
+#                              Agent loop                              #
+########################################################################
 # log.debug("Defines the meter a run's spending is counted on")
 @dataclass
 class Meter:
@@ -57,8 +72,15 @@ class Meter:
     priced: bool = True
 
     # log.debug("Defines adding one model call")
-    def add(self, completion: Completion) -> None:
-        """Count one call's tokens and cost."""
+    def add(self, completion: Completion | None = None) -> None:
+        """Counts one call's tokens and cost.
+
+        Args:
+            completion: One model call's answer, with its usage and
+                cost. Required.
+        """
+        # log.debug("Takes the model's answer, which the caller must give")
+        completion = required(completion=completion)
         # log.debug("Counts the step")
         self.steps += 1
         # log.debug("Adds the tokens read")
@@ -76,7 +98,11 @@ class Meter:
     # log.debug("Defines the cost to report: none if any call was unpriced")
     @property
     def cost(self) -> float | None:
-        """Return the cost, or None when any call had no price."""
+        """Returns the cost, or None when any call had no price.
+
+        Returns:
+            The total in US dollars, rounded to six places, or None.
+        """
         # log.debug("Returns it")
         return round(self.cost_usd, 6) if self.priced else None
 
@@ -99,16 +125,49 @@ class IntakeAgent:
     """Runs one intake through the model and the toolbox."""
 
     # log.debug("Defines the constructor")
-    def __init__(self, adapter: ModelAdapter, settings: AppSettings) -> None:
-        """Call the model through `adapter`, in `settings` limits."""
+    def __init__(
+        self, adapter: ModelAdapter | None = None, settings: AppSettings | None = None
+    ) -> None:
+        """Calls the model through `adapter`, in `settings` limits.
+
+        Args:
+            adapter: The model adapter every call goes through.
+                Required.
+            settings: The settings that give the step, tool-call,
+                token and budget limits. Required.
+        """
+        # log.debug("Takes the adapter, which the caller must give")
+        adapter = required(adapter=adapter)
+        # log.debug("Takes the settings, which the caller must give")
+        settings = required(settings=settings)
         # log.debug("Keeps the adapter")
         self.adapter = adapter
         # log.debug("Keeps the settings")
         self.settings = settings
 
     # log.debug("Defines one run")
-    def run(self, email: str, toolbox: Toolbox, meter: Meter) -> Ending:
-        """Loop until the draft is sent, the model stops, or a limit."""
+    def run(
+        self, email: str | None = None, toolbox: Toolbox | None = None, meter: Meter | None = None
+    ) -> Ending:
+        """Runs until the draft is sent, the model stops, or a limit.
+
+        Args:
+            email: The intake email, which the model reads fenced.
+                Required.
+            toolbox: The run's tools, which also record every call.
+                Required.
+            meter: Counts what the run spends; the caller reads it
+                even when the run fails. Required.
+
+        Returns:
+            How the run ended, why, and the model's last words.
+        """
+        # log.debug("Takes the email, which the caller must give")
+        email = required(email=email)
+        # log.debug("Takes the toolbox, which the caller must give")
+        toolbox = required(toolbox=toolbox)
+        # log.debug("Takes the meter, which the caller must give")
+        meter = required(meter=meter)
         # log.debug("Starts the conversation with the fenced email")
         messages = [Message(role="user", content=prompt.user_message(email))]
         # log.debug("Takes one step at a time, up to the limit")
@@ -159,8 +218,22 @@ class IntakeAgent:
 
 
 # log.debug("Defines how a run that stopped by itself ended")
-def _settle(toolbox: Toolbox, text: str) -> Ending:
-    """Return the outcome of a run whose model stopped calling tools."""
+def _settle(toolbox: Toolbox | None = None, text: str | None = None) -> Ending:
+    """Returns the outcome of a run whose model stopped calling tools.
+
+    Args:
+        toolbox: The run's tools, which know what the searches and the
+            draft came to. Required.
+        text: The model's last words. Required.
+
+    Returns:
+        Incomplete when a search failed or the draft was never sent,
+        else no_draft, with the model's words as the reason.
+    """
+    # log.debug("Takes the toolbox, which the caller must give")
+    toolbox = required(toolbox=toolbox)
+    # log.debug("Takes the model's last words, which the caller must give")
+    text = required(text=text)
     # log.debug("Reports a failed search as an incomplete check")
     if toolbox.search_failed:
         # log.debug("Returns incomplete")

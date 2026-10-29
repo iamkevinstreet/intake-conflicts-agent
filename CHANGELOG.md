@@ -2,6 +2,37 @@
 
 ## Unreleased
 
+The code moves to the updated code standard: a new place for the package and the settings, and a new
+layout for every file. The API, the evaluation's numbers and the published results stay the same,
+and so do the 153 backend and 8 web app tests. The release also carries the first live results and
+the fixes made after v0.1.0.
+
+- **src layout:** the package lives in `backend/src/intake_agent`, so the tests import the installed
+  package, as anyone else would.
+- **Settings:** `config/config.toml` (was `config/settings.toml`) holds every setting and every
+  value two files share: the API's path, the request id header, the list limits, the id patterns,
+  and the role and verdict names. Secrets go in `config/.env`, listed in `config/.env.example` (was
+  `.env.example`). The web app reads the keys it needs from the same file when it is built, and
+  nothing from `config/.env`; so does the dev server's proxy, for the API's path and address.
+  `frontend/src/config.ts` holds only those settings now, and the people a developer can act as
+  moved to `frontend/src/personas.ts`.
+- **File layout:** every file opens with a box that holds its path and a doc block with the dates
+  and a description, then its imports in three labelled groups, its global constants (the values it
+  takes from the config), its local constants and its logic, each under a banner. Three modules that
+  passed 500 lines were split by job: the seed into the planted records (`core/planted.py`), the
+  plan (`core/plan.py`) and the seed itself; the audit into its records (`core/records.py`) and the
+  log; the tools into the searches (`core/searches.py`) and the toolbox.
+- **Functions:** every parameter has a type and a default, `None` or `null` where there is no
+  natural one. A function that cannot work without a value takes it with `required()` (from
+  kds-args, and `frontend/src/lib/required.ts` in the web app), which names the argument a caller
+  left out. Every function's doc block lists each argument and what comes back, and no function runs
+  past 60 lines below it: the web app's three pages, its shell and the intake form were split into
+  hooks and smaller components, and render exactly as before. ruff's annotation rules, ESLint's doc
+  block rules, explicit return types, `kds/param-defaults`, `max-lines-per-function` and
+  `kds-standards` keep it that way.
+- **Utils:** every `kds-*` package pins utils v0.4.2 (`62a38c5a3ecf667e3e227b18412abd77759c38d5`),
+  and kds-args joins them. With it, the first retry after a provider error waits up to half a
+  second, not a whole one, and a missing key's message points at `config/.env`.
 - **Live results:** with `claude-sonnet-5-5` as the agent on all 20 scenarios, every planted record
   was found (13 of 13), no clean scenario was shown as a conflict, all 3 ambiguous scenarios were
   marked review, all 6 failures were handled, and no matter was opened, at $0.025 a scenario. Every
@@ -13,8 +44,8 @@
   request id and the security headers; an unplanned error is a plain 500.
 - **Notes:** `[api] max_note_chars` now limits a decision note in the API, and the web app reads
   its limit from its config.
-- **Evaluation:** `make eval` runs the offline stand-in whatever `.env` says, so its results are
-  always the offline baseline.
+- **Evaluation:** `make eval` runs the offline stand-in whatever `config/.env` says, so its
+  results are always the offline baseline.
 
 ## v0.1.0, Oct 29, 2026
 

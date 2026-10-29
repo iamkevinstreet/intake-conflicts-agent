@@ -1,13 +1,12 @@
 ########################################################################
 #                backend/src/intake_agent/api/routes.py                #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Routes for requesters and everyone signed in:    #
-#                     health, me, examples, intake, runs.              #
-########################################################################
-"""Routes for requesters, and the ones every signed-in person shares.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
+
+Serves the routes for requesters and for everyone signed in:
 
 - GET /health: open, for monitors
 - GET /me: who the service thinks you are
@@ -17,38 +16,65 @@
   runs, approvers see everyone's
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Final
 
+# Third-party
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
+from kds.args import required
 from kds.logs import get_logger
 
+# Local
 from intake_agent import __version__
 from intake_agent.api.identity import current_actor, require
 from intake_agent.api.schemas import Example, Health, IntakeRequest, IntakeResponse
-from intake_agent.api.state import PREFIX, Services, services
-from intake_agent.core.audit import RunDetail, RunRecord
-from intake_agent.core.models import RUN_ID, Actor, Role
+from intake_agent.api.state import Services, services
+from intake_agent.config import SETTINGS
+from intake_agent.core.models import Actor
+from intake_agent.core.records import RunDetail, RunRecord
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+# log.debug("Takes the path every route lives under, from the config")
+PREFIX: Final = SETTINGS.api_prefix
+# log.debug("Takes the shape of a run id, from the config")
+RUN_ID: Final = SETTINGS.ids_run_pattern
+# log.debug("Takes the most runs one list returns, from the config")
+MAX_LIST: Final = SETTINGS.api_max_list_limit
+# log.debug("Takes the number of runs a list returns by default, from the config")
+DEFAULT_LIST: Final = SETTINGS.api_list_limit
+# log.debug("Takes the role that sees everyone's records, from the config")
+APPROVER: Final = SETTINGS.roles_approver
+# log.debug("Takes the role that runs intakes, from the config")
+REQUESTER: Final = SETTINGS.roles_requester
+
+
+########################################################################
+#                           Requester routes                           #
+########################################################################
 # log.debug("Creates the router under the API prefix")
 router = APIRouter(prefix=PREFIX)
-# log.debug("Sets the most runs one list returns")
-MAX_LIST = 200
-# log.debug("Sets the number of runs a list returns by default")
-DEFAULT_LIST = 50
-# log.debug("Names the role that sees everyone's records")
-APPROVER: Role = "approver"
-# log.debug("Names the role that runs intakes")
-REQUESTER: Role = "requester"
 
 
 # log.debug("Defines the health check")
 @router.get("/health")
 def health(svc: Annotated[Services, Depends(services)]) -> Health:
-    """Report the version, sign-in mode, model and database size."""
+    """Reports the version, sign-in mode, model and database size.
+
+    Args:
+        svc: The services the app built at startup.
+
+    Returns:
+        The status, version, sign-in mode, provider, model and the
+        firm's record counts.
+    """
     # log.debug("Returns the report")
     return Health(
         status="ok",
@@ -63,7 +89,14 @@ def health(svc: Annotated[Services, Depends(services)]) -> Health:
 # log.debug("Defines who-am-I")
 @router.get("/me")
 def me(actor: Annotated[Actor, Depends(current_actor)]) -> Actor:
-    """Return the caller as the service sees them."""
+    """Returns the caller as the service sees them.
+
+    Args:
+        actor: The caller, as the sign-in check identified them.
+
+    Returns:
+        The caller's id, name and roles.
+    """
     # log.debug("Returns the caller")
     return actor
 
@@ -74,7 +107,15 @@ def examples(
     svc: Annotated[Services, Depends(services)],
     _: Annotated[Actor, Depends(require(REQUESTER))],
 ) -> list[Example]:
-    """Return the made-up emails the web app offers to try."""
+    """Returns the made-up emails the web app offers to try.
+
+    Args:
+        svc: The services the app built at startup.
+        _: The caller, who must hold the requester role.
+
+    Returns:
+        The example emails the settings name.
+    """
     # log.debug("Returns them")
     return list(svc.examples)
 
@@ -86,7 +127,16 @@ def intake(
     svc: Annotated[Services, Depends(services)],
     actor: Annotated[Actor, Depends(require(REQUESTER))],
 ) -> IntakeResponse:
-    """Run the agent on the email, for the caller; return the run.
+    """Runs the agent on the email for the caller; returns the run.
+
+    Args:
+        body: The pasted intake email.
+        svc: The services the app built at startup.
+        actor: The caller, who must hold the requester role.
+
+    Returns:
+        The run's record, its draft if one was saved, and the agent's
+        last words.
 
     Raises:
         HTTPException: 429 past the per-minute limit, 422 for an email
@@ -118,7 +168,16 @@ def runs(
     actor: Annotated[Actor, Depends(current_actor)],
     limit: Annotated[int, Query(ge=1, le=MAX_LIST)] = DEFAULT_LIST,
 ) -> list[RunRecord]:
-    """Return recent runs: everyone's for an approver, else your own."""
+    """Returns recent runs: everyone's for an approver, else your own.
+
+    Args:
+        svc: The services the app built at startup.
+        actor: The caller; an approver sees everyone's runs.
+        limit: The most runs to return.
+
+    Returns:
+        The runs the caller may see, newest first.
+    """
     # log.debug("Returns the runs the caller may see")
     return svc.runlog.runs(requester=_scope(actor), limit=limit)
 
@@ -130,7 +189,16 @@ def run(
     svc: Annotated[Services, Depends(services)],
     actor: Annotated[Actor, Depends(current_actor)],
 ) -> RunDetail:
-    """Return a run with every model and tool call it made.
+    """Returns a run with every model and tool call it made.
+
+    Args:
+        run_id: The run's id.
+        svc: The services the app built at startup.
+        actor: The caller, who must be an approver or the run's
+            requester.
+
+    Returns:
+        The run with its model calls and tool calls, in order.
 
     Raises:
         HTTPException: 404 for an unknown run, or one the caller may not
@@ -147,7 +215,17 @@ def run(
 
 
 # log.debug("Defines whose records a caller may see")
-def _scope(actor: Actor) -> str | None:
-    """Return None for an approver (all), else the caller's id."""
+def _scope(actor: Actor | None = None) -> str | None:
+    """Returns None for an approver (all), else the caller's id.
+
+    Args:
+        actor: The caller. Required.
+
+    Returns:
+        None for an approver, who may see everyone's records, else the
+        caller's own id.
+    """
+    # log.debug("Takes the actor, which the caller must give")
+    actor = required(actor=actor)
     # log.debug("Returns the scope")
     return None if APPROVER in actor.roles else actor.user_id

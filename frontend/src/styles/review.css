@@ -2,17 +2,22 @@
 ########################################################################
 #                    frontend/src/styles/review.css                    #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           The approver's page and the audit log: draft     #
-#                     list, detail, decision, gate, runs.              #
+*/
+/*
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Styles the approver's page and the audit log: the list of drafts
+ * beside the one being reviewed, the decision, the gate, and the runs
+ * table.
+ */
+
+/*
+########################################################################
+#                      Approvals and audit pages                       #
 ########################################################################
 */
-
-/* The approver's page and the audit log: the list of drafts beside the one
-   being reviewed, the decision, the gate, and the runs table. */
-
 .ia-review__grid {
   display: grid;
   gap: var(--ia-space-8);

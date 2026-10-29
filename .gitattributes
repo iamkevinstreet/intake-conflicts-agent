@@ -1,12 +1,13 @@
 ########################################################################
 #                            .gitattributes                            #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           LF line endings everywhere, and the generated    #
-#                     files GitHub and the checker should skip.        #
-########################################################################
+# Author:            Kevin Street
+# Created on:        2026-10-29
+# Last modified on:  2026-10-29
+#
+# Sets LF line endings everywhere, and marks the generated files GitHub
+# and the checker should skip.
+
 * text=auto eol=lf
 
 *.png binary

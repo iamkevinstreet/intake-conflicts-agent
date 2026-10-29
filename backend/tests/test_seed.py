@@ -1,33 +1,52 @@
 ########################################################################
 #                      backend/tests/test_seed.py                      #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests the made-up firm: about 500 names,         #
-#                     repeatable, and clear of every planted name.     #
-########################################################################
-"""Tests for the made-up firm: size, repeatability, guard."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Tests the made-up firm: about 500 names, repeatable, and clear of every
+planted name.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
+# Third-party
 import pytest
 from kds.logs import get_logger
 
+# Local
 from intake_agent.config import AppSettings
-from intake_agent.core import seed as seed_module
+from intake_agent.core import plan as plan_module
 from intake_agent.core.firm import SqliteDirectory
 from intake_agent.core.names import normalize, score_plain
-from intake_agent.core.seed import load_firm, plan_firm, seed
+from intake_agent.core.plan import plan_firm
+from intake_agent.core.planted import load_firm
+from intake_agent.core.seed import seed
 from intake_agent.core.store import Store
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
 
 
+########################################################################
+#                          Firm seeding tests                          #
+########################################################################
 # log.debug("Defines the size test")
 def test_about_500_names(store: Store, settings: AppSettings) -> None:
-    """300 clients and 200 adverse parties, with 180 matters."""
+    """300 clients and 200 adverse parties, with 180 matters.
+
+    Args:
+        store: The seeded firm database, from conftest.
+        settings: The test's settings, from conftest.
+    """
     # log.debug("Counts the tables")
     counts = SqliteDirectory(store).counts()
     # log.debug("Checks them")
@@ -36,7 +55,11 @@ def test_about_500_names(store: Store, settings: AppSettings) -> None:
 
 # log.debug("Defines the repeatability test")
 def test_the_same_seed_builds_the_same_firm(settings: AppSettings) -> None:
-    """Two plans from one seed are identical."""
+    """Two plans from one seed are identical.
+
+    Args:
+        settings: The test's settings, from conftest.
+    """
     # log.debug("Reads the planted records")
     firm = load_firm(settings.data_firm)
     # log.debug("Checks two plans match")
@@ -45,7 +68,11 @@ def test_the_same_seed_builds_the_same_firm(settings: AppSettings) -> None:
 
 # log.debug("Defines the guard test")
 def test_no_made_up_name_comes_near_a_planted_or_reserved_one(settings: AppSettings) -> None:
-    """Generated names cannot disturb the scenarios' findings."""
+    """Generated names cannot disturb the scenarios' findings.
+
+    Args:
+        settings: The test's settings, from conftest.
+    """
     # log.debug("Plans the firm")
     firm = load_firm(settings.data_firm)
     # log.debug("Builds the plan")
@@ -67,7 +94,11 @@ def test_no_made_up_name_comes_near_a_planted_or_reserved_one(settings: AppSetti
 
 # log.debug("Defines the near-duplicate test")
 def test_the_firm_holds_near_duplicates(settings: AppSettings) -> None:
-    """Some adverse parties are typed variants of clients."""
+    """Some adverse parties are typed variants of clients.
+
+    Args:
+        settings: The test's settings, from conftest.
+    """
     # log.debug("Plans the firm")
     plan = plan_firm(load_firm(settings.data_firm), settings)
     # log.debug("Maps each client's plain form to its name")
@@ -80,7 +111,12 @@ def test_the_firm_holds_near_duplicates(settings: AppSettings) -> None:
 
 # log.debug("Defines the idempotence test")
 def test_seeding_twice_changes_nothing(store: Store, settings: AppSettings) -> None:
-    """A second seed reports the existing counts and writes nothing."""
+    """A second seed reports the existing counts and writes nothing.
+
+    Args:
+        store: The seeded firm database, from conftest.
+        settings: The test's settings, from conftest.
+    """
     # log.debug("Seeds again")
     report = seed(store, settings)
     # log.debug("Checks nothing was created")
@@ -91,9 +127,15 @@ def test_seeding_twice_changes_nothing(store: Store, settings: AppSettings) -> N
 def test_asking_for_too_many_names_fails_clearly(
     settings: AppSettings, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Asking for too many names is an error, not a hang."""
+    """Asking for too many names is an error, not a hang.
+
+    Args:
+        settings: The test's settings, from conftest.
+        monkeypatch: pytest's helper for patching the environment and
+            objects.
+    """
     # log.debug("Allows one try per name, so the test is quick")
-    monkeypatch.setattr(seed_module, "TRIES_PER_NAME", 1)
+    monkeypatch.setattr(plan_module, "TRIES_PER_NAME", 1)
     # log.debug("Asks for more clients than there are distinct names")
     greedy = settings.model_copy(update={"seed_clients": 3000})
     # log.debug("Expects the explanation")

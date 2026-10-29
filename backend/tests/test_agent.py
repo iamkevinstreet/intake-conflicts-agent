@@ -1,18 +1,24 @@
 ########################################################################
 #                     backend/tests/test_agent.py                      #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests the agent loop and service: limits,        #
-#                     outages, timeouts and what is recorded.          #
-########################################################################
-"""Tests for the agent loop and the service around it."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Tests the agent loop and the intake service: the limits, outages and
+timeouts, and what each run records.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 from typing import Any
 
+# Third-party
 import anthropic
 import httpx2
 import pytest
@@ -20,6 +26,7 @@ from kds.llm import ModelAdapter, TransientError
 from kds.llm.fake import FakeProvider
 from kds.logs import get_logger
 
+# Local
 from intake_agent.config import AppSettings
 from intake_agent.core.audit import RunLog
 from intake_agent.core.store import Store
@@ -35,13 +42,32 @@ from support import (
     turn,
 )
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
 
+########################################################################
+#                           Local constants                            #
+########################################################################
+# log.debug("Lists the outages to try: the fakes' kind, and a real SDK's after its retries")
+OUTAGES = (
+    TransientError("down"),
+    anthropic.APIConnectionError(request=httpx2.Request("POST", "https://api.anthropic.com")),
+)
 
+
+########################################################################
+#                           Agent loop tests                           #
+########################################################################
 # log.debug("Defines the happy path")
 def test_a_good_run_is_submitted_and_audited(settings: AppSettings, store: Store) -> None:
-    """Search, draft, request approval: submitted and recorded."""
+    """Search, draft, request approval: submitted and recorded.
+
+    Args:
+        settings: The test's settings, from conftest.
+        store: The seeded firm database, from conftest.
+    """
     # log.debug("Runs the intake")
     result = service(settings, store, scripted(settings, *good_turns(), responder=submit)).run(
         CONFLICT_EMAIL, REQUESTER
@@ -62,7 +88,12 @@ def test_a_good_run_is_submitted_and_audited(settings: AppSettings, store: Store
 
 # log.debug("Defines the stop-without-drafting test")
 def test_a_model_that_stops_drafts_nothing(settings: AppSettings, store: Store) -> None:
-    """Plain words end the run with no draft; they are the reason."""
+    """Plain words end the run with no draft; they are the reason.
+
+    Args:
+        settings: The test's settings, from conftest.
+        store: The seeded firm database, from conftest.
+    """
     # log.debug("Runs with a model that only talks")
     result = service(settings, store, scripted(settings, "Not an intake request.")).run(
         CONFLICT_EMAIL, REQUESTER
@@ -77,11 +108,23 @@ def test_a_model_that_stops_drafts_nothing(settings: AppSettings, store: Store) 
 
 # log.debug("Defines the step-limit test")
 def test_the_step_limit_ends_a_looping_model(settings: AppSettings, store: Store) -> None:
-    """A model that searches forever is stopped at the step limit."""
+    """A model that searches forever is stopped at the step limit.
+
+    Args:
+        settings: The test's settings, from conftest.
+        store: The seeded firm database, from conftest.
+    """
 
     # log.debug("Defines a model that always searches")
-    def loop(_: list[Any]) -> Any:
-        """Search again."""
+    def loop(_: list[Any] | None = None) -> Any:
+        """Searches again.
+
+        Args:
+            _: The conversation so far, which a looping model ignores.
+
+        Returns:
+            Another turn with the same search.
+        """
         # log.debug("Returns another search")
         return turn(call("s", "search_clients", name="Ironwood Builders Inc."))
 
@@ -101,7 +144,12 @@ def test_the_step_limit_ends_a_looping_model(settings: AppSettings, store: Store
 
 # log.debug("Defines the tool-call limit test")
 def test_the_tool_call_limit(settings: AppSettings, store: Store) -> None:
-    """A step that would pass the tool-call limit is not run."""
+    """A step that would pass the tool-call limit is not run.
+
+    Args:
+        settings: The test's settings, from conftest.
+        store: The seeded firm database, from conftest.
+    """
     # log.debug("Allows two tool calls in all")
     limited = settings.model_copy(update={"agent_max_tool_calls": 2})
     # log.debug("Scripts a step with three searches")
@@ -112,19 +160,19 @@ def test_the_tool_call_limit(settings: AppSettings, store: Store) -> None:
     assert (result.run.outcome, result.run.tool_calls) == ("failed", 0)
 
 
-# log.debug("Lists the outages to try: the fakes' kind, and a real SDK's after its retries")
-OUTAGES = (
-    TransientError("down"),
-    anthropic.APIConnectionError(request=httpx2.Request("POST", "https://api.anthropic.com")),
-)
-
-
 # log.debug("Defines the model-outage test")
 @pytest.mark.parametrize("outage", OUTAGES, ids=["fake", "sdk"])
 def test_a_model_outage_fails_the_run_cleanly(
     settings: AppSettings, store: Store, outage: Exception
 ) -> None:
-    """An unreachable model ends the run as failed, record closed."""
+    """An unreachable model ends the run as failed, record closed.
+
+    Args:
+        settings: The test's settings, from conftest.
+        store: The seeded firm database, from conftest.
+        outage: The error the provider raises: the fakes' own kind,
+            or a real SDK's after its retries.
+    """
 
     # log.debug("Defines a provider that is always down")
     class Down(FakeProvider):
@@ -132,7 +180,13 @@ def test_a_model_outage_fails_the_run_cleanly(
 
         # log.debug("Defines the failing call")
         def complete(self, **_: Any) -> Any:
-            """Raise.
+            """Raises the outage, whatever the call asks.
+
+            Args:
+                **_: The call's arguments, which it ignores.
+
+            Returns:
+                Nothing: every call raises.
 
             Raises:
                 Exception: The outage, always.
@@ -154,7 +208,12 @@ def test_a_model_outage_fails_the_run_cleanly(
 
 # log.debug("Defines the timeout test end to end")
 def test_a_database_timeout_ends_incomplete(settings: AppSettings, store: Store) -> None:
-    """Searches fail, the draft is refused, and the run says why."""
+    """Searches fail, the draft is refused, and the run says why.
+
+    Args:
+        settings: The test's settings, from conftest.
+        store: The seeded firm database, from conftest.
+    """
     # log.debug("Scripts searches, a draft attempt, then words")
     adapter = scripted(settings, *good_turns(), "The check could not be completed.")
     # log.debug("Runs against a database that never answers")
@@ -168,7 +227,13 @@ def test_a_database_timeout_ends_incomplete(settings: AppSettings, store: Store)
 # log.debug("Defines the email length limits")
 @pytest.mark.parametrize("email", ["too short", "x" * 20_001])
 def test_email_length_limits(settings: AppSettings, store: Store, email: str) -> None:
-    """An email outside the limits is refused before any record."""
+    """An email outside the limits is refused before any record.
+
+    Args:
+        settings: The test's settings, from conftest.
+        store: The seeded firm database, from conftest.
+        email: An email too short or too long to accept.
+    """
     # log.debug("Expects the refusal")
     with pytest.raises(ValueError, match="characters"):
         # log.debug("Runs the intake")
@@ -181,7 +246,12 @@ def test_email_length_limits(settings: AppSettings, store: Store, email: str) ->
 def test_the_audit_log_holds_the_emails_hash_not_its_text(
     settings: AppSettings, store: Store
 ) -> None:
-    """The run record has the hash and length, never the text."""
+    """The run record has the hash and length, never the text.
+
+    Args:
+        settings: The test's settings, from conftest.
+        store: The seeded firm database, from conftest.
+    """
     # log.debug("Runs the intake")
     result = service(settings, store, scripted(settings, "Nothing to do.")).run(
         CONFLICT_EMAIL, REQUESTER

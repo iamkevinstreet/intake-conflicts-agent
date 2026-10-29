@@ -1,36 +1,47 @@
 ########################################################################
 #             backend/src/intake_agent/evals/scenarios.py              #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Loads the twenty scenarios and supplies the      #
-#                     database timeout one of them needs.              #
-########################################################################
-"""The evaluation's scenarios, and the fault one of them needs.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
-data/evals/scenarios.jsonl holds twenty intake emails, each with what
-should happen: the parties, the planted records the checks should find,
-the verdict and how the run should end. data/README.md describes the
-file; a test proves every expectation holds against the generated
+Loads the twenty scenarios and supplies the database timeout one of them
+needs. data/evals/scenarios.jsonl holds twenty intake emails, each with
+what should happen: the parties, the planted records the checks should
+find, the verdict and how the run should end. data/README.md describes
+the file; a test proves every expectation holds against the generated
 database before any model is asked.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import json
 from pathlib import Path
 from typing import Literal
 
+# Third-party
+from kds.args import required
 from kds.logs import get_logger
 from pydantic import BaseModel, Field
 
+# Local
 from intake_agent.core.firm import AdverseRecord, ClientRecord, Directory
 from intake_agent.core.models import Outcome, Recommendation, RecordKind
 from intake_agent.core.store import StoreTimeoutError
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Lists the groups the measures are reported by")
 Category = Literal["conflict", "ambiguous", "clean", "failure"]
 # log.debug("Lists the faults a scenario can inject")
@@ -39,6 +50,9 @@ Fault = Literal["db_timeout"]
 TIMEOUT = "simulated: the database did not answer"
 
 
+########################################################################
+#                         Evaluation scenarios                         #
+########################################################################
 # log.debug("Defines a record the checks should find")
 class Planted(BaseModel):
     """A planted record in data/samples/firm.json."""
@@ -86,12 +100,20 @@ class Scenario(BaseModel):
 
 
 # log.debug("Defines the loader")
-def load_scenarios(path: Path) -> list[Scenario]:
-    """Return the scenarios in file order.
+def load_scenarios(path: Path | None = None) -> list[Scenario]:
+    """Returns the scenarios in file order.
+
+    Args:
+        path: The scenarios file, one JSON object per line. Required.
+
+    Returns:
+        Every scenario, validated, in file order.
 
     Raises:
         ValueError: Two scenarios share an id.
     """
+    # log.debug("Takes the path, which the caller must give")
+    path = required(path=path)
     # log.debug("Parses each non-empty line")
     scenarios = [
         Scenario.model_validate(json.loads(line))
@@ -114,7 +136,10 @@ class TimeoutDirectory:
 
     # log.debug("Defines the client read, which times out")
     def clients(self) -> list[ClientRecord]:
-        """Raise a timeout.
+        """Raises a timeout.
+
+        Returns:
+            Nothing: the read always times out.
 
         Raises:
             StoreTimeoutError: Always.
@@ -124,7 +149,10 @@ class TimeoutDirectory:
 
     # log.debug("Defines the adverse-party read, which times out")
     def adverse_parties(self) -> list[AdverseRecord]:
-        """Raise a timeout.
+        """Raises a timeout.
+
+        Returns:
+            Nothing: the read always times out.
 
         Raises:
             StoreTimeoutError: Always.
@@ -134,7 +162,17 @@ class TimeoutDirectory:
 
 
 # log.debug("Defines the directory a scenario runs against")
-def directory_for(scenario: Scenario) -> Directory | None:
-    """Return a failing directory for a timeout scenario, else None."""
+def directory_for(scenario: Scenario | None = None) -> Directory | None:
+    """Returns a failing directory for a timeout scenario, else None.
+
+    Args:
+        scenario: The scenario about to run. Required.
+
+    Returns:
+        A directory whose every read times out when the scenario
+        injects that fault, else None, which keeps the real one.
+    """
+    # log.debug("Takes the scenario, which the caller must give")
+    scenario = required(scenario=scenario)
     # log.debug("Returns the failing one only when the scenario asks")
     return TimeoutDirectory() if scenario.fault == "db_timeout" else None

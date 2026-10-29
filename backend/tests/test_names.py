@@ -1,28 +1,40 @@
 ########################################################################
 #                     backend/tests/test_names.py                      #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests name matching: plain forms, scores, bands, #
-#                     and every near duplicate caught.                 #
-########################################################################
-"""Tests for name matching: plain forms, scores and bands."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Tests name matching: plain forms, scores, bands, and every near
+duplicate caught.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import random
 
+# Third-party
 import pytest
 from kds.logs import get_logger
 from kds.synthetic import NameGen, near_duplicates
 
+# Local
 from intake_agent.core.names import band, normalize, score
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
 
 
+########################################################################
+#                         Name matching tests                          #
+########################################################################
 # log.debug("Defines the plain-form cases")
 @pytest.mark.parametrize(
     ("name", "plain"),
@@ -37,7 +49,12 @@ log = get_logger(__name__)
     ],
 )
 def test_normalize(name: str, plain: str) -> None:
-    """Case, punctuation, legal forms and a leading 'the' fall away."""
+    """Case, punctuation, legal forms and a leading 'the' fall away.
+
+    Args:
+        name: A name as someone typed it.
+        plain: Its expected plain form.
+    """
     # log.debug("Checks the plain form")
     assert normalize(name) == plain
 
@@ -99,7 +116,12 @@ def test_near_duplicates_score_at_least_possible() -> None:
     ("value", "expected"), [(100, "exact"), (92, "likely"), (91, "possible"), (80, "possible")]
 )
 def test_band_boundaries(value: int, expected: str) -> None:
-    """The thresholds are inclusive."""
+    """The thresholds are inclusive.
+
+    Args:
+        value: A score at a threshold, or just below one.
+        expected: The band the score falls in.
+    """
     # log.debug("Checks the band")
     assert band(value, likely=92, possible=80) == expected
 

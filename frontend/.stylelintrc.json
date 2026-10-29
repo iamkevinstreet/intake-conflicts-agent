@@ -3,6 +3,13 @@
   "rules": {
     "selector-class-pattern": "^ia-[a-z0-9]+(?:-[a-z0-9]+)*(?:__[a-z0-9]+(?:-[a-z0-9]+)*)?(?:--[a-z0-9]+(?:-[a-z0-9]+)*)?$",
     "declaration-no-important": true,
-    "color-named": "never"
+    "color-named": "never",
+    "comment-empty-line-before": [
+      "always",
+      {
+        "except": ["first-nested"],
+        "ignore": ["after-comment", "stylelint-commands"]
+      }
+    ]
   }
 }

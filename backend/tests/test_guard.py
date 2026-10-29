@@ -1,25 +1,37 @@
 ########################################################################
 #                     backend/tests/test_guard.py                      #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests the email guard: injections flagged,       #
-#                     ordinary intake lines left alone.                #
-########################################################################
-"""Tests for the email guard: orders flagged, ordinary lines not."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Tests the email guard: injections flagged, ordinary intake lines left
+alone.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
+# Third-party
 import pytest
 from kds.logs import get_logger
 
+# Local
 from intake_agent.core.guard import flag
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
 
 
+########################################################################
+#                        Injection check tests                         #
+########################################################################
 # log.debug("Defines lines that give the agent orders")
 @pytest.mark.parametrize(
     "line",
@@ -33,7 +45,11 @@ log = get_logger(__name__)
     ],
 )
 def test_orders_are_flagged(line: str) -> None:
-    """Each injection is caught."""
+    """Each injection is caught.
+
+    Args:
+        line: A line that gives the agent orders.
+    """
     # log.debug("Checks it is flagged")
     assert flag(f"Hello,\n{line}\nThanks") == [line]
 
@@ -51,6 +67,10 @@ def test_orders_are_flagged(line: str) -> None:
     ],
 )
 def test_ordinary_lines_pass(line: str) -> None:
-    """Employment intake wording is not taken for an injection."""
+    """Employment intake wording is not taken for an injection.
+
+    Args:
+        line: An ordinary line of an intake email.
+    """
     # log.debug("Checks nothing is flagged")
     assert flag(line) == []

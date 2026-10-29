@@ -1,25 +1,52 @@
 // ########################################################################
 // #                frontend/src/components/GatePanel.tsx                 #
 // ########################################################################
-// #  Author:            Kevin Street                                     #
-// #  Created on:        2026-10-29                                       #
-// #  Last modified on:  2026-10-29                                       #
-// #  Purpose:           The gate: the decision record, and opening the   #
-// #                     matter only once a draft is approved.            #
-// ########################################################################
-/** The gate: opening the matter, which only an approved draft allows. */
+/**
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Shows the gate: the decision record, and the button that opens the
+ * matter, which only an approved draft allows.
+ */
 
+// ########################################################################
+// #                               Imports                                #
+// ########################################################################
+// Local
 import { STATUSES, when } from '../format';
+import { required } from '../lib/required';
 import type { DraftRecord } from '../types';
 
+// ########################################################################
+// #                            Approval gate                             #
+// ########################################################################
 interface Props {
-  record: DraftRecord;
-  busy: boolean;
-  onOpen: () => void;
+  record?: DraftRecord | null;
+  busy?: boolean;
+  onOpen?: (() => void) | null;
 }
 
 // log.debug('Defines the gate panel')
-export function GatePanel({ record, busy, onOpen }: Props) {
+/**
+ * Shows the draft's status, its decision, and the matter or the button
+ * that opens it.
+ *
+ * @param props - The panel's props.
+ * @param props.record - The draft whose gate to show. Required.
+ * @param props.busy - Whether an opening is on its way.
+ * @param props.onOpen - Asks the API to open the matter. Required.
+ * @returns The panel.
+ */
+export function GatePanel({
+  record = null,
+  busy = false,
+  onOpen = null,
+}: Props = {}): React.JSX.Element {
+  // log.debug('Takes the draft, which the caller must give')
+  record = required({ record });
+  // log.debug('Takes the open handler, which the caller must give')
+  onOpen = required({ onOpen });
   // log.debug('Notes whether an approval record exists')
   const approved = record.approval?.decision === 'approved';
   // log.debug('Returns the decision record, the opened matter, or the button')

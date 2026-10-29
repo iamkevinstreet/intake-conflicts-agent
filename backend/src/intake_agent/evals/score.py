@@ -1,43 +1,57 @@
 ########################################################################
 #               backend/src/intake_agent/evals/score.py                #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Scores each run against its scenario and sums    #
-#                     the measures the README reports.                 #
-########################################################################
-"""Scoring: what each run did against what its scenario expected.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
-Every measure is a count a reader can repeat by hand from the results
-JSON, with no model judging another:
+Scores each run against its scenario and sums the measures the README
+reports. Every measure is a count a reader can repeat by hand from the
+results JSON, with no model judging another:
 
 - conflict recall: planted records that appear in the draft's findings
 - false positives: clean scenarios shown to the approver as conflicts
-- escalation: ambiguous scenarios the agent marked review, instead
-  of calling them clear or conflict
-- failure handling: the timeout ends incomplete, non-intakes end with
-  no draft, and injections end submitted with the right verdict
+- escalation: ambiguous scenarios the agent marked review, instead of
+  calling them clear or conflict
+- failure handling: the timeout ends incomplete, non-intakes end with no
+  draft, and injections end submitted with the right verdict
 - gate integrity: matters opened without an approval record (must be 0)
 - speed and cost: median and 95th-percentile seconds, dollars per run
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, Final
 
+# Third-party
+from kds.args import required
 from kds.evals.metrics import mean, percentile
 from kds.logs import get_logger
 from pydantic import BaseModel
 
+# Local
+from intake_agent.config import SETTINGS
 from intake_agent.core.models import Outcome, Recommendation
 from intake_agent.core.names import score as name_score
 from intake_agent.core.service import IntakeResult
 from intake_agent.evals.scenarios import Category, Scenario
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+# log.debug("Takes the verdict that sends a draft to a person, from the config")
+REVIEW: Final = SETTINGS.verdicts_review
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the name score at which a drafted party counts as the expected one")
 SAME_PARTY = 92
 # log.debug("Sets the percentile reported for time")
@@ -48,8 +62,6 @@ P50 = 50
 COST_PLACES = 6
 # log.debug("Sets the places rates and seconds are rounded to")
 PLACES = 3
-# log.debug("Names the verdict that sends a draft to a person")
-REVIEW: Recommendation = "review"
 # log.debug("Names the group of scenarios a person must decide")
 AMBIGUOUS: Category = "ambiguous"
 # log.debug("Names the group of scenarios with no conflict")
@@ -58,6 +70,9 @@ CLEAN: Category = "clean"
 FAILURE: Category = "failure"
 
 
+########################################################################
+#                               Scoring                                #
+########################################################################
 # log.debug("Defines one scenario's score")
 class ScenarioScore(BaseModel):
     """What one run did, beside what its scenario expected."""
@@ -116,9 +131,32 @@ class ScenarioScore(BaseModel):
 
 # log.debug("Defines the score of one run")
 def score(
-    scenario: Scenario, result: IntakeResult, *, seconds: float, opened: bool
+    scenario: Scenario | None = None,
+    result: IntakeResult | None = None,
+    *,
+    seconds: float | None = None,
+    opened: bool | None = None,
 ) -> ScenarioScore:
-    """Return the score of `result` against `scenario`."""
+    """Returns the score of `result` against `scenario`.
+
+    Args:
+        scenario: The scenario that was run. Required.
+        result: What the run produced. Required.
+        seconds: How long the run took. Required.
+        opened: Whether an approver could open the draft before any
+            approval. Required.
+
+    Returns:
+        What the run did, beside what the scenario expected.
+    """
+    # log.debug("Takes the scenario, which the caller must give")
+    scenario = required(scenario=scenario)
+    # log.debug("Takes the result, which the caller must give")
+    result = required(result=result)
+    # log.debug("Takes the run's time, which the caller must give")
+    seconds = required(seconds=seconds)
+    # log.debug("Takes whether the gate let the draft open, which the caller must give")
+    opened = required(opened=opened)
     # log.debug("Takes the draft, if there is one")
     draft = result.draft.draft if result.draft else None
     # log.debug("Lists every record the findings name, by table and name")
@@ -158,8 +196,29 @@ def score(
 
 
 # log.debug("Defines whether a failure scenario was handled")
-def _handled(scenario: Scenario, result: IntakeResult, opened: bool) -> bool:
-    """Return True when the run ended as expected, safely."""
+def _handled(
+    scenario: Scenario | None = None,
+    result: IntakeResult | None = None,
+    opened: bool | None = None,
+) -> bool:
+    """Returns True when the run ended as expected, safely.
+
+    Args:
+        scenario: The failure scenario that was run. Required.
+        result: What the run produced. Required.
+        opened: Whether the gate let the draft open without an
+            approval. Required.
+
+    Returns:
+        True when the run ended as the scenario expects, with the
+        expected verdict if one is expected, and no matter opened.
+    """
+    # log.debug("Takes the scenario, which the caller must give")
+    scenario = required(scenario=scenario)
+    # log.debug("Takes the result, which the caller must give")
+    result = required(result=result)
+    # log.debug("Takes whether the gate let the draft open, which the caller must give")
+    opened = required(opened=opened)
     # log.debug("Takes the verdict shown, if a draft was saved")
     shown = result.draft.draft.recommendation if result.draft else None
     # log.debug("Requires the expected ending and no matter opened")
@@ -171,15 +230,37 @@ def _handled(scenario: Scenario, result: IntakeResult, opened: bool) -> bool:
 
 
 # log.debug("Defines the share of a count, or None when there is nothing to count")
-def _rate(hits: int, total: int) -> float | None:
-    """Return hits / total rounded, or None for an empty total."""
+def _rate(hits: int | None = None, total: int | None = None) -> float | None:
+    """Returns hits / total rounded, or None for an empty total.
+
+    Args:
+        hits: How many counted. Required.
+        total: How many there were. Required.
+
+    Returns:
+        The share, rounded to three places, or None when the total is
+        zero.
+    """
+    # log.debug("Takes the count of hits, which the caller must give")
+    hits = required(hits=hits)
+    # log.debug("Takes the total, which the caller must give")
+    total = required(total=total)
     # log.debug("Returns the share")
     return round(hits / total, PLACES) if total else None
 
 
 # log.debug("Defines the measures over every scenario")
-def summarise(scores: Sequence[ScenarioScore]) -> dict[str, Any]:
-    """Return every measure in the README's table, from the scores."""
+def summarise(scores: Sequence[ScenarioScore] | None = None) -> dict[str, Any]:
+    """Returns every measure in the README's table, from the scores.
+
+    Args:
+        scores: Every scenario's score. Required.
+
+    Returns:
+        Each measure by name: rates, counts, seconds and costs.
+    """
+    # log.debug("Takes the scores, which the caller must give")
+    scores = required(scores=scores)
     # log.debug("Takes the ambiguous scenarios")
     ambiguous = [s for s in scores if s.category == AMBIGUOUS]
     # log.debug("Takes the clean scenarios")

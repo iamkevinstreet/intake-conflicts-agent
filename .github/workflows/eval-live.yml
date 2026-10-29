@@ -1,12 +1,13 @@
 ########################################################################
 #                   .github/workflows/eval-live.yml                    #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Started by hand: the twenty scenarios with a     #
-#                     real model as the agent, results to a branch.    #
-########################################################################
+# Author:            Kevin Street
+# Created on:        2026-10-29
+# Last modified on:  2026-10-29
+#
+# Runs the twenty scenarios with a real model as the agent when started
+# by hand, and commits the results to a branch.
+
 name: eval-live
 
 # The model plays the agent on all twenty scenarios, using the ANTHROPIC_API_KEY repository secret,

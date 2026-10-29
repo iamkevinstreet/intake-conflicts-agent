@@ -1,20 +1,30 @@
 // ########################################################################
 // #                        frontend/src/types.ts                         #
 // ########################################################################
-// #  Author:            Kevin Street                                     #
-// #  Created on:        2026-10-29                                       #
-// #  Last modified on:  2026-10-29                                       #
-// #  Purpose:           The API's shapes in TypeScript, as the backend's #
-// #                     pydantic models return them.                     #
-// ########################################################################
-/** The API's shapes, as the backend's pydantic models return them. */
+/**
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Defines the API's shapes in TypeScript, as the backend's pydantic
+ * models return them.
+ */
 
+// ########################################################################
+// #                              API shapes                              #
+// ########################################################################
 export type Recommendation = 'clear' | 'review' | 'conflict';
+
 export type Severity = 'review' | 'conflict';
+
 export type Band = 'exact' | 'likely' | 'possible';
+
 export type Role = 'requester' | 'approver';
+
 export type DraftStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'opened';
+
 export type Outcome = 'running' | 'submitted' | 'no_draft' | 'incomplete' | 'failed';
+
 export type Decision = 'approved' | 'rejected';
 
 export interface Actor {

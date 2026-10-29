@@ -1,19 +1,28 @@
 // ########################################################################
 // #                      frontend/tests/api.test.ts                      #
 // ########################################################################
-// #  Author:            Kevin Street                                     #
-// #  Created on:        2026-10-29                                       #
-// #  Last modified on:  2026-10-29                                       #
-// #  Purpose:           Tests the API client's identity headers and      #
-// #                     errors, and the formatting helpers.              #
-// ########################################################################
-/** Tests the API client: identity headers and error explanations. */
+/**
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Tests the API client's identity headers and error explanations, and
+ * the formatting helpers.
+ */
 
+// ########################################################################
+// #                               Imports                                #
+// ########################################################################
+// Third-party
 import { describe, expect, it, vi } from 'vitest';
 
+// Local
 import { ApiError, api, describeError } from '../src/api';
 import { argumentsLine, money } from '../src/format';
 
+// ########################################################################
+// #                           API client tests                           #
+// ########################################################################
 // log.debug('Describes the client')
 describe('api', () => {
   // log.debug('Checks every call says who is acting')

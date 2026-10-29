@@ -1,31 +1,42 @@
 ########################################################################
 #                backend/src/intake_agent/core/firm.py                 #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Read-only access to the firm's clients and       #
-#                     adverse parties, the only view the searches get. #
-########################################################################
-"""The firm's records the agent may read: clients and adverse parties.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
-The search tools see the firm only through `Directory`, a read-only
-interface with two methods. The SQLite implementation is the only one
-the service uses; the evaluation wraps it to make the database time
-out, and tests replace it with a list.
+Gives read-only access to the firm's clients and adverse parties, the
+only view the searches get. The search tools see the firm only through
+`Directory`, a read-only interface with two methods. The SQLite
+implementation is the only one the service uses; the evaluation wraps it
+to make the database time out, and tests replace it with a list.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Literal, Protocol
 
+# Third-party
+from kds.args import required
 from kds.logs import get_logger
 
+# Local
 from intake_agent.core.store import Store
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Lists a client's standing with the firm")
 ClientStatus = Literal["current", "former"]
 # log.debug("Lists whether a matter is still being worked")
@@ -38,6 +49,9 @@ COUNTS = {
 }
 
 
+########################################################################
+#                            Firm directory                            #
+########################################################################
 # log.debug("Defines one client of the firm")
 @dataclass(frozen=True)
 class ClientRecord:
@@ -74,11 +88,20 @@ class Directory(Protocol):
 
     # log.debug("Defines the read of every client")
     def clients(self) -> list[ClientRecord]:
-        """Return every client, current and former."""
+        """Returns every client, current and former.
+
+        Returns:
+            Each client with its id, name and status.
+        """
 
     # log.debug("Defines the read of every adverse party")
     def adverse_parties(self) -> list[AdverseRecord]:
-        """Return every party the firm has been adverse to."""
+        """Returns every party the firm has been adverse to.
+
+        Returns:
+            Each party with its matter, the matter's status and the
+            client the firm acted for.
+        """
 
 
 # log.debug("Defines the directory backed by the firm database")
@@ -86,14 +109,24 @@ class SqliteDirectory:
     """Reads clients and adverse parties from the store."""
 
     # log.debug("Defines the constructor")
-    def __init__(self, store: Store) -> None:
-        """Read from `store`."""
+    def __init__(self, store: Store | None = None) -> None:
+        """Keeps the store every read goes through.
+
+        Args:
+            store: The firm database. Required.
+        """
+        # log.debug("Takes the store, which the caller must give")
+        store = required(store=store)
         # log.debug("Keeps the store")
         self.store = store
 
     # log.debug("Defines the read of every client")
     def clients(self) -> list[ClientRecord]:
-        """Return every client, in id order."""
+        """Returns every client, in id order.
+
+        Returns:
+            Each client with its id, name and status.
+        """
         # log.debug("Opens a connection for the read")
         with self.store.connect() as connection:
             # log.debug("Reads the clients")
@@ -103,7 +136,12 @@ class SqliteDirectory:
 
     # log.debug("Defines the read of every adverse party, with its matter")
     def adverse_parties(self) -> list[AdverseRecord]:
-        """Return every adverse party with its matter and client."""
+        """Returns every adverse party with its matter and client.
+
+        Returns:
+            Each party, in id order, with its matter's number and
+            status and the client the firm acted for.
+        """
         # log.debug("Opens a connection for the read")
         with self.store.connect() as connection:
             # log.debug("Reads each adverse party joined to its matter and client")
@@ -122,7 +160,11 @@ class SqliteDirectory:
 
     # log.debug("Defines the size report the health check shows")
     def counts(self) -> dict[str, int]:
-        """Return the client, matter and adverse party counts."""
+        """Returns the client, matter and adverse party counts.
+
+        Returns:
+            Each table's name mapped to its number of rows.
+        """
         # log.debug("Opens a connection for the counts")
         with self.store.connect() as connection:
             # log.debug("Returns one count per table")

@@ -1,33 +1,45 @@
 ########################################################################
 #               backend/src/intake_agent/core/models.py                #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           The shapes that cross a boundary: tool           #
-#                     arguments, matches, findings, drafts and         #
-#                     decisions.                                       #
-########################################################################
-"""The shapes that cross a boundary: tool arguments, findings, drafts.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
-Tool arguments arrive from the model, so each is parsed into a model
-here before anything uses it, and the same models give the
-JSON schema the model is shown. Unknown fields are refused, so a tool
-cannot be handed an argument it does not declare.
+Defines the shapes that cross a boundary: tool arguments and replies,
+matches, findings, drafts and decisions. Tool arguments arrive from the
+model, so each is parsed into a model here before anything uses it, and
+the same models give the JSON schema the model is shown. Unknown fields
+are refused, so a tool cannot be handed an argument it does not declare.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from dataclasses import dataclass
+from typing import Annotated, Any, Final, Literal
 
+# Third-party
 from kds.logs import get_logger
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-from intake_agent.config import MAX_PARTIES
+# Local
+from intake_agent.config import MAX_PARTIES, SETTINGS
 from intake_agent.core.names import Band
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+# log.debug("Takes the shape of a draft id, from the config")
+DRAFT_ID: Final = SETTINGS.ids_draft_pattern
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Lists the verdicts on an intake, mildest first")
 Recommendation = Literal["clear", "review", "conflict"]
 # log.debug("Lists how serious one finding is")
@@ -44,10 +56,6 @@ DraftStatus = Literal["draft", "pending", "approved", "rejected", "opened"]
 Outcome = Literal["running", "submitted", "no_draft", "incomplete", "failed"]
 # log.debug("Lists an approver's choices")
 Decision = Literal["approved", "rejected"]
-# log.debug("Matches a draft id: D- and ten hex digits")
-DRAFT_ID = r"^D-[0-9a-f]{10}$"
-# log.debug("Matches a run id: R- and ten hex digits")
-RUN_ID = r"^R-[0-9a-f]{10}$"
 # log.debug("Sets the longest party name accepted")
 NAME_CHARS = 200
 # log.debug("Defines a party name: trimmed, not empty, not too long")
@@ -60,6 +68,9 @@ STRICT = ConfigDict(extra="forbid", frozen=True, str_strip_whitespace=True)
 FROZEN = ConfigDict(frozen=True)
 
 
+########################################################################
+#                           Boundary shapes                            #
+########################################################################
 # log.debug("Defines who is acting: a person, or the agent on their behalf")
 class Actor(BaseModel):
     """A signed-in person, or the agent acting for one."""
@@ -277,3 +288,16 @@ class DraftRecord(BaseModel):
     approval: Approval | None = None
     # log.debug("Holds the opened matter, once opened")
     matter: NewMatter | None = None
+
+
+# log.debug("Defines what a tool call returns")
+@dataclass(frozen=True)
+class ToolReply:
+    """If the call worked, what the model is told, the audit code."""
+
+    # log.debug("Holds whether the call did what was asked")
+    ok: bool
+    # log.debug("Holds the JSON the model reads")
+    payload: dict[str, Any]
+    # log.debug("Holds a short code for the audit when it did not")
+    code: str = ""

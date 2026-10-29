@@ -1,16 +1,23 @@
 // ########################################################################
 // #                      frontend/tests/fixtures.ts                      #
 // ########################################################################
-// #  Author:            Kevin Street                                     #
-// #  Created on:        2026-10-29                                       #
-// #  Last modified on:  2026-10-29                                       #
-// #  Purpose:           Made-up API responses the page tests stub the    #
-// #                     client with.                                     #
-// ########################################################################
-/** Made-up API responses the page tests stub the client with. */
+/**
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Holds the made-up API responses the page tests stub the client with.
+ */
 
+// ########################################################################
+// #                               Imports                                #
+// ########################################################################
+// Local
 import type { DraftRecord, Example, IntakeResponse, RunDetail } from '../src/types';
 
+// ########################################################################
+// #                           Local constants                            #
+// ########################################################################
 // log.debug('Sets a pending draft whose checks found a conflict the agent missed')
 export const PENDING: DraftRecord = {
   draft: {
@@ -53,7 +60,6 @@ export const PENDING: DraftRecord = {
   approval: null,
   matter: null,
 };
-
 // log.debug('Sets the intake response that produced it')
 export const SUBMITTED: IntakeResponse = {
   run: {
@@ -78,7 +84,6 @@ export const SUBMITTED: IntakeResponse = {
   draft: PENDING,
   text: '',
 };
-
 // log.debug('Sets the run detail for the steps list')
 export const DETAIL: RunDetail = {
   run: SUBMITTED.run,
@@ -106,7 +111,6 @@ export const DETAIL: RunDetail = {
     },
   ],
 };
-
 // log.debug('Sets one example email')
 export const EXAMPLES: Example[] = [
   { id: 's04', title: 'A client name, typed differently', email: 'We need help. '.repeat(3) },

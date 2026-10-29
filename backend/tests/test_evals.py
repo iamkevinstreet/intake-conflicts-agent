@@ -1,13 +1,13 @@
 ########################################################################
 #                     backend/tests/test_evals.py                      #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests the evaluation: its ground truth against   #
-#                     the database, scoring and the runner.            #
-########################################################################
-"""Tests for the evaluation: its ground truth, its scoring, its runner.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
+
+Tests the evaluation: its ground truth against the database, scoring and
+the runner.
 
 The ground-truth test runs the firm's rules directly, with no agent: for
 every scenario, searching each expected party must find exactly the
@@ -16,11 +16,17 @@ generator or the matcher ever drifted, this fails before any model is
 asked anything.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
+# Third-party
 import pytest
 from kds.logs import get_logger
 
+# Local
 from intake_agent.config import AppSettings
 from intake_agent.core.conflicts import findings, search_adverse, search_clients, verdict
 from intake_agent.core.firm import SqliteDirectory
@@ -29,12 +35,21 @@ from intake_agent.evals.run import run_eval, to_markdown
 from intake_agent.evals.scenarios import Scenario, load_scenarios
 from support import REPO
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Loads the scenarios once for the parametrised tests")
 SCENARIOS = load_scenarios(REPO / "data/evals/scenarios.jsonl")
 
 
+########################################################################
+#                           Evaluation tests                           #
+########################################################################
 # log.debug("Defines the shape test")
 def test_twenty_scenarios_in_four_groups() -> None:
     """Twenty scenarios, unique ids, in the four reported groups."""
@@ -53,7 +68,13 @@ def test_twenty_scenarios_in_four_groups() -> None:
 # log.debug("Defines the ground-truth test, one per scenario")
 @pytest.mark.parametrize("scenario", SCENARIOS, ids=[s.id for s in SCENARIOS])
 def test_ground_truth_holds(scenario: Scenario, store: Store, settings: AppSettings) -> None:
-    """The rules alone find the planted records and the verdict."""
+    """The rules alone find the planted records and the verdict.
+
+    Args:
+        scenario: One of the twenty scenarios.
+        store: The seeded firm database, from conftest.
+        settings: The test's settings, from conftest.
+    """
     # log.debug("Reads the firm")
     directory = SqliteDirectory(store)
     # log.debug("Takes the thresholds")
@@ -84,7 +105,11 @@ def test_ground_truth_holds(scenario: Scenario, store: Store, settings: AppSetti
 
 # log.debug("Defines the offline evaluation smoke test")
 def test_the_offline_evaluation_runs_and_the_gate_holds(settings: AppSettings) -> None:
-    """Four scenarios through the stand-in; no matter opens."""
+    """Four scenarios through the stand-in; no matter opens.
+
+    Args:
+        settings: The test's settings, from conftest.
+    """
     # log.debug("Runs a near duplicate, a timeout, a non-intake and an injection")
     results = run_eval(
         settings, name="smoke", only=["s04", "s15", "s16", "s18"], sleep=lambda _: None
@@ -99,7 +124,11 @@ def test_the_offline_evaluation_runs_and_the_gate_holds(settings: AppSettings) -
 
 # log.debug("Defines the failure-handling test")
 def test_failure_scenarios_are_handled_by_the_stand_in(settings: AppSettings) -> None:
-    """The timeout, both non-intakes, and an injection."""
+    """The timeout, both non-intakes, and an injection.
+
+    Args:
+        settings: The test's settings, from conftest.
+    """
     # log.debug("Runs them")
     results = run_eval(
         settings, name="smoke", only=["s15", "s16", "s17", "s18"], sleep=lambda _: None
@@ -110,7 +139,11 @@ def test_failure_scenarios_are_handled_by_the_stand_in(settings: AppSettings) ->
 
 # log.debug("Defines the trace test")
 def test_each_scenario_keeps_its_trace(settings: AppSettings) -> None:
-    """Each run's calls and draft are saved, without the email."""
+    """Each run's calls and draft are saved, without the email.
+
+    Args:
+        settings: The test's settings, from conftest.
+    """
     # log.debug("Runs a conflict and a non-intake")
     results = run_eval(settings, name="smoke", only=["s04", "s16"], sleep=lambda _: None)
     # log.debug("Reads the conflict's trace")

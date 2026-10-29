@@ -1,32 +1,39 @@
 ########################################################################
 #               backend/src/intake_agent/core/drafts.py                #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Drafts, decisions and opening a matter: the      #
-#                     approval gate, checked by role and record.       #
-########################################################################
-"""Drafts, decisions and opening a matter: the approval gate lives here.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
-A draft moves draft -> pending -> approved or rejected -> opened, and
-only along those arrows. Opening is the one action with consequences,
-so it is checked three times: the caller must hold the approver role,
-an approval record must exist for the draft, and the database itself
-refuses a new matter without one (core/store.py). The agent calls the
-same `open` the approver's button does, with the requester's role
-only, so its calls are always refused.
+Keeps the drafts and their decisions, and opens a matter from an
+approved one: the approval gate, checked by role and record. A draft
+moves draft -> pending -> approved or rejected -> opened, and only along
+those arrows. Opening is the one action with consequences, so it is
+checked three times: the caller must hold the approver role, an approval
+record must exist for the draft, and the database itself refuses a new
+matter without one (core/store.py). The agent calls the same `open` the
+approver's button does, with the requester's role only, so its calls are
+always refused.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import hashlib
 import sqlite3
 from collections.abc import Callable
-from typing import Literal
+from typing import Final, Literal
 
+# Third-party
+from kds.args import missing, required
 from kds.logs import get_logger, log_event
 
+# Local
+from intake_agent.config import SETTINGS
 from intake_agent.core.models import (
     Actor,
     Approval,
@@ -38,10 +45,16 @@ from intake_agent.core.models import (
 )
 from intake_agent.core.store import Store, utc_now
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
-# log.debug("Names the role that may decide drafts and open matters")
-APPROVER: Literal["approver"] = "approver"
+# log.debug("Takes the role that may decide drafts and open matters, from the config")
+APPROVER: Final = SETTINGS.roles_approver
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets how new matter numbers are written")
 NUMBER = "NM-{:05d}"
 # log.debug("Sets the query that reads one draft with its decision and matter")
@@ -81,6 +94,9 @@ MATTER_ID = "matter_id"
 SET_STATUS = "UPDATE drafts SET status = ? WHERE id = ?"
 
 
+########################################################################
+#                            Approval gate                             #
+########################################################################
 # log.debug("Defines the family of refusals a draft action can meet")
 class DraftError(Exception):
     """A draft action was refused; the message says why."""
@@ -107,8 +123,18 @@ class ReasonRequiredError(DraftError, ValueError):
 
 
 # log.debug("Defines the fingerprint an approval is bound to")
-def fingerprint(draft: Draft) -> str:
-    """Return the SHA-256 of the draft's JSON, which never changes."""
+def fingerprint(draft: Draft | None = None) -> str:
+    """Returns the SHA-256 of the draft's JSON, which never changes.
+
+    Args:
+        draft: The draft as saved. Required.
+
+    Returns:
+        The hash in hex, which an approval records and the database
+        compares with the saved draft's.
+    """
+    # log.debug("Takes the draft, which the caller must give")
+    draft = required(draft=draft)
     # log.debug("Hashes the draft as saved")
     return hashlib.sha256(draft.model_dump_json().encode()).hexdigest()
 
@@ -119,16 +145,24 @@ class DraftBook:
 
     # log.debug("Defines the constructor")
     def __init__(
-        self, store: Store, *, min_reason_chars: int, clock: Callable[[], str] = utc_now
+        self,
+        store: Store | None = None,
+        *,
+        min_reason_chars: int | None = None,
+        clock: Callable[[], str] = utc_now,
     ) -> None:
-        """Keep drafts in `store`.
+        """Keeps drafts in `store`.
 
         Args:
-            store: The database.
+            store: The database. Required.
             min_reason_chars: The shortest reason for approving a draft
-                whose checks found something.
+                whose checks found something. Required.
             clock: Returns the time now; tests pass a fixed one.
         """
+        # log.debug("Takes the store, which the caller must give")
+        store = required(store=store)
+        # log.debug("Takes the shortest reason allowed, which the caller must give")
+        min_reason_chars = required(min_reason_chars=min_reason_chars)
         # log.debug("Keeps the store")
         self.store = store
         # log.debug("Keeps the shortest reason allowed")
@@ -137,8 +171,14 @@ class DraftBook:
         self.clock = clock
 
     # log.debug("Defines saving a new draft")
-    def save(self, draft: Draft) -> None:
-        """Save `draft` in the draft state; its text is then fixed."""
+    def save(self, draft: Draft | None = None) -> None:
+        """Saves `draft` in the draft state; its text is then fixed.
+
+        Args:
+            draft: The draft a run made. Required.
+        """
+        # log.debug("Takes the draft, which the caller must give")
+        draft = required(draft=draft)
         # log.debug("Opens a transaction")
         with self.store.connect() as connection:
             # log.debug("Inserts the draft with its fingerprint")
@@ -156,12 +196,20 @@ class DraftBook:
             )
 
     # log.debug("Defines reading one draft")
-    def get(self, draft_id: str) -> DraftRecord:
-        """Return the draft with its status, decision and matter.
+    def get(self, draft_id: str | None = None) -> DraftRecord:
+        """Returns the draft with its status, decision and matter.
+
+        Args:
+            draft_id: The draft's id. Required.
+
+        Returns:
+            The draft as saved, with where it stands.
 
         Raises:
             DraftNotFoundError: No draft has that id.
         """
+        # log.debug("Takes the draft id, which the caller must give")
+        draft_id = required(draft_id=draft_id)
         # log.debug("Opens a connection")
         with self.store.connect() as connection:
             # log.debug("Reads the draft")
@@ -177,7 +225,17 @@ class DraftBook:
     def find(
         self, *, status: DraftStatus | None = None, requester: str | None = None, limit: int = 50
     ) -> list[DraftRecord]:
-        """Return drafts, newest first, by status and requester."""
+        """Returns drafts, newest first, by status and requester.
+
+        Args:
+            status: The state to list; None lists every state.
+            requester: The requester whose drafts to list; None lists
+                everyone's.
+            limit: The most drafts to return.
+
+        Returns:
+            The drafts that pass both filters, newest first.
+        """
         # log.debug("Opens a connection")
         with self.store.connect() as connection:
             # log.debug("Reads the drafts that pass both filters")
@@ -188,14 +246,32 @@ class DraftBook:
         return [_record(row) for row in rows]
 
     # log.debug("Defines sending a draft for approval")
-    def submit(self, draft_id: str, *, run_id: str, note: str) -> DraftRecord:
-        """Move a draft to pending, with a note; only its own run may.
+    def submit(
+        self, draft_id: str | None = None, *, run_id: str | None = None, note: str | None = None
+    ) -> DraftRecord:
+        """Moves a draft to pending, with a note; only its own run may.
+
+        Args:
+            draft_id: The draft to send. Required.
+            run_id: The run asking, which must be the one that made
+                the draft. Required.
+            note: The agent's note for the approver; it may be empty.
+                Required.
+
+        Returns:
+            The draft as it now stands, pending.
 
         Raises:
             DraftNotFoundError: No draft has that id.
             GateError: The draft belongs to another run.
             DraftStateError: The draft is not in the draft state.
         """
+        # log.debug("Takes the draft id, which the caller must give")
+        draft_id = required(draft_id=draft_id)
+        # log.debug("Takes the run id, which the caller must give")
+        run_id = required(run_id=run_id)
+        # log.debug("Takes the note, which the caller must give")
+        note = required(note=note)
         # log.debug("Reads the draft")
         record = self.get(draft_id)
         # log.debug("Refuses a draft another run made")
@@ -219,9 +295,25 @@ class DraftBook:
 
     # log.debug("Defines an approver's decision")
     def decide(
-        self, draft_id: str, *, approver: Actor, decision: Decision, note: str
+        self,
+        draft_id: str | None = None,
+        *,
+        approver: Actor | None = None,
+        decision: Decision | None = None,
+        note: str | None = None,
     ) -> DraftRecord:
-        """Record an approver's decision on a pending draft.
+        """Records an approver's decision on a pending draft.
+
+        Args:
+            draft_id: The draft to decide. Required.
+            approver: The person deciding, who must hold the approver
+                role and must not have made the draft. Required.
+            decision: Approved or rejected. Required.
+            note: The approver's reason; approving past a flagged
+                check needs one of the minimum length. Required.
+
+        Returns:
+            The draft as it now stands, approved or rejected.
 
         Raises:
             GateError: The caller is not an approver, or made the draft.
@@ -230,6 +322,16 @@ class DraftBook:
             ReasonRequiredError: Approving a flagged draft without a
                 reason of the minimum length.
         """
+        # log.debug("Takes the draft id, which the caller must give")
+        draft_id = required(draft_id=draft_id)
+        # log.debug("Takes the approver, which the caller must give")
+        approver = required(approver=approver)
+        # log.debug("Stops when the caller left out the decision")
+        if decision is None:
+            # log.debug("Raises the missing-argument error")
+            raise missing(decision=decision)
+        # log.debug("Takes the note, which the caller must give")
+        note = required(note=note)
         # log.debug("Refuses a caller without the approver role")
         if APPROVER not in approver.roles:
             # log.debug("Raises: only approvers decide")
@@ -281,8 +383,16 @@ class DraftBook:
         return self.get(draft_id)
 
     # log.debug("Defines the gate: opening a matter from an approved draft")
-    def open(self, draft_id: str, *, actor: Actor) -> NewMatter:
-        """Open a matter from an approved draft. The one gated action.
+    def open(self, draft_id: str | None = None, *, actor: Actor | None = None) -> NewMatter:
+        """Opens a matter from an approved draft. The one gated action.
+
+        Args:
+            draft_id: The approved draft. Required.
+            actor: Whoever asks to open it; the agent asks as its
+                requester and is always refused. Required.
+
+        Returns:
+            The new matter, with its number and who opened it.
 
         Raises:
             GateError: The caller is not an approver, or no approval
@@ -290,6 +400,10 @@ class DraftBook:
             DraftNotFoundError: No draft has that id.
             DraftStateError: The matter is already open.
         """
+        # log.debug("Takes the draft id, which the caller must give")
+        draft_id = required(draft_id=draft_id)
+        # log.debug("Takes whoever asks, which the caller must give")
+        actor = required(actor=actor)
         # log.debug("Refuses a caller without the approver role, the agent included")
         if APPROVER not in actor.roles:
             # log.debug("Logs the refusal")
@@ -336,8 +450,19 @@ class DraftBook:
 
 
 # log.debug("Defines how a row becomes a draft record")
-def _record(row: sqlite3.Row) -> DraftRecord:
-    """Return the draft, decision and matter a joined row holds."""
+def _record(row: sqlite3.Row | None = None) -> DraftRecord:
+    """Returns the draft, decision and matter a joined row holds.
+
+    Args:
+        row: A row of the draft query, joined to its approval and new
+            matter. Required.
+
+    Returns:
+        The draft record, with its decision and matter when there are
+        any.
+    """
+    # log.debug("Takes the row, which the caller must give")
+    row = required(row=row)
     # log.debug("Reads the decision, if one was made")
     approval = (
         Approval(

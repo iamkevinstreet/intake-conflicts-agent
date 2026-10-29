@@ -1,12 +1,13 @@
 ########################################################################
 #                        backend/pyproject.toml                        #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Packages the intake service and sets ruff, mypy  #
-#                     and pytest to the code standard.                 #
-########################################################################
+# Author:            Kevin Street
+# Created on:        2026-10-29
+# Last modified on:  2026-10-29
+#
+# Packages the intake service and sets ruff, mypy and pytest to the code
+# standard.
+
 [project]
 name = "intake-conflicts-agent"
 version = "0.1.0"
@@ -16,11 +17,12 @@ requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
 dependencies = [
-  "kds-settings>=0.3.0,<0.4",
-  "kds-logs>=0.3.0,<0.4",
-  "kds-llm>=0.3.0,<0.4",
-  "kds-evals>=0.3.0,<0.4",
-  "kds-synthetic>=0.3.0,<0.4",
+  "kds-args>=0.4.0,<0.5",
+  "kds-settings>=0.4.0,<0.5",
+  "kds-logs>=0.4.0,<0.5",
+  "kds-llm>=0.4.0,<0.5",
+  "kds-evals>=0.4.0,<0.5",
+  "kds-synthetic>=0.4.0,<0.5",
   "fastapi>=0.115",
   "uvicorn>=0.32",
   "rapidfuzz>=3.9",
@@ -34,20 +36,21 @@ dev = [
   "pip-audit>=2.7",
   "pytest>=8.3",
   "ruff==0.17.3",
-  "kds-standards>=0.3.0,<0.4",
-  "kds-diagrams>=0.3.0,<0.4",
+  "kds-standards>=0.4.0,<0.5",
+  "kds-diagrams>=0.4.0,<0.5",
 ]
 
 # Our own packages come from the utils repository at one reviewed commit; none
 # of them is on PyPI, so a same-named public package can never be installed.
 [tool.uv.sources]
-kds-settings = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "settings", rev = "1b67de07d6de8006f4d6f0ee7ea5668277e411f7" }
-kds-logs = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "logs", rev = "1b67de07d6de8006f4d6f0ee7ea5668277e411f7" }
-kds-llm = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "llm", rev = "1b67de07d6de8006f4d6f0ee7ea5668277e411f7" }
-kds-evals = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "evals", rev = "1b67de07d6de8006f4d6f0ee7ea5668277e411f7" }
-kds-synthetic = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "synthetic", rev = "1b67de07d6de8006f4d6f0ee7ea5668277e411f7" }
-kds-standards = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "standards", rev = "1b67de07d6de8006f4d6f0ee7ea5668277e411f7" }
-kds-diagrams = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "diagrams", rev = "1b67de07d6de8006f4d6f0ee7ea5668277e411f7" }
+kds-args = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "args", rev = "62a38c5a3ecf667e3e227b18412abd77759c38d5" }
+kds-settings = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "settings", rev = "62a38c5a3ecf667e3e227b18412abd77759c38d5" }
+kds-logs = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "logs", rev = "62a38c5a3ecf667e3e227b18412abd77759c38d5" }
+kds-llm = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "llm", rev = "62a38c5a3ecf667e3e227b18412abd77759c38d5" }
+kds-evals = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "evals", rev = "62a38c5a3ecf667e3e227b18412abd77759c38d5" }
+kds-synthetic = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "synthetic", rev = "62a38c5a3ecf667e3e227b18412abd77759c38d5" }
+kds-standards = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "standards", rev = "62a38c5a3ecf667e3e227b18412abd77759c38d5" }
+kds-diagrams = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "diagrams", rev = "62a38c5a3ecf667e3e227b18412abd77759c38d5" }
 
 [build-system]
 requires = ["setuptools>=69", "wheel"]
@@ -65,7 +68,10 @@ target-version = "py312"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
-select = ["E", "W", "F", "I", "N", "UP", "B", "BLE", "S", "C90", "PL", "RUF", "G", "D"]
+select = ["E", "W", "F", "I", "N", "UP", "B", "BLE", "S", "C90", "PL", "RUF", "G", "D", "ANN"]
+# A module's doc block opens with its fields (Author and the dates), not a summary, so the
+# summary-first docstring rules do not fit it; kds-standards checks every function's doc block.
+ignore = ["D205", "D212", "D415", "ANN401"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -82,7 +88,7 @@ known-first-party = ["intake_agent"]
 
 [tool.ruff.lint.per-file-ignores]
 # Tests assert, repeat expected values inline, and hold made-up tokens.
-"tests/**" = ["S101", "S105", "S106", "PLR2004", "D"]
+"tests/**" = ["S101", "S105", "S106", "PLR2004"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

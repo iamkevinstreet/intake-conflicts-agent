@@ -1,25 +1,52 @@
 // ########################################################################
 // #               frontend/src/components/IdentityBar.tsx                #
 // ########################################################################
-// #  Author:            Kevin Street                                     #
-// #  Created on:        2026-10-29                                       #
-// #  Last modified on:  2026-10-29                                       #
-// #  Purpose:           Who you are acting as: a made-up person in dev   #
-// #                     mode, or a note in Entra ID mode.                #
-// ########################################################################
-/** Who you are acting as: a made-up person in dev mode, or a note for Entra ID. */
+/**
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Shows who you are acting as: a made-up person in dev mode, or a note
+ * in Entra ID mode.
+ */
 
-import { PERSONAS } from '../config';
+// ########################################################################
+// #                               Imports                                #
+// ########################################################################
+// Local
+import { required } from '../lib/required';
+import { PERSONAS } from '../personas';
 import type { Health, Persona } from '../types';
 
+// ########################################################################
+// #                           Identity picker                            #
+// ########################################################################
 interface Props {
-  health: Health | null;
-  persona: Persona;
-  onChange: (persona: Persona) => void;
+  health?: Health | null;
+  persona?: Persona | null;
+  onChange?: ((persona: Persona) => void) | null;
 }
 
 // log.debug('Defines the identity picker')
-export function IdentityBar({ health, persona, onChange }: Props) {
+/**
+ * Shows who you are acting as, and lets a developer switch person.
+ *
+ * @param props - The picker's props.
+ * @param props.health - The service's health report; null until it
+ *   arrives.
+ * @param props.persona - The made-up person being acted as. Required.
+ * @param props.onChange - Switches to another person. Required.
+ * @returns The picker, or a note in Entra ID mode.
+ */
+export function IdentityBar({
+  health = null,
+  persona = null,
+  onChange = null,
+}: Props = {}): React.JSX.Element {
+  // log.debug('Takes the person being acted as, which the caller must give')
+  persona = required({ persona });
+  // log.debug('Takes the change handler, which the caller must give')
+  onChange = required({ onChange });
   // log.debug('Explains Entra ID mode, which this web app does not sign in to yet')
   if (health?.auth_mode === 'entra') {
     // log.debug('Returns the note')

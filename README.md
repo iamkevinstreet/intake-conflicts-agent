@@ -34,8 +34,8 @@ make run    # the web app on http://localhost:5173, the API on http://127.0.0.1:
 ```
 
 Run an example as Avery Stone, a requester, then switch to Jordan Reyes, an approver, to decide and
-open the matter. For a real model, copy `.env.example` to `.env` and set `LLM_PROVIDER=anthropic`
-and `ANTHROPIC_API_KEY` there.
+open the matter. For a real model, copy `config/.env.example` to `config/.env` and set
+`LLM_PROVIDER=anthropic` and `ANTHROPIC_API_KEY` there.
 
 ## Architecture at a glance
 
@@ -154,14 +154,16 @@ are most likely to change:
 
 | Setting | Default | Lives in |
 | --- | --- | --- |
-| `[llm] provider`, `[llm] model` | `fake`, `claude-sonnet-5-5` | `config/settings.toml` |
-| `[match] likely`, `[match] possible` | `92`, `80` | `config/settings.toml` |
-| `[agent] max_steps`, `[agent] run_budget_usd` | `10`, `0.5` | `config/settings.toml` |
-| `[auth] mode`, `[entra] tenant_id`, `[entra] audience` | `dev`, empty, empty | `config/settings.toml` |
-| `ANTHROPIC_API_KEY` | unset | `.env` only |
+| `[llm] provider`, `[llm] model` | `fake`, `claude-sonnet-5-5` | `config/config.toml` |
+| `[match] likely`, `[match] possible` | `92`, `80` | `config/config.toml` |
+| `[agent] max_steps`, `[agent] run_budget_usd` | `10`, `0.5` | `config/config.toml` |
+| `[auth] mode`, `[entra] tenant_id`, `[entra] audience` | `dev`, empty, empty | `config/config.toml` |
+| `ANTHROPIC_API_KEY` | unset | `config/.env` only |
 
 Any setting can be overridden by an environment variable named for its section and key:
-`MATCH_LIKELY=90`.
+`MATCH_LIKELY=90`. The same file also holds the values the service and the web app share, such as
+the API's path and the match thresholds; the web app reads the keys it needs from it when it is
+built, and never anything from `config/.env`.
 
 ## Operating it
 
@@ -187,14 +189,14 @@ Any setting can be overridden by an environment variable named for its section a
 ```sh
 make check   # ruff, mypy (strict), kds-standards, ESLint, Stylelint, Prettier, tsc
 make test    # 153 backend and 8 web app tests
-make eval    # the offline evaluation, whatever .env says; it fails if a matter ever opens
+make eval    # the offline evaluation, whatever config/.env says; it fails if a matter ever opens
 ```
 
 Tests never call a model or the network: scripted turns and the offline stand-in take its place.
-They write only to temporary folders, run from an empty folder so no `.env` leaks in, sign Entra ID
-tokens with keys made in the test, and never sleep: retries take an injected wait. CI runs the
-checks, the tests and the offline evaluation on every push to `main` and every pull request, with
-the dependency audits, CodeQL and a secrets scan of the whole history. The live evaluation is
+They write only to temporary folders, run from an empty folder so no `config/.env` leaks in, sign
+Entra ID tokens with keys made in the test, and never sleep: retries take an injected wait. CI runs
+the checks, the tests and the offline evaluation on every push to `main` and every pull request,
+with the dependency audits, CodeQL and a secrets scan of the whole history. The live evaluation is
 started by hand.
 
 ## Security
@@ -214,9 +216,9 @@ intake-conflicts-agent/
 │   ├── src/intake_agent/  config.py, core/ (rules, tools, agent), api/ (FastAPI), evals/
 │   └── tests/             153 tests, offline
 ├── frontend/              the web app (React, TypeScript, Vite)
-│   ├── src/               pages/, components/, styles/, the API client
+│   ├── src/               pages/, components/, lib/, styles/, the API client, config.ts
 │   └── tests/             8 tests
-├── config/                settings.toml: every setting at its default
+├── config/                config.toml: every setting and shared value; .env.example: secret names
 ├── data/                  samples/ (the planted firm records), evals/ (scenarios, results)
 ├── docs/                  diagrams.toml and the two SVGs it draws
 └── .github/               CI, CodeQL, the live evaluation, Dependabot

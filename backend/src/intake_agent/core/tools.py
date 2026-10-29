@@ -1,49 +1,51 @@
 ########################################################################
 #                backend/src/intake_agent/core/tools.py                #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           The five tools for one run: read-only searches,  #
-#                     one checked draft, and a gated open.             #
-########################################################################
-"""The agent's five tools, and the rules that hold whatever it asks.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
+
+Holds the five tools for one run: read-only searches, one checked draft,
+and a gated open.
 
 - Both searches only read, through `Directory`, and retry a timed-out
-  read a bounded number of times before reporting failure.
+  read a bounded number of times before reporting failure
+  (core/searches.py).
 - draft_matter writes one draft per run, only after every party on it
   was searched, and computes the findings itself from those searches:
   the agent cannot leave a match out or change its severity.
 - request_approval sends only this run's own draft.
-- open_matter goes through the same gate as the approver's button,
-  with the requester's role only, so it is always refused.
+- open_matter goes through the same gate as the approver's button, with
+  the requester's role only, so it is always refused.
 
 Every call is validated, timed and written to the audit log, and none
 raises: refusals and failures go back to the model as JSON, so it can
 read why and stop or correct itself.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import hashlib
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Final
 
+# Third-party
+from kds.args import required
 from kds.logs import get_logger
 from pydantic import ValidationError
 
-from intake_agent.config import AppSettings
+# Local
+from intake_agent.config import SETTINGS, AppSettings
 from intake_agent.core import prompt
 from intake_agent.core.audit import RunLog
-from intake_agent.core.conflicts import (
-    findings,
-    search_adverse,
-    search_clients,
-    stricter,
-    verdict,
-)
+from intake_agent.core.conflicts import stricter, verdict
 from intake_agent.core.drafts import DraftBook, DraftError
 from intake_agent.core.firm import Directory
 from intake_agent.core.models import (
@@ -51,55 +53,40 @@ from intake_agent.core.models import (
     Draft,
     DraftArgs,
     Finding,
-    Match,
     OpenArgs,
-    SearchArgs,
     SubmitArgs,
+    ToolReply,
 )
 from intake_agent.core.names import normalize
-from intake_agent.core.store import StoreTimeoutError, new_id, utc_now
+from intake_agent.core.searches import SearchResult, SearchTools
+from intake_agent.core.store import new_id, utc_now
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
-# log.debug("Sets the milliseconds in a second")
-MS = 1000
+# log.debug("Takes the milliseconds in a second, from the config")
+MS: Final = SETTINGS.units_ms_per_second
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Names the error key every refusal carries")
 ERROR = prompt.ERROR_KEY
 # log.debug("Names the key that tells the model what to do next")
-NEXT = "next"
+NEXT = prompt.NEXT_KEY
 # log.debug("Names the key that carries a draft id")
 DRAFT_ID_KEY = prompt.DRAFT_ID_KEY
 # log.debug("Names the audit code for a refused call")
 REFUSED = "refused"
 
 
-# log.debug("Defines what a tool call returns")
-@dataclass(frozen=True)
-class ToolReply:
-    """If the call worked, what the model is told, the audit code."""
-
-    # log.debug("Holds whether the call did what was asked")
-    ok: bool
-    # log.debug("Holds the JSON the model reads")
-    payload: dict[str, Any]
-    # log.debug("Holds a short code for the audit when it did not")
-    code: str = ""
-
-
-# log.debug("Defines what one search left behind")
-@dataclass(frozen=True)
-class SearchResult:
-    """Whether a search worked, and what it found."""
-
-    # log.debug("Holds whether the read succeeded")
-    ok: bool
-    # log.debug("Holds the matches")
-    matches: tuple[Match, ...] = ()
-
-
+########################################################################
+#                             Run toolbox                              #
+########################################################################
 # log.debug("Defines the toolbox one run uses")
 @dataclass
-class Toolbox:
+class Toolbox(SearchTools):
     """The five tools for one run, and what the run did with them."""
 
     # log.debug("Holds the run's id")
@@ -134,7 +121,13 @@ class Toolbox:
     # log.debug("Defines the agent's identity: the requester, with no approver role")
     @property
     def agent(self) -> Actor:
-        """Return the requester's identity, requester role only."""
+        """Returns the requester's identity, requester role only.
+
+        Returns:
+            The requester's id and name with the requester role alone,
+            so the gate refuses the agent even when its user is also
+            an approver.
+        """
         # log.debug("Returns it, so a user with both roles still cannot open")
         return Actor(
             user_id=self.requester.user_id,
@@ -142,16 +135,32 @@ class Toolbox:
             roles=frozenset({"requester"}),
         )
 
-    # log.debug("Defines whether any search failed")
-    @property
-    def search_failed(self) -> bool:
-        """Return True if any search's last attempt failed."""
-        # log.debug("Checks every search")
-        return any(not result.ok for result in self.searched.values())
-
     # log.debug("Defines one tool call: validate, run, audit, reply")
-    def call(self, name: str, arguments: dict[str, Any], *, step: int) -> ToolReply:
-        """Run one tool call and record it; never raises."""
+    def call(
+        self,
+        name: str | None = None,
+        arguments: dict[str, Any] | None = None,
+        *,
+        step: int | None = None,
+    ) -> ToolReply:
+        """Runs one tool call and records it; never raises.
+
+        Args:
+            name: The tool the model asked for. Required.
+            arguments: The arguments the model gave, not yet
+                validated. Required.
+            step: The model call that asked for it, from 1. Required.
+
+        Returns:
+            What the tool did, which the model reads, with the audit
+            code when it did not work.
+        """
+        # log.debug("Takes the tool's name, which the caller must give")
+        name = required(name=name)
+        # log.debug("Takes the arguments, which the caller must give")
+        arguments = required(arguments=arguments)
+        # log.debug("Takes the step, which the caller must give")
+        step = required(step=step)
         # log.debug("Numbers the call")
         self.calls += 1
         # log.debug("Starts the clock")
@@ -174,8 +183,25 @@ class Toolbox:
         return reply
 
     # log.debug("Defines the dispatch to the named tool")
-    def _dispatch(self, name: str, arguments: dict[str, Any]) -> ToolReply:
-        """Return the tool's reply, or why it was refused."""
+    def _dispatch(
+        self, name: str | None = None, arguments: dict[str, Any] | None = None
+    ) -> ToolReply:
+        """Returns the tool's reply, or why it was refused.
+
+        Args:
+            name: The tool the model asked for. Required.
+            arguments: The arguments the model gave, not yet
+                validated. Required.
+
+        Returns:
+            The tool's reply, or a refusal for an unknown tool, for
+            invalid arguments, or for an action the draft book
+            refused.
+        """
+        # log.debug("Takes the tool's name, which the caller must give")
+        name = required(name=name)
+        # log.debug("Takes the arguments, which the caller must give")
+        arguments = required(arguments=arguments)
         # log.debug("Maps each tool name to its handler")
         handlers: dict[str, Callable[[dict[str, Any]], ToolReply]] = {
             prompt.SEARCH_CLIENTS: self._search_clients,
@@ -201,74 +227,20 @@ class Toolbox:
             # log.debug("Returns the draft book's refusal")
             return ToolReply(False, {ERROR: str(error)}, REFUSED)
 
-    # log.debug("Defines search_clients")
-    def _search_clients(self, arguments: dict[str, Any]) -> ToolReply:
-        """Search the clients for the given name."""
-        # log.debug("Searches with the client reader and matcher")
-        return self._search(
-            prompt.SEARCH_CLIENTS,
-            SearchArgs.model_validate(arguments).name,
-            lambda name: search_clients(self.directory.clients(), name, **self._limits()),
-        )
-
-    # log.debug("Defines search_adverse_parties")
-    def _search_adverse(self, arguments: dict[str, Any]) -> ToolReply:
-        """Search the adverse parties for the given name."""
-        # log.debug("Searches with the adverse reader and matcher")
-        return self._search(
-            prompt.SEARCH_ADVERSE,
-            SearchArgs.model_validate(arguments).name,
-            lambda name: search_adverse(self.directory.adverse_parties(), name, **self._limits()),
-        )
-
-    # log.debug("Defines the search both tools share: retries, then the record")
-    def _search(self, tool: str, name: str, run: Callable[[str], list[Match]]) -> ToolReply:
-        """Run a search with bounded retries and remember its result."""
-        # log.debug("Tries the read, then each retry")
-        for attempt in range(self.settings.store_retries + 1):
-            # log.debug("Reads and matches")
-            try:
-                # log.debug("Runs the search")
-                matches = run(name)
-            except StoreTimeoutError:
-                # log.debug("Waits before the next try, longer each time: 0.2s, then 0.4s")
-                if attempt < self.settings.store_retries:
-                    # log.debug("Waits out the backoff")
-                    self.sleep(self.settings.store_backoff_s * 2**attempt)
-                # log.debug("Tries again, or gives up after the last try")
-                continue
-            # log.debug("Remembers the search")
-            self.searched[(tool, normalize(name))] = SearchResult(True, tuple(matches))
-            # log.debug("Returns the matches")
-            return ToolReply(
-                True,
-                {"query": name, "matches": [m.model_dump(exclude_none=True) for m in matches]},
-            )
-        # log.debug("Remembers that the search failed")
-        self.searched[(tool, normalize(name))] = SearchResult(False)
-        # log.debug("Tells the model to stop rather than guess")
-        return ToolReply(
-            False,
-            {
-                ERROR: "the conflicts database did not answer, after retries",
-                NEXT: "do not draft; report that the conflicts check could not be completed",
-            },
-            "search_failed",
-        )
-
-    # log.debug("Defines the thresholds every search uses")
-    def _limits(self) -> dict[str, int]:
-        """Return the band thresholds and match limit from settings."""
-        # log.debug("Returns them")
-        return {
-            "likely": self.settings.match_likely,
-            "possible": self.settings.match_possible,
-            "limit": self.settings.match_limit,
-        }
-
     # log.debug("Defines draft_matter")
-    def _draft(self, arguments: dict[str, Any]) -> ToolReply:
-        """Save the run's one draft, with findings from its searches."""
+    def _draft(self, arguments: dict[str, Any] | None = None) -> ToolReply:
+        """Saves the run's one draft, with findings from its searches.
+
+        Args:
+            arguments: The model's arguments for draft_matter, not yet
+                validated. Required.
+
+        Returns:
+            The saved draft's id, how many findings it holds and the
+            checks' verdict, or why it was refused.
+        """
+        # log.debug("Takes the arguments, which the caller must give")
+        arguments = required(arguments=arguments)
         # log.debug("Validates the arguments")
         args = DraftArgs.model_validate(arguments)
         # log.debug("Refuses a second draft")
@@ -316,33 +288,32 @@ class Toolbox:
             },
         )
 
-    # log.debug("Defines the record of one needed search")
-    def _result(self, tool: str, name: str) -> SearchResult:
-        """Return the search's result; one not made counts as fine."""
-        # log.debug("Returns the remembered result, or an empty success")
-        return self.searched.get((tool, normalize(name)), SearchResult(True))
-
-    # log.debug("Defines the check for a search never made")
-    def _unsearched(self, tool: str, name: str) -> bool:
-        """Return True if this search was never made in this run."""
-        # log.debug("Checks the memory")
-        return (tool, normalize(name)) not in self.searched
-
-    # log.debug("Defines the findings for the draft's parties")
-    def _findings(self, client: str, adverse: list[str]) -> list[Finding]:
-        """Return the client's findings, then each adverse party's."""
-        # log.debug("Judges the client against the parties the firm is against")
-        found = findings(client, "client", self._result(prompt.SEARCH_ADVERSE, client).matches)
-        # log.debug("Judges each adverse party against the firm's clients")
-        for party in adverse:
-            # log.debug("Adds that party's findings")
-            found += findings(party, "adverse", self._result(prompt.SEARCH_CLIENTS, party).matches)
-        # log.debug("Returns them")
-        return found
-
     # log.debug("Defines the draft built from the agent's reading and the checks")
-    def _build(self, args: DraftArgs, adverse: list[str], found: list[Finding]) -> Draft:
-        """Return the draft: the agent's reading and the verdict."""
+    def _build(
+        self,
+        args: DraftArgs | None = None,
+        adverse: list[str] | None = None,
+        found: list[Finding] | None = None,
+    ) -> Draft:
+        """Returns the draft: the agent's reading and the verdict.
+
+        Args:
+            args: The agent's validated arguments for draft_matter.
+                Required.
+            adverse: The parties on the other side, without repeats.
+                Required.
+            found: The findings from the run's own searches. Required.
+
+        Returns:
+            The draft, showing the stricter of the agent's verdict and
+            the checks'.
+        """
+        # log.debug("Takes the agent's arguments, which the caller must give")
+        args = required(args=args)
+        # log.debug("Takes the adverse parties, which the caller must give")
+        adverse = required(adverse=adverse)
+        # log.debug("Takes the findings, which the caller must give")
+        found = required(found=found)
         # log.debug("Takes the verdict the findings alone support")
         checks = verdict(found)
         # log.debug("Returns the draft, showing the stricter of the two verdicts")
@@ -368,8 +339,18 @@ class Toolbox:
         )
 
     # log.debug("Defines request_approval")
-    def _submit(self, arguments: dict[str, Any]) -> ToolReply:
-        """Send this run's draft to an approver; the work ends."""
+    def _submit(self, arguments: dict[str, Any] | None = None) -> ToolReply:
+        """Sends this run's draft to an approver; the work ends.
+
+        Args:
+            arguments: The model's arguments for request_approval, not
+                yet validated. Required.
+
+        Returns:
+            The draft's id and its new status, and the word to stop.
+        """
+        # log.debug("Takes the arguments, which the caller must give")
+        arguments = required(arguments=arguments)
         # log.debug("Validates the arguments")
         args = SubmitArgs.model_validate(arguments)
         # log.debug("Moves the draft to pending; the book refuses another run's")
@@ -382,8 +363,20 @@ class Toolbox:
         )
 
     # log.debug("Defines open_matter, which the gate always refuses for the agent")
-    def _open(self, arguments: dict[str, Any]) -> ToolReply:
-        """Try to open a matter as the agent; the gate refuses it."""
+    def _open(self, arguments: dict[str, Any] | None = None) -> ToolReply:
+        """Tries to open a matter as the agent; the gate refuses it.
+
+        Args:
+            arguments: The model's arguments for open_matter, not yet
+                validated. Required.
+
+        Returns:
+            The opened matter's number, which only a broken gate would
+            give: the gate raises for the agent, and the dispatch hands
+            the refusal back.
+        """
+        # log.debug("Takes the arguments, which the caller must give")
+        arguments = required(arguments=arguments)
         # log.debug("Validates the arguments")
         args = OpenArgs.model_validate(arguments)
         # log.debug("Counts the attempt, which the evaluation reports")
@@ -394,15 +387,36 @@ class Toolbox:
         return ToolReply(True, {"matter": matter.number})
 
     # log.debug("Defines a refusal reply")
-    def _refuse(self, message: str) -> ToolReply:
-        """Return a refusal with the message."""
+    def _refuse(self, message: str | None = None) -> ToolReply:
+        """Returns a refusal with the message.
+
+        Args:
+            message: Why the call was refused, for the model to read.
+                Required.
+
+        Returns:
+            A failed reply carrying the message, with the audit code
+            for a refusal.
+        """
+        # log.debug("Takes the message, which the caller must give")
+        message = required(message=message)
         # log.debug("Returns it")
         return ToolReply(False, {ERROR: message}, REFUSED)
 
 
 # log.debug("Defines the parties without repeats")
-def unique(names: list[str]) -> list[str]:
-    """Return the names in order, without later repeats."""
+def unique(names: list[str] | None = None) -> list[str]:
+    """Returns the names in order, without later repeats.
+
+    Args:
+        names: Party names as the agent wrote them. Required.
+
+    Returns:
+        The names in their first order, each plain form kept once, in
+        its first spelling.
+    """
+    # log.debug("Takes the names, which the caller must give")
+    names = required(names=names)
     # log.debug("Starts the plain forms seen")
     seen: set[str] = set()
     # log.debug("Starts the result")

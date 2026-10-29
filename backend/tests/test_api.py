@@ -1,30 +1,44 @@
 ########################################################################
 #                      backend/tests/test_api.py                       #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests the HTTP service: roles, the gate's        #
-#                     routes, scoping, limits, hosts and headers.      #
-########################################################################
-"""Tests for the HTTP service: roles, gate routes, limits, headers."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Tests the HTTP service: roles, the gate's routes, what each caller may
+see, the limits, the hosts and the headers.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 from collections.abc import Iterator
 from typing import Any
 
+# Third-party
 import pytest
 from fastapi.testclient import TestClient
+from kds.args import required
 from kds.llm import ModelAdapter
 from kds.logs import get_logger
 
+# Local
 from intake_agent.api.app import create_app
 from intake_agent.config import AppSettings
 from support import CONFLICT_EMAIL, good_turns, scripted, submit
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the headers of the requester")
 AVERY = {"X-Dev-User": "Avery Stone", "X-Dev-Role": "requester"}
 # log.debug("Sets the headers of a second requester")
@@ -35,9 +49,26 @@ JORDAN = {"X-Dev-User": "Jordan Reyes", "X-Dev-Role": "approver"}
 REASON = {"decision": "approved", "note": "Waiver signed by both clients, on file."}
 
 
+########################################################################
+#                              HTTP tests                              #
+########################################################################
 # log.debug("Defines a client around an app with a scripted model")
-def _client(settings: AppSettings, adapter: ModelAdapter) -> Iterator[TestClient]:
-    """Yield a test client addressed to this machine, started up."""
+def _client(
+    settings: AppSettings | None = None, adapter: ModelAdapter | None = None
+) -> Iterator[TestClient]:
+    """Yields a test client addressed to this machine, started up.
+
+    Args:
+        settings: The settings to build the app with. Required.
+        adapter: The scripted model adapter the app uses. Required.
+
+    Yields:
+        The client, while the app is running.
+    """
+    # log.debug("Takes the settings, which the caller must give")
+    settings = required(settings=settings)
+    # log.debug("Takes the adapter, which the caller must give")
+    adapter = required(adapter=adapter)
     # log.debug("Starts the app and yields the client")
     with TestClient(create_app(settings, adapter=adapter), base_url="http://127.0.0.1") as client:
         # log.debug("Yields it")
@@ -47,14 +78,30 @@ def _client(settings: AppSettings, adapter: ModelAdapter) -> Iterator[TestClient
 # log.debug("Defines the client most tests use: one good run is scripted")
 @pytest.fixture
 def client(settings: AppSettings) -> Iterator[TestClient]:
-    """A client whose model searches, drafts and submits once."""
+    """A client whose model searches, drafts and submits once.
+
+    Args:
+        settings: The test's settings, from conftest.
+
+    Yields:
+        The client, while the app is running.
+    """
     # log.debug("Yields it")
     yield from _client(settings, scripted(settings, *good_turns(), responder=submit))
 
 
 # log.debug("Defines a submitted intake")
-def _intake(client: TestClient) -> dict[str, Any]:
-    """Run the scripted intake as Avery and return the response body."""
+def _intake(client: TestClient | None = None) -> dict[str, Any]:
+    """Runs the scripted intake as Avery and returns the response body.
+
+    Args:
+        client: The test client to post the intake with. Required.
+
+    Returns:
+        The intake's response: the run, the draft and the last words.
+    """
+    # log.debug("Takes the client, which the caller must give")
+    client = required(client=client)
     # log.debug("Posts the email")
     response = client.post("/api/v1/intake", json={"email": CONFLICT_EMAIL}, headers=AVERY)
     # log.debug("Checks it was created")
@@ -65,7 +112,11 @@ def _intake(client: TestClient) -> dict[str, Any]:
 
 # log.debug("Defines the health test")
 def test_health(client: TestClient) -> None:
-    """Open to monitors; says the mode and the firm's size."""
+    """Opens to monitors; says the mode and the firm's size.
+
+    Args:
+        client: A test client for the app, started up.
+    """
     # log.debug("Reads the health report")
     body = client.get("/api/v1/health").json()
     # log.debug("Checks the mode and the counts")
@@ -74,7 +125,11 @@ def test_health(client: TestClient) -> None:
 
 # log.debug("Defines the sign-in test")
 def test_routes_need_a_signed_in_person(client: TestClient) -> None:
-    """Without the dev headers, 401 with a sign-in challenge."""
+    """Without the dev headers, 401 with a sign-in challenge.
+
+    Args:
+        client: A test client for the app, started up.
+    """
     # log.debug("Asks for the runs anonymously")
     response = client.get("/api/v1/runs")
     # log.debug("Checks the refusal and the challenge")
@@ -83,7 +138,11 @@ def test_routes_need_a_signed_in_person(client: TestClient) -> None:
 
 # log.debug("Defines the role test for intake")
 def test_only_requesters_run_intakes(client: TestClient) -> None:
-    """An approver who is not a requester gets 403."""
+    """An approver who is not a requester gets 403.
+
+    Args:
+        client: A test client for the app, started up.
+    """
     # log.debug("Posts as the approver")
     response = client.post("/api/v1/intake", json={"email": CONFLICT_EMAIL}, headers=JORDAN)
     # log.debug("Checks the refusal")
@@ -92,7 +151,11 @@ def test_only_requesters_run_intakes(client: TestClient) -> None:
 
 # log.debug("Defines the whole flow through the API")
 def test_intake_review_approve_open(client: TestClient) -> None:
-    """Submit, open early (409), approve with a reason, open (201)."""
+    """Submit, open early (409), approve with a reason, open (201).
+
+    Args:
+        client: A test client for the app, started up.
+    """
     # log.debug("Runs the intake")
     draft_id = _intake(client)["draft"]["draft"]["id"]
     # log.debug("Tries to open before any approval")
@@ -117,7 +180,11 @@ def test_intake_review_approve_open(client: TestClient) -> None:
 
 # log.debug("Defines the decision refusals")
 def test_decision_refusals(client: TestClient) -> None:
-    """A requester cannot decide (403); a flag needs a reason (422)."""
+    """A requester cannot decide (403); a flag needs a reason (422).
+
+    Args:
+        client: A test client for the app, started up.
+    """
     # log.debug("Runs the intake")
     draft_id = _intake(client)["draft"]["draft"]["id"]
     # log.debug("Tries to decide as the requester")
@@ -132,7 +199,11 @@ def test_decision_refusals(client: TestClient) -> None:
 
 # log.debug("Defines the scoping test")
 def test_requesters_see_only_their_own(client: TestClient) -> None:
-    """Another requester gets 404s and empty lists."""
+    """Another requester gets 404s and empty lists.
+
+    Args:
+        client: A test client for the app, started up.
+    """
     # log.debug("Runs the intake as Avery")
     body = _intake(client)
     # log.debug("Reads Avery's draft as Casey")
@@ -147,7 +218,11 @@ def test_requesters_see_only_their_own(client: TestClient) -> None:
 
 # log.debug("Defines the audit-trail test")
 def test_the_run_detail_shows_every_call(client: TestClient) -> None:
-    """Four tool calls and three model calls, in order."""
+    """Four tool calls and three model calls, in order.
+
+    Args:
+        client: A test client for the app, started up.
+    """
     # log.debug("Runs the intake")
     run_id = _intake(client)["run"]["id"]
     # log.debug("Reads the run's detail")
@@ -162,7 +237,12 @@ def test_the_run_detail_shows_every_call(client: TestClient) -> None:
 # log.debug("Defines the path-safety test")
 @pytest.mark.parametrize("path", ["/api/v1/drafts/D-..%2F..%2Fetc", "/api/v1/runs/R-1"])
 def test_malformed_ids_are_refused(client: TestClient, path: str) -> None:
-    """Ids that do not match their pattern never reach the database."""
+    """Ids that do not match their pattern never reach the database.
+
+    Args:
+        client: A test client for the app, started up.
+        path: A path whose id does not match its pattern.
+    """
     # log.debug("Asks for it")
     response = client.get(path, headers=JORDAN)
     # log.debug("Checks it was refused as invalid")
@@ -171,7 +251,11 @@ def test_malformed_ids_are_refused(client: TestClient, path: str) -> None:
 
 # log.debug("Defines the rate-limit test")
 def test_intakes_are_rate_limited(settings: AppSettings) -> None:
-    """Past the per-minute limit, 429 with a retry hint."""
+    """Past the per-minute limit, 429 with a retry hint.
+
+    Args:
+        settings: The test's settings, from conftest.
+    """
     # log.debug("Allows one intake a minute")
     limited = settings.model_copy(update={"api_intakes_per_minute": 1})
     # log.debug("Starts a client with a model that just talks")
@@ -186,7 +270,11 @@ def test_intakes_are_rate_limited(settings: AppSettings) -> None:
 
 # log.debug("Defines the size tests")
 def test_email_size_limits(client: TestClient) -> None:
-    """Too short: 422. Over the body limit: 413, before it is read."""
+    """Too short: 422. Over the body limit: 413, before it is read.
+
+    Args:
+        client: A test client for the app, started up.
+    """
     # log.debug("Posts a short email")
     short = client.post("/api/v1/intake", json={"email": "hi"}, headers=AVERY)
     # log.debug("Posts a huge body")
@@ -197,7 +285,11 @@ def test_email_size_limits(client: TestClient) -> None:
 
 # log.debug("Defines the header test")
 def test_security_headers_and_request_id(client: TestClient) -> None:
-    """Every response has the headers and echoes a good request id."""
+    """Every response has the headers and echoes a good request id.
+
+    Args:
+        client: A test client for the app, started up.
+    """
     # log.debug("Asks with a request id")
     response = client.get("/api/v1/health", headers={"X-Request-ID": "abc-123"})
     # log.debug("Checks the headers")
@@ -210,7 +302,11 @@ def test_security_headers_and_request_id(client: TestClient) -> None:
 
 # log.debug("Defines the host test")
 def test_requests_for_another_host_are_refused(client: TestClient) -> None:
-    """A rebinding page gets 400, still with the headers."""
+    """A rebinding page gets 400, still with the headers.
+
+    Args:
+        client: A test client for the app, started up.
+    """
     # log.debug("Asks with a foreign Host header")
     response = client.get("/api/v1/health", headers={"Host": "attacker.example"})
     # log.debug("Checks the refusal still carries the request id and headers")
@@ -223,7 +319,11 @@ def test_requests_for_another_host_are_refused(client: TestClient) -> None:
 
 # log.debug("Defines the test for a body that hides its length")
 def test_a_body_without_a_declared_length_is_refused(client: TestClient) -> None:
-    """A chunked body cannot be measured unread, so it gets 411."""
+    """A chunked body cannot be measured unread, so it gets 411.
+
+    Args:
+        client: A test client for the app, started up.
+    """
     # log.debug("Sends the email as a stream, which has no Content-Length")
     response = client.post(
         "/api/v1/intake",
@@ -238,11 +338,23 @@ def test_a_body_without_a_declared_length_is_refused(client: TestClient) -> None
 def test_an_unplanned_error_is_a_plain_500_with_headers(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """The reply says nothing about the error and keeps the headers."""
+    """The reply says nothing about the error and keeps the headers.
+
+    Args:
+        client: A test client for the app, started up.
+        monkeypatch: pytest's helper for patching the environment and
+            objects.
+    """
 
     # log.debug("Defines a failing read of the runs")
     def broken(**_: Any) -> Any:
-        """Fail.
+        """Fails, as an error nobody planned for would.
+
+        Args:
+            **_: The read's arguments, which it ignores.
+
+        Returns:
+            Nothing: every call raises.
 
         Raises:
             RuntimeError: Always.
@@ -266,7 +378,12 @@ def test_an_unplanned_error_is_a_plain_500_with_headers(
 
 # log.debug("Defines the note limit test")
 def test_a_note_over_the_limit_is_refused(client: TestClient, settings: AppSettings) -> None:
-    """The setting, not a hard-coded number, limits a decision note."""
+    """The setting, not a hard-coded number, limits a decision note.
+
+    Args:
+        client: A test client for the app, started up.
+        settings: The test's settings, from conftest.
+    """
     # log.debug("Runs the intake")
     draft_id = _intake(client)["draft"]["draft"]["id"]
     # log.debug("Approves with a note one character over the setting")
@@ -284,7 +401,11 @@ def test_a_note_over_the_limit_is_refused(client: TestClient, settings: AppSetti
 
 # log.debug("Defines the examples test")
 def test_examples_come_from_the_scenarios(client: TestClient) -> None:
-    """The four examples settings name, with their emails."""
+    """The four examples settings name, with their emails.
+
+    Args:
+        client: A test client for the app, started up.
+    """
     # log.debug("Reads the examples")
     examples = client.get("/api/v1/examples", headers=AVERY).json()
     # log.debug("Checks their ids")

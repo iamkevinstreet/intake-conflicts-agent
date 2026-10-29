@@ -2,18 +2,22 @@
 ########################################################################
 #                    frontend/src/styles/intake.css                    #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           The requester's page: form, outcome, verdicts,   #
-#                     meter, findings, draft and steps.                #
+*/
+/*
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Styles the requester's page: the form, the outcome, the verdicts, the
+ * match meter, the findings, the draft and the steps. The form stays in
+ * view on wide screens while the result scrolls beside it.
+ */
+
+/*
+########################################################################
+#                            Requester page                            #
 ########################################################################
 */
-
-/* The requester's page: the form, the outcome, the verdicts, the findings,
-   the draft and the steps. The form stays in view on wide screens while
-   the result scrolls beside it. */
-
 .ia-intake__grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

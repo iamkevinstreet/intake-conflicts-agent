@@ -1,18 +1,20 @@
 ########################################################################
 #                               Makefile                               #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           One command for each routine task: install, run, #
-#                     seed, check, test, eval, audit, build.           #
-########################################################################
+# Author:            Kevin Street
+# Created on:        2026-10-14
+# Last modified on:  2026-10-29
+#
+# Gives one command for each routine task: install, run, seed, check,
+# test, eval, audit, build.
+#
 # CI runs the same targets. Run them from the repository root, where
-# config/settings.toml and data/ are found.
+# config/config.toml and data/ are found.
+
 UV := uv run --project backend --no-sync
 NPM := npm --prefix frontend
 # Our own packages install from git, not PyPI, so the PyPI audit leaves them out.
-KDS := kds-settings kds-logs kds-llm kds-evals kds-synthetic kds-standards kds-diagrams
+KDS := kds-args kds-settings kds-logs kds-llm kds-evals kds-synthetic kds-standards kds-diagrams
 AUDIT_FILE := data/generated/requirements-audit.txt
 
 .PHONY: install run api web check check-backend check-frontend test test-backend test-frontend \
@@ -28,7 +30,7 @@ run:  ## The API on :8000 and the web app on :5173 together; Ctrl-C stops both
 api:  ## The API alone; it builds the made-up firm database on first start
 	$(UV) python -m intake_agent.api
 
-web:  ## The web app alone; it proxies /api to :8000
+web:  ## The web app alone; it proxies the API's path to the service, as config/config.toml sets
 	$(NPM) run dev
 
 seed:  ## Rebuild the made-up firm database from data/samples/firm.json and the seed
@@ -58,7 +60,7 @@ test-backend:
 test-frontend:
 	$(NPM) test
 
-eval:  ## The offline evaluation: the stand-in plays the agent, whatever .env says; no key, no network
+eval:  ## The offline evaluation: the stand-in plays the agent, whatever config/.env says; no key, no network
 	LLM_PROVIDER=fake $(UV) python -m intake_agent.evals.run --name offline
 
 audit: audit-backend audit-frontend  ## Known vulnerabilities in every locked dependency

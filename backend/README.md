@@ -15,17 +15,21 @@ make eval             # the 20 scenarios with the offline stand-in
 
 | Path | What it does |
 | --- | --- |
-| `src/intake_agent/config.py` | Every setting, typed and validated, read from `config/settings.toml` and `.env` |
+| `src/intake_agent/config.py` | Every setting, typed and validated, read from `config/config.toml` and `config/.env`; `SETTINGS`, loaded once, for the values modules share |
 | `core/names.py` | Plain forms of names and how alike two are |
 | `core/conflicts.py` | The searches and the conflicts rules: severities and verdicts |
 | `core/firm.py` | `Directory`: the only, read-only view of the firm the searches get |
 | `core/store.py` | The SQLite schema, migrations and the triggers behind the gate and the audit |
-| `core/seed.py` | Builds the made-up firm database around `data/samples/firm.json` |
-| `core/models.py` | Tool arguments, matches, findings, drafts and decisions |
+| `core/planted.py` | Reads `data/samples/firm.json`: the planted records and reserved names |
+| `core/plan.py` | Plans every row of the made-up firm around the planted records, from the seed |
+| `core/seed.py` | Writes the plan into an empty database, once |
+| `core/models.py` | Tool arguments and replies, matches, findings, drafts and decisions |
 | `core/prompt.py` | The agent's rules and its five tools as the model sees them |
+| `core/searches.py` | The two search tools, their retries, and what each search found |
 | `core/tools.py` | The five tools for one run, with the draft guard and the audit of every call |
 | `core/drafts.py` | Drafts, decisions and opening a matter: the gate |
-| `core/audit.py` | Run, model-call and tool-call records |
+| `core/records.py` | The run, model-call and tool-call records |
+| `core/audit.py` | Writes and reads those records |
 | `core/agent.py` | The loop, within step, tool-call and budget limits |
 | `core/service.py` | One intake end to end; the API and the evaluation both call it |
 | `core/guard.py` | Finds order-giving lines in an email for the approver |
@@ -37,8 +41,14 @@ Core logic never imports the web framework, so every rule is tested without HTTP
 
 ## Conventions
 
-- Every file carries the header box and a logger line above every statement; turn the
-  lines on with `kds-standards trace on backend` and off before committing.
+- Every file opens with a box that holds its path and a doc block with the dates and a
+  description, then its sections: imports, global constants (values from the config), local
+  constants and its logic. A logger line sits above every statement; turn the lines on with
+  `kds-standards trace on backend` and off before committing.
+- Every parameter has a type and a default, `None` where there is no natural one; a function that
+  cannot work without a value takes it with `required()` from kds-args. Every function's doc block
+  lists each argument and what comes back. No function runs past 60 lines below its doc block and no
+  file past 500 lines; `kds-standards check` reports both.
 - Tests run in an empty temporary folder, offline, with fresh settings (`tests/conftest.py`);
   shared helpers are in `tests/support.py`.
 - Our own packages (`kds-*`) install from the utils repository at one commit, pinned in

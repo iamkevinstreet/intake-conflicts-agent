@@ -1,15 +1,13 @@
 ########################################################################
 #               backend/src/intake_agent/api/identity.py               #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Who is calling: Entra ID tokens checked against  #
-#                     the tenant's keys, or dev headers locally.       #
-########################################################################
-"""Who is calling, and which roles they hold.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
-Two modes, set by [auth] mode:
+Works out who is calling: an Entra ID token checked against the tenant's
+keys, or dev headers locally. There are two modes, set by [auth] mode:
 
 - "entra": a Microsoft Entra ID access token in the Authorization
   header. The signature is checked against the tenant's published keys
@@ -17,12 +15,16 @@ Two modes, set by [auth] mode:
   Roles come from the token's `roles` claim, mapped from the app roles
   named in settings. The user is the token's object id (`oid`).
 - "dev": the X-Dev-User and X-Dev-Role headers are trusted as given.
-  Settings refuse this mode on any address but this machine's, so it
-  can only ever serve a developer at their own keyboard.
+  Settings refuse this mode on any address but this machine's, so it can
+  only ever serve a developer at their own keyboard.
 
 A failure is logged with its reason and never with the token.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
@@ -30,15 +32,24 @@ import re
 from collections.abc import Callable
 from typing import Annotated, Any, Protocol
 
+# Third-party
 import jwt
 from fastapi import Depends, Header, HTTPException, Request, status
+from kds.args import missing, required
 from kds.logs import get_logger, log_event
 
+# Local
 from intake_agent.config import AppSettings
 from intake_agent.core.models import Actor, Role
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the scheme a token header must use")
 SCHEME = "Bearer "
 # log.debug("Sets the header that tells a client how to sign in")
@@ -59,13 +70,23 @@ DEV_ROLES: dict[str, Role] = {"requester": "requester", "approver": "approver"}
 DENIED = "auth.denied"
 
 
+########################################################################
+#                               Sign-in                                #
+########################################################################
 # log.debug("Defines where signing keys come from")
 class KeySource(Protocol):
     """Finds the public key a token was signed with."""
 
     # log.debug("Defines the lookup")
-    def key_for(self, token: str) -> Any:
-        """Return the public key for the token's key id."""
+    def key_for(self, token: str | None = None) -> Any:
+        """Returns the public key for the token's key id.
+
+        Args:
+            token: The access token, as sent. Required.
+
+        Returns:
+            The public key the token's signature was made with.
+        """
 
 
 # log.debug("Defines the tenant's published keys, fetched and cached")
@@ -73,16 +94,36 @@ class EntraKeys:
     """The tenant's signing keys, from its JWKS endpoint, cached."""
 
     # log.debug("Defines the constructor")
-    def __init__(self, tenant_id: str, *, cache_s: int) -> None:
-        """Read `tenant_id` keys, cached for `cache_s` seconds."""
+    def __init__(self, tenant_id: str | None = None, *, cache_s: int | None = None) -> None:
+        """Fetches the tenant's keys, cached for `cache_s` seconds.
+
+        Args:
+            tenant_id: The directory (tenant) id whose published keys
+                to fetch. Required.
+            cache_s: How long fetched keys are kept, in seconds.
+                Required.
+        """
+        # log.debug("Takes the tenant id, which the caller must give")
+        tenant_id = required(tenant_id=tenant_id)
+        # log.debug("Takes how long keys are kept, which the caller must give")
+        cache_s = required(cache_s=cache_s)
         # log.debug("Builds the key client for the tenant's endpoint")
         self._client = jwt.PyJWKClient(
             f"{LOGIN}/{tenant_id}/discovery/v2.0/keys", cache_keys=True, lifespan=cache_s
         )
 
     # log.debug("Defines the lookup")
-    def key_for(self, token: str) -> Any:
-        """Return the key the token names, fetching keys if needed."""
+    def key_for(self, token: str | None = None) -> Any:
+        """Returns the key the token names, fetching keys if needed.
+
+        Args:
+            token: The access token, as sent. Required.
+
+        Returns:
+            The public key the token's key id names.
+        """
+        # log.debug("Takes the token, which the caller must give")
+        token = required(token=token)
         # log.debug("Returns the key")
         return self._client.get_signing_key_from_jwt(token).key
 
@@ -92,8 +133,18 @@ class EntraVerifier:
     """Turns an Entra ID access token into an actor, or refuses it."""
 
     # log.debug("Defines the constructor")
-    def __init__(self, settings: AppSettings, keys: KeySource) -> None:
-        """Check tokens against `settings`, with keys from `keys`."""
+    def __init__(self, settings: AppSettings | None = None, keys: KeySource | None = None) -> None:
+        """Checks tokens against `settings`, with keys from `keys`.
+
+        Args:
+            settings: The settings that give the tenant, the audience,
+                the app roles and the clock skew allowed. Required.
+            keys: Where the signing keys come from. Required.
+        """
+        # log.debug("Takes the settings, which the caller must give")
+        settings = required(settings=settings)
+        # log.debug("Takes the keys, which the caller must give")
+        keys = required(keys=keys)
         # log.debug("Keeps the settings")
         self.settings = settings
         # log.debug("Keeps the key source")
@@ -105,13 +156,23 @@ class EntraVerifier:
         }
 
     # log.debug("Defines the check")
-    def actor(self, token: str) -> Actor:
-        """Return who the token says is calling, with their roles.
+    def actor(self, token: str | None = None) -> Actor:
+        """Returns who the token says is calling, with their roles.
+
+        Args:
+            token: The access token, without its Bearer scheme.
+                Required.
+
+        Returns:
+            The caller: their object id, a name to show, and the roles
+            their app roles map to.
 
         Raises:
             HTTPException: 401 for a token that fails any check, 403
                 for a valid token with none of our roles.
         """
+        # log.debug("Takes the token, which the caller must give")
+        token = required(token=token)
         # log.debug("Checks the signature and every required claim")
         try:
             # log.debug("Decodes and verifies the token")
@@ -146,13 +207,25 @@ class EntraVerifier:
 
 
 # log.debug("Defines the dependency every protected route uses")
-def current_actor(
+def current_actor(  # fixed: FastAPI's dependency signature
     request: Request,
     authorization: Annotated[str | None, Header()] = None,
     x_dev_user: Annotated[str | None, Header()] = None,
     x_dev_role: Annotated[str | None, Header()] = None,
 ) -> Actor:
-    """Return the caller, by the configured mode.
+    """Returns the caller, by the configured mode.
+
+    Args:
+        request: The request FastAPI is answering; its app holds the
+            settings and the token check.
+        authorization: The Authorization header, which carries the
+            bearer token in entra mode.
+        x_dev_user: The X-Dev-User header: a name, in dev mode.
+        x_dev_role: The X-Dev-Role header: requester or approver, in
+            dev mode.
+
+    Returns:
+        The caller, with their roles.
 
     Raises:
         HTTPException: 401 when the caller cannot be identified, 403
@@ -175,12 +248,32 @@ def current_actor(
 
 
 # log.debug("Defines the dependency for a route that needs one role")
-def require(role: Role) -> Callable[..., Actor]:
-    """Return a dependency that passes only callers holding `role`."""
+def require(role: Role | None = None) -> Callable[..., Actor]:
+    """Returns a dependency that passes only callers holding `role`.
+
+    Args:
+        role: The role the route needs. Required.
+
+    Returns:
+        A FastAPI dependency that returns the caller when they hold the
+        role.
+    """
+    # log.debug("Stops when the caller left out the role")
+    if role is None:
+        # log.debug("Raises the missing-argument error")
+        raise missing(role=role)
 
     # log.debug("Defines the dependency")
-    def check(actor: Annotated[Actor, Depends(current_actor)]) -> Actor:
-        """Return the caller if they hold the role.
+    def check(  # fixed: FastAPI's dependency signature
+        actor: Annotated[Actor, Depends(current_actor)],
+    ) -> Actor:
+        """Returns the caller if they hold the role.
+
+        Args:
+            actor: The caller, as current_actor identified them.
+
+        Returns:
+            The caller, who holds the role.
 
         Raises:
             HTTPException: 403 without the role.
@@ -197,8 +290,15 @@ def require(role: Role) -> Callable[..., Actor]:
 
 
 # log.debug("Defines the dev sign-in")
-def _dev_actor(user: str | None, role: str | None) -> Actor:
-    """Return the actor the dev headers name.
+def _dev_actor(user: str | None = None, role: str | None = None) -> Actor:
+    """Returns the actor the dev headers name.
+
+    Args:
+        user: The X-Dev-User header; None when it was not sent.
+        role: The X-Dev-Role header; None when it was not sent.
+
+    Returns:
+        The actor the headers name, with an id derived from the name.
 
     Raises:
         HTTPException: 401 when a header is missing or malformed.
@@ -220,8 +320,22 @@ def _dev_actor(user: str | None, role: str | None) -> Actor:
 
 
 # log.debug("Defines a logged refusal")
-def _refuse(code: int, reason: str, detail: str = "") -> HTTPException:
-    """Log the refusal's reason and return the HTTP error to raise."""
+def _refuse(code: int | None = None, reason: str | None = None, detail: str = "") -> HTTPException:
+    """Logs the refusal's reason and returns the HTTP error to raise.
+
+    Args:
+        code: The HTTP status to answer with. Required.
+        reason: Why, for the log; never the token. Required.
+        detail: What the caller is told; empty gives the status's
+            usual words.
+
+    Returns:
+        The error to raise; a 401 carries the sign-in challenge.
+    """
+    # log.debug("Takes the code, which the caller must give")
+    code = required(code=code)
+    # log.debug("Takes the reason, which the caller must give")
+    reason = required(reason=reason)
     # log.debug("Logs the reason, never a token")
     log_event(log, DENIED, logging.WARNING, status=code, reason=reason)
     # log.debug("Returns the error; 401s carry the sign-in challenge")

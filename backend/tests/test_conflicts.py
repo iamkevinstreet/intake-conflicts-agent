@@ -1,19 +1,27 @@
 ########################################################################
 #                   backend/tests/test_conflicts.py                    #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests the conflicts rules: the severity table,   #
-#                     the verdict and both searches.                   #
-########################################################################
-"""Tests for the conflicts rules: severity, verdicts and searches."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Tests the conflicts rules: the severity table, the verdict and both
+searches.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
+# Third-party
 import pytest
+from kds.args import required
 from kds.logs import get_logger
 
+# Local
 from intake_agent.core.conflicts import (
     findings,
     judge,
@@ -25,8 +33,14 @@ from intake_agent.core.conflicts import (
 from intake_agent.core.firm import AdverseRecord, ClientRecord
 from intake_agent.core.models import Match, Side
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets a few clients to search")
 CLIENTS = [
     ClientRecord(1, "ACME Logistics LLC", "current"),
@@ -40,9 +54,28 @@ ADVERSE = [
 ]
 
 
+########################################################################
+#                        Conflicts rules tests                         #
+########################################################################
 # log.debug("Defines a match for the severity table")
-def _match(kind: str, band: str, status: str) -> Match:
-    """Return a match with the given table, band and status."""
+def _match(kind: str | None = None, band: str | None = None, status: str | None = None) -> Match:
+    """Returns a match with the given table, band and status.
+
+    Args:
+        kind: The table the match came from: client or adverse_party.
+            Required.
+        band: How sure the match is. Required.
+        status: The client's or the matter's status. Required.
+
+    Returns:
+        The match, with a fixed id, name, score and matter.
+    """
+    # log.debug("Takes the kind, which the caller must give")
+    kind = required(kind=kind)
+    # log.debug("Takes the band, which the caller must give")
+    band = required(band=band)
+    # log.debug("Takes the status, which the caller must give")
+    status = required(status=status)
     # log.debug("Returns it")
     return Match.model_validate(
         {
@@ -71,7 +104,15 @@ def _match(kind: str, band: str, status: str) -> Match:
     ],
 )
 def test_severity_table(side: Side, kind: str, band: str, status: str, severity: str) -> None:
-    """Each rule in the module's table gives its severity."""
+    """Each rule in the module's table gives its severity.
+
+    Args:
+        side: The searched party's side in the new matter.
+        kind: The table the match came from.
+        band: How sure the match is.
+        status: The client's or the matter's status.
+        severity: The severity the rule gives.
+    """
     # log.debug("Checks the severity")
     assert judge(side, _match(kind, band, status))[0] == severity
 

@@ -2,17 +2,22 @@
 ########################################################################
 #                     frontend/src/styles/base.css                     #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           The frame every page shares: page, bar, footer,  #
-#                     controls, verdict badges, tables, focus.         #
+*/
+/*
+ * Author:            Kevin Street
+ * Created on:        2026-10-29
+ * Last modified on:  2026-10-29
+ *
+ * Styles the frame every page shares: the page, the top bar, the
+ * footer, the controls, the verdict badges, the tables, focus, and the
+ * screen-reader helpers.
+ */
+
+/*
+########################################################################
+#                          Shared page frame                           #
 ########################################################################
 */
-
-/* The frame every page shares: page, top bar, footer, controls, tables,
-   focus, and the screen-reader helpers. */
-
 *,
 *::before,
 *::after {

@@ -41,7 +41,7 @@ see "Unresolved" in the [README](README.md) before running it anywhere shared.
 | An edited audit record | Triggers refuse updates and deletes on runs (once finished), model calls, tool calls, approvals and matters |
 | Personal data in logs | Email text is never logged; `kds.logs` redacts emails, phone numbers and ID-like numbers; tool arguments are redacted before they are stored |
 | Abuse of the model | A per-person limit on intakes, step, tool-call and spending limits per run, a budget per process, and a size limit on every request body (a body that does not declare its length is refused) |
-| A committed secret | gitleaks before every commit and over the whole history in CI; secrets live only in `.env`, and the settings loader refuses one in `config/settings.toml` |
+| A committed secret | gitleaks before every commit and over the whole history in CI; secrets live only in `config/.env`, and the settings loader refuses one in `config/config.toml` |
 | A vulnerable dependency | Lockfiles with hashes, `pip-audit` and `npm audit` in CI, Dependabot every week |
 | A tampered Action or tool | Actions pinned to commit SHAs; the gitleaks download checked against its published SHA-256 |
 | A flaw in the code | CodeQL for Python and TypeScript, ruff's security rules (bandit), least-privilege workflow permissions |

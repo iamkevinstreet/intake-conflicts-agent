@@ -1,59 +1,76 @@
 ########################################################################
 #              backend/src/intake_agent/api/approvals.py               #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Routes for drafts: review, decide and open, with #
-#                     each refusal mapped to its status.               #
-########################################################################
-"""Routes for drafts: review, decide, and open; the gate is behind them.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
+
+Serves the routes for drafts: review, decide and open, with each refusal
+mapped to its status.
 
 - GET /drafts and /drafts/{id}: approvers see every draft; requesters
   see their own
-- POST /drafts/{id}/decision: an approver approves or rejects; not
-  their own draft, and a reason is needed to approve past a flag
+- POST /drafts/{id}/decision: an approver approves or rejects; not their
+  own draft, and a reason is needed to approve past a flag
 - POST /drafts/{id}/open: an approver opens the matter; refused (409)
   until an approval record exists
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Final
 
+# Third-party
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from kds.logs import get_logger
 
+# Local
 from intake_agent.api.identity import current_actor, require
 from intake_agent.api.schemas import DecisionRequest
-from intake_agent.api.state import PREFIX, Services, services
+from intake_agent.api.state import Services, services
+from intake_agent.config import SETTINGS
 from intake_agent.core.drafts import (
     DraftNotFoundError,
     DraftStateError,
     GateError,
     ReasonRequiredError,
 )
-from intake_agent.core.models import (
-    DRAFT_ID,
-    Actor,
-    DraftRecord,
-    DraftStatus,
-    NewMatter,
-    Role,
-)
+from intake_agent.core.models import Actor, DraftRecord, DraftStatus, NewMatter
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = get_logger(__name__)
-# log.debug("Creates the router for drafts")
-router = APIRouter(prefix=f"{PREFIX}/drafts")
-# log.debug("Sets the most drafts one list returns")
-MAX_LIST = 200
-# log.debug("Sets the number of drafts a list returns by default")
-DEFAULT_LIST = 50
-# log.debug("Names the role these actions need")
-APPROVER: Role = "approver"
+# log.debug("Takes the path every route lives under, from the config")
+PREFIX: Final = SETTINGS.api_prefix
+# log.debug("Takes the shape of a draft id, from the config")
+DRAFT_ID: Final = SETTINGS.ids_draft_pattern
+# log.debug("Takes the most drafts one list returns, from the config")
+MAX_LIST: Final = SETTINGS.api_max_list_limit
+# log.debug("Takes the number of drafts a list returns by default, from the config")
+DEFAULT_LIST: Final = SETTINGS.api_list_limit
+# log.debug("Takes the role these actions need, from the config")
+APPROVER: Final = SETTINGS.roles_approver
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the answer for a draft that does not exist or is not the caller's")
 NOT_FOUND = "no such draft"
+
+
+########################################################################
+#                           Approval routes                            #
+########################################################################
+# log.debug("Creates the router for drafts")
+router = APIRouter(prefix=f"{PREFIX}/drafts")
+
+
 # log.debug("Describes a draft id in a path")
 DraftId = Annotated[str, Path(pattern=DRAFT_ID)]
 
@@ -66,7 +83,19 @@ def drafts(
     state: Annotated[DraftStatus | None, Query(alias="status")] = None,
     limit: Annotated[int, Query(ge=1, le=MAX_LIST)] = DEFAULT_LIST,
 ) -> list[DraftRecord]:
-    """Return drafts, newest first: everyone's for an approver."""
+    """Returns drafts, newest first: everyone's for an approver.
+
+    Args:
+        svc: The services the app built at startup.
+        actor: The caller; an approver sees every draft, a requester
+            only their own.
+        state: The status to list, from the status query; None lists
+            every status.
+        limit: The most drafts to return.
+
+    Returns:
+        The drafts the caller may see, newest first.
+    """
     # log.debug("Returns the drafts the caller may see")
     return svc.drafts.find(
         status=state,
@@ -82,7 +111,16 @@ def draft(
     svc: Annotated[Services, Depends(services)],
     actor: Annotated[Actor, Depends(current_actor)],
 ) -> DraftRecord:
-    """Return a draft with its findings, decision and matter.
+    """Returns a draft with its findings, decision and matter.
+
+    Args:
+        draft_id: The draft's id.
+        svc: The services the app built at startup.
+        actor: The caller, who must be an approver or the draft's
+            requester.
+
+    Returns:
+        The draft with its status, decision and matter.
 
     Raises:
         HTTPException: 404 for an unknown draft, or one the caller may
@@ -111,7 +149,16 @@ def decide(
     svc: Annotated[Services, Depends(services)],
     actor: Annotated[Actor, Depends(require(APPROVER))],
 ) -> DraftRecord:
-    """Approve or reject a pending draft.
+    """Approves or rejects a pending draft.
+
+    Args:
+        draft_id: The draft's id.
+        body: The decision and the approver's note.
+        svc: The services the app built at startup.
+        actor: The caller, who must hold the approver role.
+
+    Returns:
+        The draft as it now stands, approved or rejected.
 
     Raises:
         HTTPException: 404 unknown, 409 not pending, 403 your own draft,
@@ -150,7 +197,15 @@ def open_matter(
     svc: Annotated[Services, Depends(services)],
     actor: Annotated[Actor, Depends(require(APPROVER))],
 ) -> NewMatter:
-    """Open the matter from an approved draft.
+    """Opens the matter from an approved draft.
+
+    Args:
+        draft_id: The approved draft's id.
+        svc: The services the app built at startup.
+        actor: The caller, who must hold the approver role.
+
+    Returns:
+        The new matter, with its number and who opened it.
 
     Raises:
         HTTPException: 404 unknown, 409 not approved or already open.
