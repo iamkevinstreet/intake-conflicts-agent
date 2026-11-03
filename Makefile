@@ -8,7 +8,7 @@
 # Last modified on:  2026-11-03
 #
 # Gives one command for each routine task: install, run, seed, check,
-# test, eval, audit, build.
+# test, eval, dashboard, publish, audit, build.
 #
 # CI runs the same targets. Run them from the repository root, where
 # config/config.toml and data/ are found.
@@ -20,10 +20,10 @@ KDS := kds-args kds-settings kds-logs kds-llm kds-evals kds-synthetic kds-standa
 AUDIT_FILE := data/generated/requirements-audit.txt
 
 .PHONY: install run api web check check-backend check-frontend test test-backend test-frontend \
-	eval audit audit-backend audit-frontend diagrams build seed
+	eval dashboard publish audit audit-backend audit-frontend diagrams build seed
 
-install:  ## The backend from uv.lock and the frontend from package-lock.json
-	uv sync --project backend --locked
+install:  ## The backend from uv.lock (with the dashboard) and the frontend from package-lock.json
+	uv sync --project backend --locked --all-extras
 	$(NPM) ci
 
 run:  ## The API on :8000 and the web app on :5173 together; Ctrl-C stops both
@@ -64,6 +64,14 @@ test-frontend:
 
 eval:  ## The offline evaluation: the stand-in plays the agent, whatever config/.env says; no key, no network
 	LLM_PROVIDER=fake $(UV) python -m intake_agent.evals.run --name offline
+
+dashboard:  ## The evaluation dashboard on :8050, over the saved runs
+	$(UV) python -m intake_agent.dashboard
+
+publish:  ## After a live run: the figures, the Tableau CSV files and the index the case study reads
+	$(UV) python -m intake_agent.dashboard --export-figures
+	$(UV) python -m intake_agent.evals.export
+	$(UV) python -m intake_agent.evals.index
 
 audit: audit-backend audit-frontend  ## Known vulnerabilities in every locked dependency
 
