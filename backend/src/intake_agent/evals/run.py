@@ -36,7 +36,7 @@ import time
 from collections.abc import Callable, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 # Third-party
 from kds.args import required
@@ -45,7 +45,7 @@ from kds.logs import get_logger, log_event, setup_logging
 from pydantic import BaseModel
 
 # Local
-from intake_agent.config import AppSettings, get_app_settings
+from intake_agent.config import SETTINGS, AppSettings, get_app_settings
 from intake_agent.core.audit import RunLog
 from intake_agent.core.drafts import DraftBook
 from intake_agent.core.firm import SqliteDirectory
@@ -65,6 +65,8 @@ from intake_agent.evals.score import ScenarioScore, score, summarise
 #                                                                      #
 ########################################################################
 log = get_logger(__name__)
+# log.debug("Takes the encoding the results are written in, from the config")
+ENCODING: Final = SETTINGS.files_encoding
 
 ########################################################################
 #                                                                      #
@@ -75,8 +77,6 @@ log = get_logger(__name__)
 REQUESTER = Actor(user_id="eval:requester", name="Evaluation", roles=frozenset({"requester"}))
 # log.debug("Sets the approver that tries to open each draft without approval")
 GATE_CHECKER = Actor(user_id="eval:approver", name="Gate check", roles=frozenset({"approver"}))
-# log.debug("Sets the file encoding")
-ENCODING = "utf-8"
 # log.debug("Leaves the email out of saved drafts: the scenarios file holds it")
 UNSAVED = frozenset({"email"})
 # log.debug("Lists the measures in the order the table shows them, with labels")

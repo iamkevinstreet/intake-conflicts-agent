@@ -1,21 +1,23 @@
 # config
 
-[`config.toml`](config.toml) lists every setting the service reads, and every value the service
-and the web app share, at its default. It holds no secrets: those go in `config/.env` (copy
-[`.env.example`](.env.example)), and the service refuses to start if a secret is written here.
+[`config.toml`](config.toml) lists every setting the service, the evaluation and the dashboard
+read, and every value two files share, at its default. It holds no secrets: those go in
+`config/.env` (copy [`.env.example`](.env.example)), and the service refuses to start if a secret
+is written here.
 
 ## How a value is chosen
 
 Highest first: an environment variable, then `config/.env`, then this file, then the default in
 [`backend/src/intake_agent/config.py`](../backend/src/intake_agent/config.py). Each key's
 environment name is its section and key joined by an underscore, in capitals: `[match] likely` is
-`MATCH_LIKELY`. `SETTINGS_FILE` points the service at a different file. Every setting is logged at
-startup, secrets masked, in the `service.start` event.
+`MATCH_LIKELY`. A nested table is one setting: `[labels.categories]` is `labels_categories`.
+`SETTINGS_FILE` points the service at a different file. Every setting is logged at startup, secrets
+masked, in the `service.start` event.
 
 A test (`backend/tests/test_config.py`) keeps this file equal to the defaults in code, so the two
 cannot drift. Settings that contradict each other stop the service at startup: a possible threshold
-at or above the likely one, a default list longer than the most a list may hold, dev sign-in on an
-address other machines can reach, or Entra ID without a tenant id and an audience.
+at or above the likely one, a default list longer than the most a list may hold, dev sign-in or the
+dashboard on an address other machines can reach, or Entra ID without a tenant id and an audience.
 
 The web app reads the keys it needs from this file when it is built (`frontend/vite.config.ts`):
 the API's path and request id header, the email, reason and note limits, the match thresholds, and
@@ -41,6 +43,7 @@ more than one file uses them.
 | `[azure_openai] endpoint` | unset | The Azure OpenAI resource; only for the `azure` provider |
 | `[azure_openai] api_version` | `2024-10-21` | Only for the `azure` provider |
 | `[eval] budget_usd` | `5.0` | A process stops calling the model once it has spent this |
+| `[eval] offline_provider` | `fake` | The provider of the offline stand-in; the dashboard and the exports mark its runs as the offline baseline |
 | `[log] dir` | `logs` | Where the daily JSON log files go |
 | `[log] level` | `INFO` | `DEBUG`, `INFO`, `WARNING` or `ERROR` |
 | `[log] redact` | `true` | Removes emails, phone numbers and ID-like numbers from log lines |
@@ -48,7 +51,10 @@ more than one file uses them.
 | `[data] firm` | `data/samples/firm.json` | The planted records the database is built around |
 | `[data] database` | `data/generated/firm.sqlite` | The made-up firm database, built on first start |
 | `[data] scenarios` | `data/evals/scenarios.jsonl` | The twenty evaluation scenarios |
-| `[data] results` | `data/evals/results` | Where evaluation results are written |
+| `[data] results` | `data/evals/results` | Where evaluation results are written, and the figures and index beside them |
+| `[data] export` | `data/export` | Where the CSV files for Tableau go |
+| `[data] figures` | `figures.json` | The case study's figures, written in the results folder |
+| `[files] encoding` | `utf-8` | The encoding every file is read and written in |
 | `[seed] random` | `11` | The seed; the same seed always builds the same database |
 | `[seed] clients` | `300` | Clients, the planted ones included |
 | `[seed] matters` | `180` | Existing matters |
@@ -89,6 +95,7 @@ more than one file uses them.
 | `[verdicts] review` | `review` | A person must decide (fixed) |
 | `[verdicts] conflict` | `conflict` | The firm cannot take the matter as it stands (fixed) |
 | `[units] ms_per_second` | `1000` | Milliseconds in a second, for timings in the logs and on screen (fixed) |
+| `[units] percent` | `100` | A share of one, written in percent (fixed) |
 | `[auth] mode` | `dev` | `dev`: trusted headers, this machine only; `entra`: Entra ID tokens |
 | `[entra] tenant_id` | empty | The directory (tenant) id, a GUID |
 | `[entra] audience` | empty | The API's application (client) id, which tokens must be issued for |
@@ -97,6 +104,17 @@ more than one file uses them.
 | `[entra] leeway_s` | `60` | The clock skew allowed on token times |
 | `[entra] keys_cache_s` | `3600` | How long the tenant's signing keys are cached |
 | `[ui] examples` | `s04`, `s09`, `s13`, `s18` | The scenario ids the web app offers to try |
+| `[dashboard] host` | `127.0.0.1` | The address the dashboard listens on: this machine only, since it has no sign-in |
+| `[dashboard] port` | `8050` | The dashboard's port |
+| `[dashboard_ids] ...` | `url`, `scheme`, `runs`, ... | The ids of the dashboard's parts, which its layout and its callback share |
+| `[columns] ...` | `run_id`, `run`, `model`, ... | The column names of the evaluation tables the dashboard draws and the Tableau CSV files hold |
+| `[charts] light_scheme`, `[charts] dark_scheme` | `light`, `dark` | The two colour schemes; the exported figures use the light one |
+| `[charts] max_runs` | `3` | The most runs a chart compares: one per step of the colour ramp |
+| `[charts] font_size`, `[charts] tick_size`, `[charts] edge` | `12`, `11`, `8` | Chart text, value-axis ticks and the margin at a chart's edges, in pixels |
+| `[charts] clear`, `[charts] align` | `rgba(0,0,0,0)`, `left` | The colour that lets the card show through; the edge titles and notes line up on |
+| `[charts] cost_places` | `4` | The decimals a cost is written with |
+| `[charts] verdicts_title`, `[charts] steps_title`, `[charts] latency_title`, `[charts] cost_title` | sentence case | The four charts' titles, which the exported figures carry |
+| `[labels.categories]` | `Conflict`, `Ambiguous`, `Clean`, `Failure` | The name of each kind of scenario, in the order the results report them |
 
 ## Turning on Entra ID
 

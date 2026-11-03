@@ -8,10 +8,12 @@ Author:            Kevin Street
 Created on:        2026-10-29
 Last modified on:  2026-11-03
 
-Reads every setting the service uses, typed and validated, with the
-checks that need more than one setting. Each field is a `[section] key`
-in config/config.toml, joined by an underscore: `[match] likely` is
-`match_likely`, which the environment variable MATCH_LIKELY overrides.
+Reads every setting the service, the evaluation and the dashboard use,
+typed and validated, with the checks that need more than one setting.
+Each field is a `[section] key` in config/config.toml, joined by an
+underscore: `[match] likely` is `match_likely`, which the environment
+variable MATCH_LIKELY overrides. A nested table is one field:
+`[labels.categories]` is `labels_categories`.
 
 SETTINGS holds the settings loaded once at import: modules bind the
 values they share from it in their global constants. Functions that take
@@ -36,7 +38,7 @@ from typing import Final, Literal, Self
 
 # Third-party
 from kds.logs import get_logger
-from kds.settings import Settings
+from kds.settings import Provider, Settings
 from pydantic import Field, model_validator
 
 # Local
@@ -118,6 +120,31 @@ REVIEW: Final = "review"
 CONFLICT: Final = "conflict"
 # log.debug("Sets the milliseconds in a second")
 MS_PER_SECOND: Final = 1000
+# log.debug("Sets the percent a share of one is")
+PERCENT: Final = 100
+# log.debug("Names the provider of the offline stand-in, whose runs are the baseline")
+OFFLINE_PROVIDER: Final = "fake"
+# log.debug("Sets the default port the dashboard listens on")
+DASHBOARD_PORT = 8050
+# log.debug("Sets the default most runs a chart compares")
+MAX_RUNS = 3
+# log.debug("Sets the default size of chart text, in pixels")
+FONT_SIZE = 12
+# log.debug("Sets the default size of value-axis ticks and small notes, in pixels")
+TICK_SIZE = 11
+# log.debug("Sets the default margin every chart keeps at its edges, in pixels")
+EDGE = 8
+# log.debug("Sets the default decimals a cost is written with")
+COST_PLACES = 4
+# log.debug("Names the model calls of a scenario: a chart's id and a column")
+STEPS: Final = "steps"
+# log.debug("Names each kind of scenario, in the order the results report them")
+CATEGORY_NAMES = {
+    "conflict": "Conflict",
+    "ambiguous": "Ambiguous",
+    "clean": "Clean",
+    "failure": "Failure",
+}
 
 
 ########################################################################
@@ -129,6 +156,9 @@ MS_PER_SECOND: Final = 1000
 class AppSettings(Settings):
     """Intake settings; config/config.toml lists and explains each."""
 
+    # log.debug("Holds the provider of the offline stand-in, whose runs are the baseline")
+    eval_offline_provider: Provider = OFFLINE_PROVIDER
+
     # log.debug("Holds the planted firm records the database is built around")
     data_firm: Path = Path("data/samples/firm.json")
     # log.debug("Holds the generated firm database, rebuilt when missing")
@@ -137,6 +167,13 @@ class AppSettings(Settings):
     data_scenarios: Path = Path("data/evals/scenarios.jsonl")
     # log.debug("Holds where evaluation results are written")
     data_results: Path = Path("data/evals/results")
+    # log.debug("Holds where the CSV files for Tableau go")
+    data_export: Path = Path("data/export")
+    # log.debug("Holds the name of the figures file in the results folder")
+    data_figures: str = "figures.json"
+
+    # log.debug("Holds the encoding every file is read and written in")
+    files_encoding: str = "utf-8"
 
     # log.debug("Holds the seed that makes the generated names repeatable")
     seed_random: int = 11
@@ -226,6 +263,8 @@ class AppSettings(Settings):
 
     # log.debug("Holds the milliseconds in a second, for timings in logs and on screen")
     units_ms_per_second: Literal[1000] = MS_PER_SECOND
+    # log.debug("Holds the percent a share of one is")
+    units_percent: Literal[100] = PERCENT
 
     # log.debug("Holds how callers prove who they are")
     auth_mode: AuthMode = DEV
@@ -245,6 +284,89 @@ class AppSettings(Settings):
     # log.debug("Holds the scenario ids the web app offers as examples")
     ui_examples: tuple[str, ...] = ("s04", "s09", "s13", "s18")
 
+    # log.debug("Holds the address the dashboard listens on; it has no sign-in")
+    dashboard_host: str = LOCALHOST
+    # log.debug("Holds the port the dashboard listens on")
+    dashboard_port: int = Field(default=DASHBOARD_PORT, ge=1, le=MAX_PORT)
+
+    # log.debug("Holds the id of the location, whose first change reads the scheme")
+    dashboard_ids_url: str = "url"
+    # log.debug("Holds the id of the store that holds the browser's colour scheme")
+    dashboard_ids_scheme: str = "scheme"
+    # log.debug("Holds the id of the run picker")
+    dashboard_ids_runs: str = "runs"
+    # log.debug("Holds the id of the runs' key")
+    dashboard_ids_legend: str = "legend"
+    # log.debug("Holds the id of the headline numbers")
+    dashboard_ids_tiles: str = "tiles"
+    # log.debug("Holds the id of the chart of scenarios that ended as expected")
+    dashboard_ids_verdicts: str = "verdicts"
+    # log.debug("Holds the id of the chart of model calls and tool calls per scenario")
+    dashboard_ids_steps: str = STEPS
+    # log.debug("Holds the id of the time chart")
+    dashboard_ids_latency: str = "latency"
+    # log.debug("Holds the id of the cost chart")
+    dashboard_ids_cost: str = "cost"
+    # log.debug("Holds the id of the table of scenarios that did not end as expected")
+    dashboard_ids_wrong_table: str = "wrong-table"
+
+    # log.debug("Holds the run id column")
+    columns_run_id: str = "run_id"
+    # log.debug("Holds the column of each run's long label")
+    columns_run: str = "run"
+    # log.debug("Holds the model column")
+    columns_model: str = "model"
+    # log.debug("Holds the start time column")
+    columns_started_at: str = "started_at"
+    # log.debug("Holds the scenario id column")
+    columns_scenario_id: str = "scenario_id"
+    # log.debug("Holds the scenario title column")
+    columns_title: str = "title"
+    # log.debug("Holds the kind of scenario column")
+    columns_category: str = "category"
+    # log.debug("Holds the column that is 1 when a scenario ended as expected and 0 when not")
+    columns_as_expected: str = "as_expected"
+    # log.debug("Holds the column of each scenario's time, in seconds")
+    columns_seconds: str = "seconds"
+    # log.debug("Holds the column of each scenario's model calls")
+    columns_steps: str = STEPS
+    # log.debug("Holds the column of each scenario's tool calls")
+    columns_tool_calls: str = "tool_calls"
+    # log.debug("Holds the runs table's cost per scenario column, as the summary names it")
+    columns_cost_per_scenario: str = "mean_cost_usd"
+    # log.debug("Holds the column of the date of the list prices a run's costs use")
+    columns_prices_as_of: str = "prices_as_of"
+
+    # log.debug("Holds the name of the light scheme, which the exported figures use")
+    charts_light_scheme: str = "light"
+    # log.debug("Holds the name of the dark scheme")
+    charts_dark_scheme: str = "dark"
+    # log.debug("Holds the most runs a chart compares")
+    charts_max_runs: int = Field(default=MAX_RUNS, ge=1)
+    # log.debug("Holds the size of chart text")
+    charts_font_size: int = FONT_SIZE
+    # log.debug("Holds the size of value-axis ticks and small notes")
+    charts_tick_size: int = TICK_SIZE
+    # log.debug("Holds the margin every chart keeps at its edges")
+    charts_edge: int = EDGE
+    # log.debug("Holds the colour that lets the card show through")
+    charts_clear: str = "rgba(0,0,0,0)"
+    # log.debug("Holds the edge titles and notes line up on")
+    charts_align: str = "left"
+    # log.debug("Holds the decimals a cost is written with")
+    charts_cost_places: int = COST_PLACES
+    # log.debug("Holds the title of the chart of scenarios that ended as expected")
+    charts_verdicts_title: str = "Scenarios that ended as expected, by kind"
+    # log.debug("Holds the title of the chart of model calls and tool calls per scenario")
+    charts_steps_title: str = "Model calls and tool calls per scenario"
+    # log.debug("Holds the title of the time chart")
+    charts_latency_title: str = "Seconds per scenario"
+    # log.debug("Holds the title of the cost chart")
+    charts_cost_title: str = "Cost per scenario, at list prices"
+
+    # log.debug("Holds the name of each kind of scenario, in the order the results report them")
+    labels_categories: dict[str, str] = Field(default=CATEGORY_NAMES)
+
     # log.debug("Defines the checks that need more than one setting")
     @model_validator(mode="after")
     def _consistent(self) -> Self:
@@ -255,8 +377,9 @@ class AppSettings(Settings):
 
         Raises:
             ValueError: The thresholds or list limits are out of order,
-                dev sign-in would listen beyond this machine, or Entra
-                ID is on without its tenant and audience.
+                dev sign-in or the dashboard would listen beyond this
+                machine, or Entra ID is on without its tenant and
+                audience.
         """
         # log.debug("Refuses a possible threshold above the likely one")
         if self.match_possible >= self.match_likely:
@@ -278,6 +401,15 @@ class AppSettings(Settings):
                 f"set [api] host to 127.0.0.1 or [auth] mode to 'entra' (not {self.api_host})"
             )
             # log.debug("Stops the service")
+            raise ValueError(msg)
+        # log.debug("Refuses a dashboard on an address other machines can reach")
+        if self.dashboard_host not in LOOPBACK:
+            # log.debug("Explains that the dashboard has no sign-in")
+            msg = (
+                f"[dashboard] host must stay on this machine (127.0.0.1): the dashboard has no "
+                f"sign-in (not {self.dashboard_host})"
+            )
+            # log.debug("Stops the dashboard")
             raise ValueError(msg)
         # log.debug("Refuses Entra ID without a tenant and an audience")
         if self.auth_mode == ENTRA and not (

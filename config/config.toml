@@ -7,15 +7,17 @@
 # Created on:        2026-10-29
 # Last modified on:  2026-11-03
 #
-# Holds every setting the service reads, and every value the service and
-# the web app share, at its default. No secrets: those go in
-# config/.env.
+# Holds every setting the service, the evaluation and the dashboard
+# read, and every value two files share, at its default. No secrets:
+# those go in config/.env.
 #
 # Each key's name is its section and key joined: [match] likely is
 # match_likely, and the environment variable MATCH_LIKELY overrides it.
-# backend/tests/test_config.py keeps this file equal to the defaults in
-# backend/src/intake_agent/config.py and the shared kds settings. The
-# web app reads the keys it needs from this file when it is built.
+# A nested table is one setting: [labels.categories] is
+# labels_categories. backend/tests/test_config.py keeps this file equal
+# to the defaults in backend/src/intake_agent/config.py and the shared
+# kds settings. The web app reads the keys it needs from this file when
+# it is built.
 
 [llm]
 provider = "fake"                         # anthropic | openai | azure | fake (offline stand-in)
@@ -32,6 +34,7 @@ api_version = "2024-10-21"
 
 [eval]
 budget_usd = 5.0                          # one process stops calling the model past this spend
+offline_provider = "fake"                 # the provider of the offline stand-in; its runs are the baseline
 
 [log]
 dir = "logs"                              # one YYYY-MM-DD.jsonl file per day
@@ -44,6 +47,12 @@ firm = "data/samples/firm.json"           # the planted records the database is 
 database = "data/generated/firm.sqlite"   # the made-up firm database, built when missing
 scenarios = "data/evals/scenarios.jsonl"  # the twenty evaluation scenarios
 results = "data/evals/results"            # where evaluation results are written
+export = "data/export"                    # the CSV files for Tableau
+figures = "figures.json"                  # the case study's figures, in the results folder
+
+# How files are read and written.
+[files]
+encoding = "utf-8"                        # every file is read and written as UTF-8
 
 [seed]
 random = 11                               # the same seed always builds the same database
@@ -104,6 +113,7 @@ conflict = "conflict"                     # the firm cannot take the matter as i
 
 [units]
 ms_per_second = 1000                      # for timings in the logs and on screen
+percent = 100                             # a share of one, written in percent
 
 [auth]
 mode = "dev"                              # dev: trusted headers, this machine only | entra
@@ -118,3 +128,61 @@ keys_cache_s = 3600                       # how long the tenant's signing keys a
 
 [ui]
 examples = ["s04", "s09", "s13", "s18"]   # scenario ids the web app offers to try
+
+# The evaluation dashboard, which has no sign-in and so listens on this machine only.
+[dashboard]
+host = "127.0.0.1"                        # this machine only
+port = 8050
+
+# The ids of the dashboard's parts, which its layout and its callback share.
+[dashboard_ids]
+url = "url"                               # the location, whose first change reads the scheme
+scheme = "scheme"                         # the store that holds the browser's colour scheme
+runs = "runs"                             # the run picker
+legend = "legend"                         # the runs' key
+tiles = "tiles"                           # the headline numbers
+verdicts = "verdicts"                     # the chart of scenarios that ended as expected
+steps = "steps"                           # the chart of model calls and tool calls per scenario
+latency = "latency"                       # the time chart
+cost = "cost"                             # the cost chart
+wrong_table = "wrong-table"               # the table of scenarios that did not end as expected
+
+# The column names of the evaluation tables the dashboard draws and the
+# Tableau CSV files hold.
+[columns]
+run_id = "run_id"                         # the run's id: its file name without .json
+run = "run"                               # the run's long label
+model = "model"                           # the model that played the agent
+started_at = "started_at"                 # when the run started, UTC
+scenario_id = "scenario_id"               # the scenario's id, s01 to s20
+title = "title"                           # the scenario's title
+category = "category"                     # the kind of scenario: conflict, ambiguous, clean or failure
+as_expected = "as_expected"               # 1 when the ending and the verdict shown match the scenario's
+seconds = "seconds"                       # a scenario's time, in seconds
+steps = "steps"                           # a scenario's model calls
+tool_calls = "tool_calls"                 # a scenario's tool calls
+cost_per_scenario = "mean_cost_usd"       # a run's mean cost per scenario, as the summary names it
+prices_as_of = "prices_as_of"             # the date of the list prices a run's costs use
+
+# The dashboard's charts, which the case study's figures share.
+[charts]
+light_scheme = "light"                    # the light scheme, which the exported figures use
+dark_scheme = "dark"                      # the dark scheme
+max_runs = 3                              # the most runs a chart compares: one per ramp step
+font_size = 12                            # the size of chart text, in pixels
+tick_size = 11                            # the size of value-axis ticks and small notes, in pixels
+edge = 8                                  # the margin every chart keeps at its edges, in pixels
+clear = "rgba(0,0,0,0)"                   # the colour that lets the card show through
+align = "left"                            # titles and notes line up on their left edge
+cost_places = 4                           # the decimals a cost is written with
+verdicts_title = "Scenarios that ended as expected, by kind"
+steps_title = "Model calls and tool calls per scenario"
+latency_title = "Seconds per scenario"
+cost_title = "Cost per scenario, at list prices"
+
+# The words people read, shared by the dashboard and the CSV files.
+[labels.categories]                       # each kind of scenario, in the order the results report them
+conflict = "Conflict"
+ambiguous = "Ambiguous"
+clean = "Clean"
+failure = "Failure"

@@ -31,10 +31,15 @@ dependencies = [
   "pyjwt[crypto]>=2.10",
 ]
 
+[project.optional-dependencies]
+# The evaluation dashboard and the figures and CSV files the case study and Tableau read.
+dashboard = ["dash>=3", "plotly>=6", "pandas>=2.2"]
+
 [dependency-groups]
 dev = [
   "httpx>=0.28",
   "mypy>=1.13",
+  "pandas-stubs>=2.2",
   "pip-audit>=2.7",
   "pytest>=8.3",
   "ruff==0.17.3",
@@ -94,10 +99,15 @@ known-first-party = ["intake_agent"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+# Dash registers a pytest plugin for browser tests we do not use; its old-style hooks warn.
+addopts = "-q -p no:dash"
 
 [tool.mypy]
 python_version = "3.12"
 strict = true
 mypy_path = "src"
 files = ["src", "tests"]
+
+[[tool.mypy.overrides]]
+module = ["plotly", "plotly.*", "dash", "dash.*"]
+ignore_missing_imports = true

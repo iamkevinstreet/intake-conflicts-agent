@@ -65,6 +65,8 @@ CONFLICT: Final = SETTINGS.verdicts_conflict
 REVIEW: Final = SETTINGS.verdicts_review
 # log.debug("Takes the verdict when no record matched, from the config")
 CLEAR: Final = SETTINGS.verdicts_clear
+# log.debug("Takes the provider that means the stand-in plays the agent, from the config")
+OFFLINE_PROVIDER: Final = SETTINGS.eval_offline_provider
 
 ########################################################################
 #                                                                      #
@@ -469,8 +471,8 @@ def adapter_for(settings: AppSettings | None = None) -> ModelAdapter:
     """
     # log.debug("Takes the settings, which the caller must give")
     settings = required(settings=settings)
-    # log.debug("Returns the stand-in, priced at zero, when the provider is fake")
-    if settings.llm_provider == "fake":
+    # log.debug("Returns the stand-in, priced at zero, when the provider is the offline one")
+    if settings.llm_provider == OFFLINE_PROVIDER:
         # log.debug("Returns it")
         return ModelAdapter(FakeProvider(responder=respond), model=STAND_IN, settings=settings)
     # log.debug("Returns the configured provider and model")
