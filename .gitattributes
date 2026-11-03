@@ -20,3 +20,4 @@ docs/*.svg linguist-generated
 backend/uv.lock linguist-generated
 frontend/package-lock.json linguist-generated
 data/evals/results/* linguist-generated
+data/export/* linguist-generated

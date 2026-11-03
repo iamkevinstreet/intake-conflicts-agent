@@ -1,0 +1,112 @@
+run_id,run,model,scenario_id,step,input_tokens,output_tokens,cost_usd,ms,stop_reason
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s01,1,2554,204,0.007148,2375,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s01,2,2839,554,0.011218,4789,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s01,3,3418,223,0.009066,2243,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s02,1,2498,116,0.006156,1245,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s02,2,2805,455,0.01016,3147,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s02,3,3322,182,0.008464,1820,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s03,1,2482,314,0.008104,2584,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s03,2,2868,461,0.010346,3236,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s03,3,3389,179,0.008568,1877,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s04,1,2547,267,0.007764,2802,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s04,2,2924,607,0.011918,5049,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s04,3,3552,687,0.013974,4501,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s04,4,4169,227,0.010608,2216,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s05,1,2470,195,0.00689,1794,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s05,2,2754,524,0.010748,4605,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s05,3,3299,202,0.008618,1924,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s06,1,2467,110,0.006034,1659,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s06,2,2763,479,0.010316,3289,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s06,3,3278,188,0.008436,1936,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s07,1,2474,272,0.007668,3038,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s07,2,2856,543,0.011142,4086,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s07,3,3413,181,0.008636,2553,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s08,1,2484,181,0.006778,2009,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s08,2,2767,507,0.010604,3655,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s08,3,3307,195,0.008564,2053,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s09,1,2476,134,0.006292,1969,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s09,2,2654,577,0.011078,4624,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s09,3,3196,226,0.008652,2112,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s10,1,2474,299,0.007938,2492,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s10,2,2897,447,0.010264,3288,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s10,3,3404,184,0.008648,1919,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s11,1,2487,338,0.008354,2791,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s11,2,2870,577,0.01151,4046,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s11,3,3474,192,0.008868,1753,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s12,1,2462,229,0.007214,2181,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s12,2,2687,415,0.009524,3062,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s12,3,3161,138,0.007702,1559,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s13,1,2486,261,0.007582,3748,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s13,2,2715,597,0.0114,4544,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s13,3,3246,203,0.008522,2343,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s14,1,2474,248,0.007428,2456,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s14,2,2799,393,0.009528,2724,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s14,3,3254,142,0.007928,1586,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s15,1,2454,213,0.007038,2165,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s15,2,2720,216,0.0076,1956,end_turn
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s16,1,2412,54,0.005364,1541,end_turn
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s17,1,2379,48,0.005238,1602,end_turn
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s18,1,2498,377,0.008766,3944,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s18,2,2896,560,0.011392,4336,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s18,3,3442,223,0.009114,2158,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s19,1,2475,277,0.00772,3016,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s19,2,2759,504,0.010558,3598,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s19,3,3293,221,0.008796,2109,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s20,1,2468,230,0.007236,2627,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s20,2,2691,354,0.008922,2654,tool_use
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,s20,3,3106,149,0.007702,1701,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s01,1,674,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s01,2,727,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s01,3,760,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s02,1,641,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s02,2,710,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s02,3,743,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s03,1,629,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s03,2,678,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s03,3,711,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s04,1,659,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s04,2,721,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s04,3,754,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s05,1,619,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s05,2,674,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s05,3,707,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s06,1,616,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s06,2,682,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s06,3,715,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s07,1,624,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s07,2,647,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s07,3,680,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s08,1,638,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s08,2,651,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s08,3,683,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s09,1,627,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s09,2,686,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s09,3,718,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s10,1,621,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s10,2,672,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s10,3,705,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s11,1,633,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s11,2,696,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s11,3,729,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s12,1,605,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s12,2,628,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s12,3,660,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s13,1,636,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s13,2,649,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s13,3,681,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s14,1,613,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s14,2,646,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s14,3,679,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s15,1,604,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s15,2,676,18,0.0,0,end_turn
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s16,1,589,20,0.0,0,end_turn
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s17,1,558,20,0.0,0,end_turn
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s18,1,633,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s18,2,688,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s18,3,721,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s19,1,620,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s19,2,635,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s19,3,667,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s20,1,622,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s20,2,645,1,0.0,0,tool_use
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,s20,3,677,1,0.0,0,tool_use

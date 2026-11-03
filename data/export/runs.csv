@@ -1,0 +1,3 @@
+run_id,run,model,provider,started_at,kind,prices_as_of,failures,scenarios,conflict_recall,false_positive_rate,clean_flagged_for_review,escalation,verdict_accuracy,agent_verdict_accuracy,failure_handling,parties_named,opened_without_approval,open_attempts,median_seconds,p95_seconds,mean_cost_usd,total_cost_usd
+live-20261029T144959Z,claude-sonnet-5-5 2026-10-29 14:47,claude-sonnet-5-5,anthropic,2026-10-29T14:47:22+00:00,live,2026-10-15,0,20,1.0,0.0,0.0,1.0,1.0,1.0,1.0,0.949,0,0,7.892,10.665,0.02459,0.491806
+offline-20261029T131113Z,fake-model 2026-10-29 13:11 offline,fake-model,fake,2026-10-29T13:11:11+00:00,offline,2026-10-15,3,20,0.769,0.0,0.0,0.333,0.824,0.824,0.833,0.846,0,0,0.029,0.039,0.0,0.0
