@@ -54,8 +54,8 @@ jobs:
         with:
           version: "0.13.6"
 
-      - name: Install the locked backend (hashes checked)
-        run: uv sync --project backend --locked
+      - name: Install the locked backend with the dashboard (hashes checked)
+        run: uv sync --project backend --locked --all-extras
 
       - name: Lint, format, strict types and the code standard
         run: make check-backend
