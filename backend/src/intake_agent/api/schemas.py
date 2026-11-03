@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #               backend/src/intake_agent/api/schemas.py                #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Defines the HTTP request and response bodies. Requests are validated
 here, at the edge: the email's size, the decision's choices and the
@@ -13,7 +15,9 @@ exactly what the core recorded.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -30,12 +34,16 @@ from intake_agent.core.models import Decision, DraftRecord
 from intake_agent.core.records import RunRecord
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the hard ceiling on an email, above any setting")
 CEILING_CHARS = 100_000
@@ -46,7 +54,9 @@ Status = Literal["ok"]
 
 
 ########################################################################
+#                                                                      #
 #                             HTTP bodies                              #
+#                                                                      #
 ########################################################################
 # log.debug("Defines an intake request")
 class IntakeRequest(BaseModel):

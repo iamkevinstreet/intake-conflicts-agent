@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #                frontend/src/components/MatchMeter.tsx                #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Shows a name-match score on a 0 to 100 bar, with the possible and
  * likely thresholds marked.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Local
 import { CONFIG } from '../config';
@@ -20,7 +24,9 @@ import { required } from '../lib/required';
 import type { Match } from '../types';
 
 // ########################################################################
+// #                                                                      #
 // #                           Global constants                           #
+// #                                                                      #
 // ########################################################################
 // log.debug('Takes the score from which a person must decide, from the config')
 const POSSIBLE = CONFIG.match.possible;
@@ -28,7 +34,9 @@ const POSSIBLE = CONFIG.match.possible;
 const LIKELY = CONFIG.match.likely;
 
 // ########################################################################
+// #                                                                      #
 // #                             Match meter                              #
+// #                                                                      #
 // ########################################################################
 interface Props {
   match?: Match | null;

@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                  backend/src/intake_agent/config.py                  #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Reads every setting the service uses, typed and validated, with the
 checks that need more than one setting. Each field is a `[section] key`
@@ -20,7 +22,9 @@ reads.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -39,12 +43,16 @@ from pydantic import Field, model_validator
 from intake_agent.core.names import Band
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Names the sign-in mode that trusts headers, for this machine only")
 DEV: Final = "dev"
@@ -113,7 +121,9 @@ MS_PER_SECOND: Final = 1000
 
 
 ########################################################################
+#                                                                      #
 #                           Service settings                           #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the service's settings on top of the shared ones")
 class AppSettings(Settings):

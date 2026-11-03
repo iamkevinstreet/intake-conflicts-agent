@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                       backend/tests/support.py                       #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Holds the helpers the tests share: made-up people, a seeded store,
 scripted models and an intake service with no waits.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -38,12 +42,16 @@ from intake_agent.core.service import IntakeService
 from intake_agent.core.store import Store
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Finds the repository root, two folders above this file")
 REPO = Path(__file__).resolve().parents[2]
@@ -65,7 +73,9 @@ CONFLICT_EMAIL = (
 
 
 ########################################################################
+#                                                                      #
 #                             Test helpers                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines a seeded store")
 def seeded_store(settings: AppSettings | None = None) -> Store:

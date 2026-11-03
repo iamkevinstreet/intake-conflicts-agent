@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                    backend/tests/test_identity.py                    #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests sign-in: Entra ID token checks, the dev headers, and unsafe
 settings refused.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -33,12 +37,16 @@ from intake_agent.api.identity import EntraVerifier, _dev_actor
 from intake_agent.config import AppSettings
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets a made-up tenant id")
 TENANT = "11111111-2222-3333-4444-555555555555"
@@ -51,7 +59,9 @@ OTHER_KEY = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
 
 ########################################################################
+#                                                                      #
 #                            Sign-in tests                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the key source the tests hand the verifier")
 class StaticKeys:

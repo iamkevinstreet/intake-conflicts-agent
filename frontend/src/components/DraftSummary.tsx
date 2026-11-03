@@ -1,24 +1,30 @@
 // ########################################################################
+// #                                                                      #
 // #               frontend/src/components/DraftSummary.tsx               #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Shows the agent's reading of the email: the parties, the matter, the
  * timing, any warnings, its reasons and the email itself.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Local
 import { required } from '../lib/required';
 import type { DraftRecord } from '../types';
 
 // ########################################################################
+// #                                                                      #
 // #                            Draft summary                             #
+// #                                                                      #
 // ########################################################################
 interface Props {
   record?: DraftRecord | null;

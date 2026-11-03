@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #              frontend/src/components/FindingsTable.tsx               #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Shows every match the run's searches found for the draft's parties:
  * the firm's record, how alike the names are, and why it matters.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Local
 import { required } from '../lib/required';
@@ -20,7 +24,9 @@ import { MatchMeter } from './MatchMeter';
 import { VerdictBadge } from './VerdictBadge';
 
 // ########################################################################
+// #                                                                      #
 // #                            Findings table                            #
+// #                                                                      #
 // ########################################################################
 interface Props {
   findings?: Finding[];

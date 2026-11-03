@@ -1,10 +1,12 @@
 // ########################################################################
+// #                                                                      #
 // #                      frontend/eslint.config.js                       #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Sets the lint rules: ESLint's recommended rules, typescript-eslint's
  * strict rules with types, React hooks, the doc block rules, our own
@@ -12,7 +14,9 @@
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Third-party
 import js from '@eslint/js';
@@ -27,7 +31,9 @@ import tseslint from 'typescript-eslint';
 import kds from './kds-eslint.js';
 
 // ########################################################################
+// #                                                                      #
 // #                              Lint rules                              #
+// #                                                                      #
 // ########################################################################
 // log.debug('Exports the lint rules: recommended, strict TypeScript, React hooks, docs, length')
 export default defineConfig(

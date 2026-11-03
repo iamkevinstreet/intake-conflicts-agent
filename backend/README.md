@@ -28,6 +28,7 @@ make eval             # the 20 scenarios with the offline stand-in
 | `core/searches.py` | The two search tools, their retries, and what each search found |
 | `core/tools.py` | The five tools for one run, with the draft guard and the audit of every call |
 | `core/drafts.py` | Drafts, decisions and opening a matter: the gate |
+| `core/refusals.py` | The refusals a draft action can meet, and the fingerprint an approval is bound to |
 | `core/records.py` | The run, model-call and tool-call records |
 | `core/audit.py` | Writes and reads those records |
 | `core/agent.py` | The loop, within step, tool-call and budget limits |

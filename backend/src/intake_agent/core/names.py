@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                backend/src/intake_agent/core/names.py                #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Puts party names in a plain form and scores how alike two names are, so
 typed variants still match. Intake data is typed by people, so the same
@@ -16,7 +18,9 @@ every match below "exact".
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -30,12 +34,16 @@ from kds.logs import get_logger
 from rapidfuzz import fuzz
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists how sure a match is, strongest first")
 Band = Literal["exact", "likely", "possible"]
@@ -52,7 +60,9 @@ EXACT = 100
 
 
 ########################################################################
+#                                                                      #
 #                            Name matching                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the plain form two names are compared in")
 def normalize(name: str | None = None) -> str:

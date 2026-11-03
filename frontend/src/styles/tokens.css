@@ -1,12 +1,14 @@
 /*
 ########################################################################
+#                                                                      #
 #                    frontend/src/styles/tokens.css                    #
+#                                                                      #
 ########################################################################
 */
 /*
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Sets the design tokens every stylesheet uses: file paper and navy
  * ink, the same family as the other law projects; three verdict
@@ -18,7 +20,9 @@
 
 /*
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 */
 :root {

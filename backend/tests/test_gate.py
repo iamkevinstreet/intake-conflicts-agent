@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                      backend/tests/test_gate.py                      #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests gate integrity: no matter opens without another person's approval,
 by any path.
@@ -16,7 +18,9 @@ then an approver opens.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -30,13 +34,9 @@ from kds.logs import get_logger
 
 # Local
 from intake_agent.config import AppSettings
-from intake_agent.core.drafts import (
-    DraftBook,
-    DraftStateError,
-    GateError,
-    ReasonRequiredError,
-)
+from intake_agent.core.drafts import DraftBook
 from intake_agent.core.models import Actor, DraftRecord
+from intake_agent.core.refusals import DraftStateError, GateError, ReasonRequiredError
 from intake_agent.core.store import Store
 from support import (
     APPROVER,
@@ -51,12 +51,16 @@ from support import (
 )
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the requester's identity as the agent carries it")
 AGENT = Actor(user_id=REQUESTER.user_id, name=REQUESTER.name, roles=frozenset({"requester"}))
@@ -65,7 +69,9 @@ REASON = "Waiver signed by both clients, on file."
 
 
 ########################################################################
+#                                                                      #
 #                         Gate integrity tests                         #
+#                                                                      #
 ########################################################################
 # log.debug("Defines a pending draft made by a requester")
 def _pending(

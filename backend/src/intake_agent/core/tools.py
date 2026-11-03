@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                backend/src/intake_agent/core/tools.py                #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Holds the five tools for one run: read-only searches, one checked draft,
 and a gated open.
@@ -25,7 +27,9 @@ read why and stop or correct itself.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -46,7 +50,7 @@ from intake_agent.config import SETTINGS, AppSettings
 from intake_agent.core import prompt
 from intake_agent.core.audit import RunLog
 from intake_agent.core.conflicts import stricter, verdict
-from intake_agent.core.drafts import DraftBook, DraftError
+from intake_agent.core.drafts import DraftBook
 from intake_agent.core.firm import Directory
 from intake_agent.core.models import (
     Actor,
@@ -58,18 +62,23 @@ from intake_agent.core.models import (
     ToolReply,
 )
 from intake_agent.core.names import normalize
+from intake_agent.core.refusals import DraftError
 from intake_agent.core.searches import SearchResult, SearchTools
 from intake_agent.core.store import new_id, utc_now
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 # log.debug("Takes the milliseconds in a second, from the config")
 MS: Final = SETTINGS.units_ms_per_second
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Names the error key every refusal carries")
 ERROR = prompt.ERROR_KEY
@@ -82,7 +91,9 @@ REFUSED = "refused"
 
 
 ########################################################################
+#                                                                      #
 #                             Run toolbox                              #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the toolbox one run uses")
 @dataclass

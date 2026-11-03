@@ -1,9 +1,11 @@
 ########################################################################
+#                                                                      #
 #                              .gitignore                              #
+#                                                                      #
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-14
-# Last modified on:  2026-10-29
+# Last modified on:  2026-11-03
 #
 # Keeps secrets, keys, caches, builds, logs, generated data and
 # databases out of git.

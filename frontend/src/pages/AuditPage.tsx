@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #                   frontend/src/pages/AuditPage.tsx                   #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Shows the audit log: every run the person may see, and every model
  * and tool call the chosen run made.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Third-party
 import { useEffect, useState } from 'react';
@@ -24,7 +28,9 @@ import { required } from '../lib/required';
 import type { Persona, RunDetail, RunRecord } from '../types';
 
 // ########################################################################
+// #                                                                      #
 // #                              Audit page                              #
+// #                                                                      #
 // ########################################################################
 interface Props {
   persona?: Persona | null;

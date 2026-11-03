@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                     backend/tests/test_store.py                      #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the database rules: migrations run once, and the triggers that
 hold the gate and the audit.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -28,12 +32,16 @@ from kds.logs import get_logger
 from intake_agent.core.store import MIGRATIONS, Store
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the insert of a draft row")
 INSERT_DRAFT = (
@@ -48,7 +56,9 @@ INSERT_APPROVAL = (
 
 
 ########################################################################
+#                                                                      #
 #                         Database rule tests                          #
+#                                                                      #
 ########################################################################
 # log.debug("Defines a store with one draft in a given state")
 def _store_with_draft(tmp_path: Path | None = None, status: str | None = None) -> Store:

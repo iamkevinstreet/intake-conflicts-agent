@@ -1,9 +1,11 @@
 ########################################################################
+#                                                                      #
 #                          docs/diagrams.toml                          #
+#                                                                      #
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-29
-# Last modified on:  2026-10-29
+# Last modified on:  2026-11-03
 #
 # Holds the README's two diagrams as data. Redraw them with make
 # diagrams; never edit the SVGs by hand.

@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #                         frontend/src/api.ts                          #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Calls the API: one function per route, the dev identity headers, and
  * errors that say what happened, with the request id for support.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Local
 import { CONFIG } from './config';
@@ -20,7 +24,9 @@ import type { Actor, Decision, DraftRecord, DraftStatus, Example, Health } from 
 import type { IntakeResponse, NewMatter, Persona, RunDetail, RunRecord } from './types';
 
 // ########################################################################
+// #                                                                      #
 // #                           Global constants                           #
+// #                                                                      #
 // ########################################################################
 // log.debug('Takes the API address, by default this origin through the dev proxy')
 const API_BASE = CONFIG.api.base;
@@ -28,7 +34,9 @@ const API_BASE = CONFIG.api.base;
 const REQUEST_ID = CONFIG.api.request_id_header;
 
 // ########################################################################
+// #                                                                      #
 // #                              API client                              #
+// #                                                                      #
 // ########################################################################
 // log.debug('Defines the error every failed call raises')
 export class ApiError extends Error {

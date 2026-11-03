@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                     backend/tests/test_evals.py                      #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the evaluation: its ground truth against the database, scoring and
 the runner.
@@ -17,7 +19,9 @@ asked anything.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -36,19 +40,25 @@ from intake_agent.evals.scenarios import Scenario, load_scenarios
 from support import REPO
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Loads the scenarios once for the parametrised tests")
 SCENARIOS = load_scenarios(REPO / "data/evals/scenarios.jsonl")
 
 
 ########################################################################
+#                                                                      #
 #                           Evaluation tests                           #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the shape test")
 def test_twenty_scenarios_in_four_groups() -> None:

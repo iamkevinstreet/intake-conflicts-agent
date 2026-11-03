@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                backend/src/intake_agent/core/firm.py                 #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Gives read-only access to the firm's clients and adverse parties, the
 only view the searches get. The search tools see the firm only through
@@ -14,7 +16,9 @@ to make the database time out, and tests replace it with a list.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -30,12 +34,16 @@ from kds.logs import get_logger
 from intake_agent.core.store import Store
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists a client's standing with the firm")
 ClientStatus = Literal["current", "former"]
@@ -50,7 +58,9 @@ COUNTS = {
 
 
 ########################################################################
+#                                                                      #
 #                            Firm directory                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines one client of the firm")
 @dataclass(frozen=True)

@@ -1,3 +1,15 @@
+########################################################################
+#                                                                      #
+#                       frontend/.prettierignore                       #
+#                                                                      #
+########################################################################
+# Author:            Kevin Street
+# Created on:        2026-10-29
+# Last modified on:  2026-11-03
+#
+# What Prettier leaves alone: the build, coverage, the lockfile, and
+# Markdown, which has its own rules.
+
 dist
 coverage
 package-lock.json

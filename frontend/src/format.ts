@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #                        frontend/src/format.ts                        #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Writes values for people: verdicts, bands, outcomes and statuses in a
  * few words, and money, durations, times and tool arguments as text.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Local
 import { CONFIG } from './config';
@@ -19,13 +23,17 @@ import { required } from './lib/required';
 import type { Band, DraftStatus, Outcome, Recommendation } from './types';
 
 // ########################################################################
+// #                                                                      #
 // #                           Global constants                           #
+// #                                                                      #
 // ########################################################################
 // log.debug('Takes the milliseconds in a second, from the config')
 const MS = CONFIG.units.ms_per_second;
 
 // ########################################################################
+// #                                                                      #
 // #                           Local constants                            #
+// #                                                                      #
 // ########################################################################
 // log.debug('Sets the decimal places dollar amounts are shown with')
 const CENTS_PLACES = 4;
@@ -59,7 +67,9 @@ export const STATUSES: Readonly<Record<DraftStatus, string>> = {
 };
 
 // ########################################################################
+// #                                                                      #
 // #                             Display text                             #
+// #                                                                      #
 // ########################################################################
 // log.debug('Defines how a cost is written')
 /**

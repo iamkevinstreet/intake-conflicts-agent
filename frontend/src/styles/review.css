@@ -1,12 +1,14 @@
 /*
 ########################################################################
+#                                                                      #
 #                    frontend/src/styles/review.css                    #
+#                                                                      #
 ########################################################################
 */
 /*
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Styles the approver's page and the audit log: the list of drafts
  * beside the one being reviewed, the decision, the gate, and the runs
@@ -15,7 +17,9 @@
 
 /*
 ########################################################################
+#                                                                      #
 #                      Approvals and audit pages                       #
+#                                                                      #
 ########################################################################
 */
 .ia-review__grid {

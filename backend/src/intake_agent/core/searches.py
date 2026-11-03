@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #              backend/src/intake_agent/core/searches.py               #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Runs the two search tools for one run and remembers what each found.
 Both searches only read, through `Directory`, and retry a timed-out read
@@ -15,7 +17,9 @@ leave a match out or change its severity.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -38,12 +42,16 @@ from intake_agent.core.names import normalize
 from intake_agent.core.store import StoreTimeoutError
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Names the error key every refusal carries")
 ERROR = prompt.ERROR_KEY
@@ -52,7 +60,9 @@ NEXT = prompt.NEXT_KEY
 
 
 ########################################################################
+#                                                                      #
 #                             Search tools                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines what one search left behind")
 @dataclass(frozen=True)

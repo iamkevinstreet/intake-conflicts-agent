@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #               backend/src/intake_agent/core/prompt.py                #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Writes the agent's rules and its five tools as the model sees them. The
 rules are fixed in the system message; the email goes in the user
@@ -15,7 +17,9 @@ and what the tools accept cannot drift apart.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -31,12 +35,16 @@ from kds.logs import get_logger
 from intake_agent.core.models import DraftArgs, OpenArgs, SearchArgs, SubmitArgs
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the prompt's version, recorded with every run")
 VERSION = "2026-10-29"
@@ -147,7 +155,9 @@ TOOLS: tuple[ToolSpec, ...] = (
 
 
 ########################################################################
+#                                                                      #
 #                             Agent prompt                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the user message: the fenced email")
 def user_message(email: str | None = None) -> str:

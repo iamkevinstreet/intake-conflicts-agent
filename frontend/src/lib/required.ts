@@ -1,10 +1,12 @@
 // ########################################################################
+// #                                                                      #
 // #                     frontend/src/lib/required.ts                     #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Takes a function's arguments the way the code standard asks. Every
  * parameter has a default, null where there is no natural one, so a
@@ -15,7 +17,9 @@
  */
 
 // ########################################################################
+// #                                                                      #
 // #                          Required arguments                          #
+// #                                                                      #
 // ########################################################################
 // log.debug('Defines the step that takes an argument the caller must give')
 /**

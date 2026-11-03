@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                      backend/tests/conftest.py                       #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Gives every test its isolation and the fixtures most tests share: each
 test runs offline in an empty folder, with fresh settings, and may ask
@@ -12,7 +14,9 @@ for settings that write to its temporary folder and a seeded firm.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -31,13 +35,17 @@ from intake_agent.core.store import Store
 from support import REPO, seeded_store
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                            Test isolation                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the isolation every test gets")
 @pytest.fixture(autouse=True)

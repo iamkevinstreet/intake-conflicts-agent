@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #               frontend/src/components/IdentityBar.tsx                #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Shows who you are acting as: a made-up person in dev mode, or a note
  * in Entra ID mode.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Local
 import { required } from '../lib/required';
@@ -19,7 +23,9 @@ import { PERSONAS } from '../personas';
 import type { Health, Persona } from '../types';
 
 // ########################################################################
+// #                                                                      #
 // #                           Identity picker                            #
+// #                                                                      #
 // ########################################################################
 interface Props {
   health?: Health | null;

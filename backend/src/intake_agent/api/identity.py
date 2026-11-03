@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #               backend/src/intake_agent/api/identity.py               #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Works out who is calling: an Entra ID token checked against the tenant's
 keys, or dev headers locally. There are two modes, set by [auth] mode:
@@ -22,7 +24,9 @@ A failure is logged with its reason and never with the token.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -43,12 +47,16 @@ from intake_agent.config import AppSettings
 from intake_agent.core.models import Actor, Role
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the scheme a token header must use")
 SCHEME = "Bearer "
@@ -71,7 +79,9 @@ DENIED = "auth.denied"
 
 
 ########################################################################
+#                                                                      #
 #                               Sign-in                                #
+#                                                                      #
 ########################################################################
 # log.debug("Defines where signing keys come from")
 class KeySource(Protocol):

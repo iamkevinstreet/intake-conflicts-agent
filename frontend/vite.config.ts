@@ -1,10 +1,12 @@
 // ########################################################################
+// #                                                                      #
 // #                       frontend/vite.config.ts                        #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Sets the build, dev-server and test settings: React, the API proxy,
  * and jsdom for tests. It reads config/config.toml when the build
@@ -14,7 +16,9 @@
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Standard library
 import { readFileSync } from 'node:fs';
@@ -28,7 +32,9 @@ import { defineConfig } from 'vitest/config';
 import { required } from './src/lib/required.ts';
 
 // ########################################################################
+// #                                                                      #
 // #                           Local constants                            #
+// #                                                                      #
 // ########################################################################
 // log.debug('Sets the file every setting and shared value comes from')
 const CONFIG_FILE = new URL('../config/config.toml', import.meta.url);
@@ -38,7 +44,9 @@ const SETTINGS = parse(readFileSync(CONFIG_FILE, 'utf8'));
 const DEV_PORT = 5173;
 
 // ########################################################################
+// #                                                                      #
 // #                            Build settings                            #
+// #                                                                      #
 // ########################################################################
 // log.debug('Defines how one value is found in the config file')
 /**

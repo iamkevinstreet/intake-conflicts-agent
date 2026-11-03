@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                   backend/tests/test_conflicts.py                    #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the conflicts rules: the severity table, the verdict and both
 searches.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -34,12 +38,16 @@ from intake_agent.core.firm import AdverseRecord, ClientRecord
 from intake_agent.core.models import Match, Side
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets a few clients to search")
 CLIENTS = [
@@ -55,7 +63,9 @@ ADVERSE = [
 
 
 ########################################################################
+#                                                                      #
 #                        Conflicts rules tests                         #
+#                                                                      #
 ########################################################################
 # log.debug("Defines a match for the severity table")
 def _match(kind: str | None = None, band: str | None = None, status: str | None = None) -> Match:

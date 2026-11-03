@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #             backend/src/intake_agent/evals/scenarios.py              #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Loads the twenty scenarios and supplies the database timeout one of them
 needs. data/evals/scenarios.jsonl holds twenty intake emails, each with
@@ -15,7 +17,9 @@ database before any model is asked.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -35,12 +39,16 @@ from intake_agent.core.models import Outcome, Recommendation, RecordKind
 from intake_agent.core.store import StoreTimeoutError
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists the groups the measures are reported by")
 Category = Literal["conflict", "ambiguous", "clean", "failure"]
@@ -51,7 +59,9 @@ TIMEOUT = "simulated: the database did not answer"
 
 
 ########################################################################
+#                                                                      #
 #                         Evaluation scenarios                         #
+#                                                                      #
 ########################################################################
 # log.debug("Defines a record the checks should find")
 class Planted(BaseModel):

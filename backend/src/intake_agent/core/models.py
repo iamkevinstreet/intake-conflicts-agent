@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #               backend/src/intake_agent/core/models.py                #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Defines the shapes that cross a boundary: tool arguments and replies,
 matches, findings, drafts and decisions. Tool arguments arrive from the
@@ -14,7 +16,9 @@ are refused, so a tool cannot be handed an argument it does not declare.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -31,14 +35,18 @@ from intake_agent.config import MAX_PARTIES, SETTINGS
 from intake_agent.core.names import Band
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 # log.debug("Takes the shape of a draft id, from the config")
 DRAFT_ID: Final = SETTINGS.ids_draft_pattern
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists the verdicts on an intake, mildest first")
 Recommendation = Literal["clear", "review", "conflict"]
@@ -69,7 +77,9 @@ FROZEN = ConfigDict(frozen=True)
 
 
 ########################################################################
+#                                                                      #
 #                           Boundary shapes                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines who is acting: a person, or the agent on their behalf")
 class Actor(BaseModel):

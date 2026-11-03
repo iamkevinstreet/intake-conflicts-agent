@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                backend/src/intake_agent/core/plan.py                 #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Plans every row of the made-up firm database: the planted records, then
 made-up clients, matters and adverse parties until the counts in
@@ -18,7 +20,9 @@ seed always gives the same plan.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -37,12 +41,16 @@ from intake_agent.core.names import normalize, score_plain
 from intake_agent.core.planted import FirmFile
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists the kinds of matter the made-up records are")
 MATTER_KINDS = (
@@ -70,7 +78,9 @@ TRIES_PER_NAME = 50
 
 
 ########################################################################
+#                                                                      #
 #                           Made-up records                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the rows the database will hold")
 @dataclass

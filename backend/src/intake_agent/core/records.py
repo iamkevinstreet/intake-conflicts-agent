@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #               backend/src/intake_agent/core/records.py               #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Defines the audit records as the audit log reads them back: a run, each
 model call and tool call it made, and the totals a run finishes with.
@@ -12,7 +14,9 @@ Every record is frozen once built, as the database keeps it.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -27,19 +31,25 @@ from pydantic import BaseModel, ConfigDict
 from intake_agent.core.models import Outcome
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the settings shared by the audit records")
 FROZEN = ConfigDict(frozen=True)
 
 
 ########################################################################
+#                                                                      #
 #                            Audit records                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the record of one run")
 class RunRecord(BaseModel):

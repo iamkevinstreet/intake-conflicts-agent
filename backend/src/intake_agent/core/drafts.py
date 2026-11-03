@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #               backend/src/intake_agent/core/drafts.py                #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Keeps the drafts and their decisions, and opens a matter from an
 approved one: the approval gate, checked by role and record. A draft
@@ -18,12 +20,13 @@ always refused.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
 
-import hashlib
 import sqlite3
 from collections.abc import Callable
 from typing import Final, Literal
@@ -43,17 +46,28 @@ from intake_agent.core.models import (
     DraftStatus,
     NewMatter,
 )
+from intake_agent.core.refusals import (
+    DraftNotFoundError,
+    DraftStateError,
+    GateError,
+    ReasonRequiredError,
+    fingerprint,
+)
 from intake_agent.core.store import Store, utc_now
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 # log.debug("Takes the role that may decide drafts and open matters, from the config")
 APPROVER: Final = SETTINGS.roles_approver
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets how new matter numbers are written")
 NUMBER = "NM-{:05d}"
@@ -95,50 +109,10 @@ SET_STATUS = "UPDATE drafts SET status = ? WHERE id = ?"
 
 
 ########################################################################
+#                                                                      #
 #                            Approval gate                             #
+#                                                                      #
 ########################################################################
-# log.debug("Defines the family of refusals a draft action can meet")
-class DraftError(Exception):
-    """A draft action was refused; the message says why."""
-
-
-# log.debug("Defines the refusal for an unknown draft")
-class DraftNotFoundError(DraftError, LookupError):
-    """No draft has that id."""
-
-
-# log.debug("Defines the refusal for an action the draft's state does not allow")
-class DraftStateError(DraftError):
-    """The draft is in the wrong state for this action."""
-
-
-# log.debug("Defines the refusal for a caller who may not do this")
-class GateError(DraftError, PermissionError):
-    """The caller may not take this action on this draft."""
-
-
-# log.debug("Defines the refusal for approving a flagged draft without a reason")
-class ReasonRequiredError(DraftError, ValueError):
-    """Approving over a flagged check needs a written reason."""
-
-
-# log.debug("Defines the fingerprint an approval is bound to")
-def fingerprint(draft: Draft | None = None) -> str:
-    """Returns the SHA-256 of the draft's JSON, which never changes.
-
-    Args:
-        draft: The draft as saved. Required.
-
-    Returns:
-        The hash in hex, which an approval records and the database
-        compares with the saved draft's.
-    """
-    # log.debug("Takes the draft, which the caller must give")
-    draft = required(draft=draft)
-    # log.debug("Hashes the draft as saved")
-    return hashlib.sha256(draft.model_dump_json().encode()).hexdigest()
-
-
 # log.debug("Defines the book of drafts")
 class DraftBook:
     """Saves drafts and moves them through their states."""

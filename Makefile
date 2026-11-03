@@ -1,9 +1,11 @@
 ########################################################################
+#                                                                      #
 #                               Makefile                               #
+#                                                                      #
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-14
-# Last modified on:  2026-10-29
+# Last modified on:  2026-11-03
 #
 # Gives one command for each routine task: install, run, seed, check,
 # test, eval, audit, build.

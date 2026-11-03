@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #                 frontend/src/components/RunSteps.tsx                 #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Shows a run's audit trail: each model call and the tool calls it
  * asked for.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Local
 import { argumentsLine, money, seconds } from '../format';
@@ -19,7 +23,9 @@ import { required } from '../lib/required';
 import type { RunDetail } from '../types';
 
 // ########################################################################
+// #                                                                      #
 // #                              Run steps                               #
+// #                                                                      #
 // ########################################################################
 interface Props {
   detail?: RunDetail | null;

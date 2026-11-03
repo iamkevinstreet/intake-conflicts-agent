@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #               frontend/src/components/DecisionForm.tsx               #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Shows the approver's decision: approve or reject, with the reason a
  * flagged draft needs before it can be approved.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Third-party
 import { useState } from 'react';
@@ -22,7 +26,9 @@ import { required } from '../lib/required';
 import type { Decision, DraftRecord } from '../types';
 
 // ########################################################################
+// #                                                                      #
 // #                           Global constants                           #
+// #                                                                      #
 // ########################################################################
 // log.debug('Takes the shortest reason for approving past a flag, from the config')
 const MIN_REASON_CHARS = CONFIG.api.min_reason_chars;
@@ -30,7 +36,9 @@ const MIN_REASON_CHARS = CONFIG.api.min_reason_chars;
 const MAX_NOTE_CHARS = CONFIG.api.max_note_chars;
 
 // ########################################################################
+// #                                                                      #
 // #                            Decision form                             #
+// #                                                                      #
 // ########################################################################
 interface Props {
   record?: DraftRecord | null;

@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                    backend/tests/test_offline.py                     #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the offline stand-in: what its rules find, and the blind spot it
 documents.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -26,13 +30,17 @@ from intake_agent.core.store import Store
 from support import CONFLICT_EMAIL, REQUESTER, service
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                        Offline stand-in tests                        #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the extraction test")
 def test_the_signature_names_the_client() -> None:

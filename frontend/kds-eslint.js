@@ -1,10 +1,12 @@
 // ########################################################################
+// #                                                                      #
 // #                        frontend/kds-eslint.js                        #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Our own ESLint rule, kds/param-defaults: every parameter of a named
  * function has a default, null where there is no natural one, so a
@@ -16,7 +18,9 @@
  */
 
 // ########################################################################
+// #                                                                      #
 // #                           Local constants                            #
+// #                                                                      #
 // ########################################################################
 // log.debug('Sets the comment that marks a signature a library fixes')
 const FIXED_MARK = 'fixed:';
@@ -24,7 +28,9 @@ const FIXED_MARK = 'fixed:';
 const NAMING_PARENTS = new Set(['VariableDeclarator', 'MethodDefinition', 'PropertyDefinition']);
 
 // ########################################################################
+// #                                                                      #
 // #                            Parameter rule                            #
+// #                                                                      #
 // ########################################################################
 // log.debug('Defines the test for a function that has a name of its own')
 /**

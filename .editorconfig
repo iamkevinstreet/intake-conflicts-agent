@@ -1,9 +1,11 @@
 ########################################################################
+#                                                                      #
 #                            .editorconfig                             #
+#                                                                      #
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-29
-# Last modified on:  2026-10-29
+# Last modified on:  2026-11-03
 #
 # Sets what every editor reads: the 99-column margin, LF line endings,
 # a final newline and UTF-8.

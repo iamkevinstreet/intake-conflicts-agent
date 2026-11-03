@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                backend/src/intake_agent/evals/run.py                 #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Runs the scenarios on a fresh database, checks the gate and writes the
 results:
@@ -21,7 +23,9 @@ with a -latest.md copy the README links to.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -43,11 +47,12 @@ from pydantic import BaseModel
 # Local
 from intake_agent.config import AppSettings, get_app_settings
 from intake_agent.core.audit import RunLog
-from intake_agent.core.drafts import DraftBook, GateError
+from intake_agent.core.drafts import DraftBook
 from intake_agent.core.firm import SqliteDirectory
 from intake_agent.core.models import Actor
 from intake_agent.core.offline import adapter_for
 from intake_agent.core.records import RunDetail
+from intake_agent.core.refusals import GateError
 from intake_agent.core.seed import seed
 from intake_agent.core.service import IntakeResult, IntakeService
 from intake_agent.core.store import Store
@@ -55,12 +60,16 @@ from intake_agent.evals.scenarios import Scenario, directory_for, load_scenarios
 from intake_agent.evals.score import ScenarioScore, score, summarise
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the requester every scenario runs as")
 REQUESTER = Actor(user_id="eval:requester", name="Evaluation", roles=frozenset({"requester"}))
@@ -90,7 +99,9 @@ ROWS = (
 
 
 ########################################################################
+#                                                                      #
 #                          Evaluation runner                           #
+#                                                                      #
 ########################################################################
 # log.debug("Defines what the agent did on one scenario")
 class ScenarioTrace(BaseModel):

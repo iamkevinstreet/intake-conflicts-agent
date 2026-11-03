@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #                 frontend/src/pages/ApprovalsPage.tsx                 #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Shows the approver's page: pick a draft, weigh the findings, decide,
  * and open the matter.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Third-party
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -28,7 +32,9 @@ import { required } from '../lib/required';
 import type { Decision, DraftRecord, Persona } from '../types';
 
 // ########################################################################
+// #                                                                      #
 // #                            Approvals page                            #
+// #                                                                      #
 // ########################################################################
 interface Props {
   persona?: Persona | null;

@@ -1,10 +1,12 @@
 // ########################################################################
+// #                                                                      #
 // #                          frontend/node.d.ts                          #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Declares the one Node function vite.config.ts uses to read
  * config/config.toml, so the rest of the frontend is still checked
@@ -12,7 +14,9 @@
  */
 
 // ########################################################################
+// #                                                                      #
 // #                          Node declarations                           #
+// #                                                                      #
 // ########################################################################
 declare module 'node:fs' {
   /**

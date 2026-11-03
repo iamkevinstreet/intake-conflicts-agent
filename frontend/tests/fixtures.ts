@@ -1,22 +1,28 @@
 // ########################################################################
+// #                                                                      #
 // #                      frontend/tests/fixtures.ts                      #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Holds the made-up API responses the page tests stub the client with.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Local
 import type { DraftRecord, Example, IntakeResponse, RunDetail } from '../src/types';
 
 // ########################################################################
+// #                                                                      #
 // #                           Local constants                            #
+// #                                                                      #
 // ########################################################################
 // log.debug('Sets a pending draft whose checks found a conflict the agent missed')
 export const PENDING: DraftRecord = {

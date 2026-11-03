@@ -1,9 +1,11 @@
 ########################################################################
+#                                                                      #
 #                       .github/workflows/ci.yml                       #
+#                                                                      #
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-14
-# Last modified on:  2026-10-29
+# Last modified on:  2026-11-03
 #
 # Runs on every push and pull request: the secrets scan, lint, types,
 # the code standard, the tests, the offline evaluation and the audits.

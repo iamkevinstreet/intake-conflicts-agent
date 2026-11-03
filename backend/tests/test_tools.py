@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                     backend/tests/test_tools.py                      #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the five tools: the draft guard, findings from searches, scope,
 retries and the audit.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -34,13 +38,17 @@ from intake_agent.evals.scenarios import TimeoutDirectory
 from support import CONFLICT_EMAIL, REQUESTER, draft_args
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                              Tool tests                              #
+#                                                                      #
 ########################################################################
 # log.debug("Defines a toolbox for one run")
 @pytest.fixture

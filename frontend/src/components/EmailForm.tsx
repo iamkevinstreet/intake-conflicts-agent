@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #                frontend/src/components/EmailForm.tsx                 #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Shows the intake form: paste an email or try a made-up example,
  * within the length limits.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Third-party
 import { useState } from 'react';
@@ -22,7 +26,9 @@ import { required } from '../lib/required';
 import type { Example } from '../types';
 
 // ########################################################################
+// #                                                                      #
 // #                           Global constants                           #
+// #                                                                      #
 // ########################################################################
 // log.debug('Takes the shortest email the API accepts, from the config')
 const MIN_EMAIL_CHARS = CONFIG.agent.min_email_chars;
@@ -30,7 +36,9 @@ const MIN_EMAIL_CHARS = CONFIG.agent.min_email_chars;
 const MAX_EMAIL_CHARS = CONFIG.agent.max_email_chars;
 
 // ########################################################################
+// #                                                                      #
 // #                             Intake form                              #
+// #                                                                      #
 // ########################################################################
 interface Props {
   examples?: Example[];

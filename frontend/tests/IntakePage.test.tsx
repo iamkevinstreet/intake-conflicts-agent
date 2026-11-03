@@ -1,16 +1,20 @@
 // ########################################################################
+// #                                                                      #
 // #                  frontend/tests/IntakePage.test.tsx                  #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Tests the requester's page end to end against a stubbed API.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Third-party
 import { render, screen } from '@testing-library/react';
@@ -23,13 +27,17 @@ import { IntakePage } from '../src/pages/IntakePage';
 import { DETAIL, EXAMPLES, SUBMITTED } from './fixtures';
 
 // ########################################################################
+// #                                                                      #
 // #                           Local constants                            #
+// #                                                                      #
 // ########################################################################
 // log.debug('Sets the requester the page acts as')
 const AVERY = { name: 'Avery Stone', role: 'requester' } as const;
 
 // ########################################################################
+// #                                                                      #
 // #                          Intake page tests                           #
+// #                                                                      #
 // ########################################################################
 // log.debug('Describes the intake page')
 describe('IntakePage', () => {

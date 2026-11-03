@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #               backend/src/intake_agent/core/service.py               #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Runs one intake end to end, the path the API and the evaluation share.
 It opens the run's audit record, flags order-giving lines in the email,
@@ -15,7 +17,9 @@ evaluation meets the same limits.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -45,7 +49,9 @@ from intake_agent.core.store import new_id
 from intake_agent.core.tools import Toolbox
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 # log.debug("Takes the milliseconds in a second, from the config")
@@ -53,7 +59,9 @@ MS: Final = SETTINGS.units_ms_per_second
 
 
 ########################################################################
+#                                                                      #
 #                            Intake service                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the result of one intake")
 @dataclass(frozen=True)

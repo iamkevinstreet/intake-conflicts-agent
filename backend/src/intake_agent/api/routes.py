@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                backend/src/intake_agent/api/routes.py                #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Serves the routes for requesters and for everyone signed in:
 
@@ -17,7 +19,9 @@ Serves the routes for requesters and for everyone signed in:
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -39,7 +43,9 @@ from intake_agent.core.models import Actor
 from intake_agent.core.records import RunDetail, RunRecord
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 # log.debug("Takes the path every route lives under, from the config")
@@ -57,7 +63,9 @@ REQUESTER: Final = SETTINGS.roles_requester
 
 
 ########################################################################
+#                                                                      #
 #                           Requester routes                           #
+#                                                                      #
 ########################################################################
 # log.debug("Creates the router under the API prefix")
 router = APIRouter(prefix=PREFIX)

@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                backend/src/intake_agent/core/store.py                #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Opens the SQLite database and keeps its schema, migrations and the
 triggers that hold the gate and the audit rules. The schema carries the
@@ -16,7 +18,9 @@ only as numbered migrations.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -33,12 +37,16 @@ from kds.args import required
 from kds.logs import get_logger, log_event
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists the migrations in order; the database records how many have run")
 MIGRATIONS: tuple[str, ...] = (
@@ -182,7 +190,9 @@ MIGRATIONS: tuple[str, ...] = (
 
 
 ########################################################################
+#                                                                      #
 #                            Firm database                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the clock every record is stamped with: UTC, to the second")
 def utc_now() -> str:

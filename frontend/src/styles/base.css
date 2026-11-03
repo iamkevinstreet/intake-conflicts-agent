@@ -1,12 +1,14 @@
 /*
 ########################################################################
+#                                                                      #
 #                     frontend/src/styles/base.css                     #
+#                                                                      #
 ########################################################################
 */
 /*
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Styles the frame every page shares: the page, the top bar, the
  * footer, the controls, the verdict badges, the tables, focus, and the
@@ -15,7 +17,9 @@
 
 /*
 ########################################################################
+#                                                                      #
 #                          Shared page frame                           #
+#                                                                      #
 ########################################################################
 */
 *,

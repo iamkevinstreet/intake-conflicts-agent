@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #                        frontend/src/types.ts                         #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Defines the API's shapes in TypeScript, as the backend's pydantic
  * models return them.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                              API shapes                              #
+// #                                                                      #
 // ########################################################################
 export type Recommendation = 'clear' | 'review' | 'conflict';
 

@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                 backend/src/intake_agent/api/app.py                  #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Builds the HTTP app: startup, request ids, security headers, hosts, size
 limits and CORS. Every response carries the request id and security
@@ -16,7 +18,9 @@ internal.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -46,7 +50,9 @@ from intake_agent.api.state import build_services, build_verifier
 from intake_agent.config import SETTINGS, AppSettings, get_app_settings
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 # log.debug("Takes the path every route lives under, from the config")
@@ -57,7 +63,9 @@ REQUEST_ID: Final = SETTINGS.api_request_id_header
 MS: Final = SETTINGS.units_ms_per_second
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Matches a request id a client may supply")
 REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
@@ -89,7 +97,9 @@ Next = Callable[[Request], Awaitable[Response]]
 
 
 ########################################################################
+#                                                                      #
 #                               HTTP app                               #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the app, whose API schema describes each route by its summary")
 class App(FastAPI):

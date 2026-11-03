@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #              backend/src/intake_agent/core/conflicts.py              #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Applies the conflicts rules: what a search returns, how serious each
 match is, and the verdict. These are plain functions of the firm's
@@ -24,7 +26,9 @@ The rules, for a match at or above the possible threshold:
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -43,7 +47,9 @@ from intake_agent.core.models import Finding, Match, Recommendation, Severity, S
 from intake_agent.core.names import Band, band, normalize, score_plain
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 # log.debug("Takes the bands strong enough to call a conflict outright, from the config")
@@ -54,14 +60,18 @@ REVIEW: Final = SETTINGS.verdicts_review
 CONFLICT: Final = SETTINGS.verdicts_conflict
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Orders the verdicts from mildest to strictest")
 ORDER: dict[Recommendation, int] = {"clear": 0, "review": 1, "conflict": 2}
 
 
 ########################################################################
+#                                                                      #
 #                           Conflicts rules                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines a search of the clients")
 def search_clients(

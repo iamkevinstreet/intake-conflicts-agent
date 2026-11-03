@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                backend/src/intake_agent/core/seed.py                 #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Builds the made-up firm database once: the planted records from
 data/samples/firm.json, then about 500 made-up names around them, as the
@@ -14,7 +16,9 @@ the same database.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -33,13 +37,17 @@ from intake_agent.core.planted import load_firm
 from intake_agent.core.store import Store
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                            Database seed                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines what seeding did")
 @dataclass(frozen=True)

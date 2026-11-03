@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #                  frontend/src/pages/IntakePage.tsx                   #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Shows the requester's page: paste an email, run the agent, and see
  * everything it did.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Third-party
 import { useEffect, useState } from 'react';
@@ -28,7 +32,9 @@ import { required } from '../lib/required';
 import type { Example, IntakeResponse, Persona, RunDetail } from '../types';
 
 // ########################################################################
+// #                                                                      #
 // #                             Intake page                              #
+// #                                                                      #
 // ########################################################################
 interface Props {
   persona?: Persona | null;

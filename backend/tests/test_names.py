@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                     backend/tests/test_names.py                      #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests name matching: plain forms, scores, bands, and every near
 duplicate caught.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -27,13 +31,17 @@ from kds.synthetic import NameGen, near_duplicates
 from intake_agent.core.names import band, normalize, score
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                         Name matching tests                          #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the plain-form cases")
 @pytest.mark.parametrize(

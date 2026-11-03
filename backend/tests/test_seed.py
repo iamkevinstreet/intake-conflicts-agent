@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                      backend/tests/test_seed.py                      #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the made-up firm: about 500 names, repeatable, and clear of every
 planted name.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -31,13 +35,17 @@ from intake_agent.core.seed import seed
 from intake_agent.core.store import Store
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                          Firm seeding tests                          #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the size test")
 def test_about_500_names(store: Store, settings: AppSettings) -> None:

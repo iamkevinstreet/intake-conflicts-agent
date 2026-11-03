@@ -1,9 +1,11 @@
 ########################################################################
+#                                                                      #
 #                        backend/pyproject.toml                        #
+#                                                                      #
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-29
-# Last modified on:  2026-10-29
+# Last modified on:  2026-11-03
 #
 # Packages the intake service and sets ruff, mypy and pytest to the code
 # standard.
@@ -17,12 +19,12 @@ requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
 dependencies = [
-  "kds-args>=0.4.0,<0.5",
-  "kds-settings>=0.4.0,<0.5",
-  "kds-logs>=0.4.0,<0.5",
-  "kds-llm>=0.4.0,<0.5",
-  "kds-evals>=0.4.0,<0.5",
-  "kds-synthetic>=0.4.0,<0.5",
+  "kds-args>=0.5.0,<0.6",
+  "kds-settings>=0.5.0,<0.6",
+  "kds-logs>=0.5.0,<0.6",
+  "kds-llm>=0.5.0,<0.6",
+  "kds-evals>=0.5.0,<0.6",
+  "kds-synthetic>=0.5.0,<0.6",
   "fastapi>=0.115",
   "uvicorn>=0.32",
   "rapidfuzz>=3.9",
@@ -36,21 +38,21 @@ dev = [
   "pip-audit>=2.7",
   "pytest>=8.3",
   "ruff==0.17.3",
-  "kds-standards>=0.4.0,<0.5",
-  "kds-diagrams>=0.4.0,<0.5",
+  "kds-standards>=0.5.0,<0.6",
+  "kds-diagrams>=0.5.0,<0.6",
 ]
 
 # Our own packages come from the utils repository at one reviewed commit; none
 # of them is on PyPI, so a same-named public package can never be installed.
 [tool.uv.sources]
-kds-args = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "args", rev = "62a38c5a3ecf667e3e227b18412abd77759c38d5" }
-kds-settings = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "settings", rev = "62a38c5a3ecf667e3e227b18412abd77759c38d5" }
-kds-logs = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "logs", rev = "62a38c5a3ecf667e3e227b18412abd77759c38d5" }
-kds-llm = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "llm", rev = "62a38c5a3ecf667e3e227b18412abd77759c38d5" }
-kds-evals = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "evals", rev = "62a38c5a3ecf667e3e227b18412abd77759c38d5" }
-kds-synthetic = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "synthetic", rev = "62a38c5a3ecf667e3e227b18412abd77759c38d5" }
-kds-standards = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "standards", rev = "62a38c5a3ecf667e3e227b18412abd77759c38d5" }
-kds-diagrams = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "diagrams", rev = "62a38c5a3ecf667e3e227b18412abd77759c38d5" }
+kds-args = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "args", rev = "fcac0477e1caadccf1e2d7580ce648258c5a79fa" }
+kds-settings = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "settings", rev = "fcac0477e1caadccf1e2d7580ce648258c5a79fa" }
+kds-logs = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "logs", rev = "fcac0477e1caadccf1e2d7580ce648258c5a79fa" }
+kds-llm = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "llm", rev = "fcac0477e1caadccf1e2d7580ce648258c5a79fa" }
+kds-evals = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "evals", rev = "fcac0477e1caadccf1e2d7580ce648258c5a79fa" }
+kds-synthetic = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "synthetic", rev = "fcac0477e1caadccf1e2d7580ce648258c5a79fa" }
+kds-standards = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "standards", rev = "fcac0477e1caadccf1e2d7580ce648258c5a79fa" }
+kds-diagrams = { git = "https://github.com/iamkevinstreet/utils", subdirectory = "diagrams", rev = "fcac0477e1caadccf1e2d7580ce648258c5a79fa" }
 
 [build-system]
 requires = ["setuptools>=69", "wheel"]

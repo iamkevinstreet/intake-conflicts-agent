@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #              backend/src/intake_agent/api/approvals.py               #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Serves the routes for drafts: review, decide and open, with each refusal
 mapped to its status.
@@ -18,7 +20,9 @@ mapped to its status.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -34,16 +38,18 @@ from intake_agent.api.identity import current_actor, require
 from intake_agent.api.schemas import DecisionRequest
 from intake_agent.api.state import Services, services
 from intake_agent.config import SETTINGS
-from intake_agent.core.drafts import (
+from intake_agent.core.models import Actor, DraftRecord, DraftStatus, NewMatter
+from intake_agent.core.refusals import (
     DraftNotFoundError,
     DraftStateError,
     GateError,
     ReasonRequiredError,
 )
-from intake_agent.core.models import Actor, DraftRecord, DraftStatus, NewMatter
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 # log.debug("Takes the path every route lives under, from the config")
@@ -58,14 +64,18 @@ DEFAULT_LIST: Final = SETTINGS.api_list_limit
 APPROVER: Final = SETTINGS.roles_approver
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the answer for a draft that does not exist or is not the caller's")
 NOT_FOUND = "no such draft"
 
 
 ########################################################################
+#                                                                      #
 #                           Approval routes                            #
+#                                                                      #
 ########################################################################
 # log.debug("Creates the router for drafts")
 router = APIRouter(prefix=f"{PREFIX}/drafts")

@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                backend/src/intake_agent/core/agent.py                #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Runs the agent loop: model calls and tool calls within step, tool-call
 and budget limits. Each step is one model call. The model may ask for
@@ -17,7 +19,9 @@ cost.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -37,12 +41,16 @@ from intake_agent.core.models import Outcome
 from intake_agent.core.tools import Toolbox
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the longest stretch of the model's last words kept as a reason")
 REASON_CHARS = 300
@@ -53,7 +61,9 @@ INCOMPLETE: Outcome = "incomplete"
 
 
 ########################################################################
+#                                                                      #
 #                              Agent loop                              #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the meter a run's spending is counted on")
 @dataclass

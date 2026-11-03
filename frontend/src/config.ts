@@ -1,10 +1,12 @@
 // ########################################################################
+// #                                                                      #
 // #                        frontend/src/config.ts                        #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Holds the web app's settings, frozen: the keys of config/config.toml
  * the browser needs, which the build reads from the file, and the API's
@@ -13,7 +15,9 @@
  */
 
 // ########################################################################
+// #                                                                      #
 // #                           Local constants                            #
+// #                                                                      #
 // ########################################################################
 // log.debug('Takes the keys of config/config.toml the build passed in')
 const BUILT = __CONFIG__;

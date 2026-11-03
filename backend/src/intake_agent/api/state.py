@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                backend/src/intake_agent/api/state.py                 #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Builds the services the routes share, once, when the app starts, and the
 Entra ID token check when sign-in needs one. Routes reach the services
@@ -12,7 +14,9 @@ through the `services` dependency.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -41,13 +45,17 @@ from intake_agent.core.store import Store
 from intake_agent.evals.scenarios import load_scenarios
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                             App services                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the services the routes share")
 @dataclass(frozen=True)

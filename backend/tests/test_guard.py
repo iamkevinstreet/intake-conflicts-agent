@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                     backend/tests/test_guard.py                      #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the email guard: injections flagged, ordinary intake lines left
 alone.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -24,13 +28,17 @@ from kds.logs import get_logger
 from intake_agent.core.guard import flag
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                        Injection check tests                         #
+#                                                                      #
 ########################################################################
 # log.debug("Defines lines that give the agent orders")
 @pytest.mark.parametrize(

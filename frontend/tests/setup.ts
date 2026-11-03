@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #                       frontend/tests/setup.ts                        #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Sets up every test: the DOM matchers, the trace logger, and a clean
  * page after each one.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Third-party
 import '@testing-library/jest-dom/vitest';
@@ -22,7 +26,9 @@ import { afterEach, vi } from 'vitest';
 import '../src/log';
 
 // ########################################################################
+// #                                                                      #
 // #                              Test setup                              #
+// #                                                                      #
 // ########################################################################
 // log.debug('Removes rendered pages and restores stubbed functions after each test')
 afterEach(() => {

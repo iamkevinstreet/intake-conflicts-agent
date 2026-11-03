@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #                 frontend/src/components/Verdicts.tsx                 #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Shows the verdict the approver sees beside the two it comes from: the
  * agent's and the checks'.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Local
 import { required } from '../lib/required';
@@ -19,7 +23,9 @@ import type { Draft } from '../types';
 import { VerdictBadge } from './VerdictBadge';
 
 // ########################################################################
+// #                                                                      #
 // #                          Verdict comparison                          #
+// #                                                                      #
 // ########################################################################
 interface Props {
   draft?: Draft | null;

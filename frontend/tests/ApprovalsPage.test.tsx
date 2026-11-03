@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #                frontend/tests/ApprovalsPage.test.tsx                 #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Tests the approver's page: the reason rule, the decision and the
  * gate.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Third-party
 import { render, screen } from '@testing-library/react';
@@ -25,7 +29,9 @@ import type { DraftRecord } from '../src/types';
 import { PENDING } from './fixtures';
 
 // ########################################################################
+// #                                                                      #
 // #                           Local constants                            #
+// #                                                                      #
 // ########################################################################
 // log.debug('Sets the approver the page acts as')
 const JORDAN = { name: 'Jordan Reyes', role: 'approver' } as const;
@@ -41,7 +47,9 @@ const APPROVAL = {
 } as const;
 
 // ########################################################################
+// #                                                                      #
 // #                         Approvals page tests                         #
+// #                                                                      #
 // ########################################################################
 // log.debug('Describes the approvals page')
 describe('ApprovalsPage', () => {

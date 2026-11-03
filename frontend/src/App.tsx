@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #                         frontend/src/App.tsx                         #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Shows the app's shell: the top bar, who you are acting as, and the
  * three views, one at a time as the address names them.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Third-party
 import { useEffect, useState } from 'react';
@@ -28,7 +32,9 @@ import { PERSONAS } from './personas';
 import type { Health, Persona } from './types';
 
 // ########################################################################
+// #                                                                      #
 // #                           Local constants                            #
+// #                                                                      #
 // ########################################################################
 // log.debug('Takes the first made-up person as the starting identity')
 const FIRST: Persona = PERSONAS[0] ?? { name: 'Avery Stone', role: 'requester' };
@@ -40,7 +46,9 @@ const VIEWS: readonly { id: View; label: string }[] = [
 ];
 
 // ########################################################################
+// #                                                                      #
 // #                              App shell                               #
+// #                                                                      #
 // ########################################################################
 type View = 'intake' | 'approvals' | 'audit';
 

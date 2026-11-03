@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #                      frontend/tests/api.test.ts                      #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Tests the API client's identity headers and error explanations, and
  * the formatting helpers.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Third-party
 import { describe, expect, it, vi } from 'vitest';
@@ -21,7 +25,9 @@ import { ApiError, api, describeError } from '../src/api';
 import { argumentsLine, money } from '../src/format';
 
 // ########################################################################
+// #                                                                      #
 // #                           API client tests                           #
+// #                                                                      #
 // ########################################################################
 // log.debug('Describes the client')
 describe('api', () => {

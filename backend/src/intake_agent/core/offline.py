@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #               backend/src/intake_agent/core/offline.py               #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Plays the agent offline, with fixed rules and no model or key. It makes
 the service run with no key and gives the evaluation a baseline a model
@@ -25,7 +27,9 @@ other way. The evaluation reports how much that costs.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -48,7 +52,9 @@ from intake_agent.core.models import DraftArgs, Recommendation, SearchArgs, Subm
 from intake_agent.core.names import normalize
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 # log.debug("Takes the bands the firm's rules treat as strong, from the config")
@@ -61,7 +67,9 @@ REVIEW: Final = SETTINGS.verdicts_review
 CLEAR: Final = SETTINGS.verdicts_clear
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Names the model the stand-in reports; it is priced at zero")
 STAND_IN = "fake-model"
@@ -104,7 +112,9 @@ CHECK_FAILED = "The conflicts check could not be completed: the database did not
 
 
 ########################################################################
+#                                                                      #
 #                           Offline stand-in                           #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the stand-in's reply to the conversation so far")
 def respond(messages: list[Message] | None = None) -> str | dict[str, Any]:

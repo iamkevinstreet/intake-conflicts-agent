@@ -1,29 +1,37 @@
 // ########################################################################
+// #                                                                      #
 // #              frontend/src/components/OfflineNotice.tsx               #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Shows a notice that fixed rules, not a model, are playing the agent,
  * and what they miss.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Local
 import type { Health } from '../types';
 
 // ########################################################################
+// #                                                                      #
 // #                           Local constants                            #
+// #                                                                      #
 // ########################################################################
 // log.debug('Names the provider that means the offline stand-in')
 const OFFLINE_PROVIDER = 'fake';
 
 // ########################################################################
+// #                                                                      #
 // #                            Offline notice                            #
+// #                                                                      #
 // ########################################################################
 interface Props {
   health?: Health | null;

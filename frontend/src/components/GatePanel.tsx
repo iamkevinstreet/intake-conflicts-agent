@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #                frontend/src/components/GatePanel.tsx                 #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Shows the gate: the decision record, and the button that opens the
  * matter, which only an approved draft allows.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Local
 import { STATUSES, when } from '../format';
@@ -19,7 +23,9 @@ import { required } from '../lib/required';
 import type { DraftRecord } from '../types';
 
 // ########################################################################
+// #                                                                      #
 // #                            Approval gate                             #
+// #                                                                      #
 // ########################################################################
 interface Props {
   record?: DraftRecord | null;

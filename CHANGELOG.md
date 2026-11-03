@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **The box:** every file's header box and every section banner is five lines now: a border, a
+  blank walled line, the title, another blank walled line and a border. The shared packages are
+  pinned to utils v0.5.0, commit `fcac0477e1caadccf1e2d7580ce648258c5a79fa`, whose checker asks for
+  that form and whose `stamp` brought every file to it. The dotfiles that take `#` comments carry
+  a header like the Makefile. No code changed.
+
 ## v0.2.0, Oct 29, 2026
 
 The code moves to the updated code standard: a new place for the package and the settings, and a new

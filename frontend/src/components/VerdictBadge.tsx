@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #               frontend/src/components/VerdictBadge.tsx               #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Shows a verdict as a coloured label: conflict, a person to decide, or
  * clear.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Local
 import { VERDICTS } from '../format';
@@ -19,7 +23,9 @@ import { required } from '../lib/required';
 import type { Recommendation } from '../types';
 
 // ########################################################################
+// #                                                                      #
 // #                            Verdict badge                             #
+// #                                                                      #
 // ########################################################################
 interface Props {
   verdict?: Recommendation | null;

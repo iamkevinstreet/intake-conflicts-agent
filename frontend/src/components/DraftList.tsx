@@ -1,17 +1,21 @@
 // ########################################################################
+// #                                                                      #
 // #                frontend/src/components/DraftList.tsx                 #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Lists the drafts to pick from: client, matter, verdict, status, who
  * asked and when.
  */
 
 // ########################################################################
+// #                                                                      #
 // #                               Imports                                #
+// #                                                                      #
 // ########################################################################
 // Local
 import { STATUSES, when } from '../format';
@@ -20,7 +24,9 @@ import type { DraftRecord } from '../types';
 import { VerdictBadge } from './VerdictBadge';
 
 // ########################################################################
+// #                                                                      #
 // #                              Draft list                              #
+// #                                                                      #
 // ########################################################################
 interface Props {
   records?: DraftRecord[];

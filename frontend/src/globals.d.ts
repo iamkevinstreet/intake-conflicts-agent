@@ -1,10 +1,12 @@
 // ########################################################################
+// #                                                                      #
 // #                      frontend/src/globals.d.ts                       #
+// #                                                                      #
 // ########################################################################
 /**
  * Author:            Kevin Street
  * Created on:        2026-10-29
- * Last modified on:  2026-10-29
+ * Last modified on:  2026-11-03
  *
  * Declares the globals every module may use: the trace logger, the keys
  * of config/config.toml the build passes to the browser, and the one
@@ -12,7 +14,9 @@
  */
 
 // ########################################################################
+// #                                                                      #
 // #                         Global declarations                          #
+// #                                                                      #
 // ########################################################################
 declare const log: { debug(message: string): void };
 

@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                backend/src/intake_agent/core/guard.py                #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Finds lines in an intake email that give orders to the agent, for the
 approver to see. An intake email is data. A line in it that addresses
@@ -15,7 +17,9 @@ draft so the approver sees exactly what the email tried.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -27,12 +31,16 @@ from kds.args import required
 from kds.logs import get_logger
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists patterns of text that gives orders to an agent or a system")
 PATTERNS = tuple(
@@ -59,7 +67,9 @@ SHOWN_CHARS = 200
 
 
 ########################################################################
+#                                                                      #
 #                           Injection check                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the check that finds order-giving lines")
 def flag(text: str | None = None) -> list[str]:

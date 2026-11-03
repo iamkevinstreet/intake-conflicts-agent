@@ -1,9 +1,11 @@
 ########################################################################
+#                                                                      #
 #                        .github/dependabot.yml                        #
+#                                                                      #
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-29
-# Last modified on:  2026-10-29
+# Last modified on:  2026-11-03
 #
 # Opens weekly pull requests that update the pinned Actions, the uv
 # lockfile and the npm lockfile.

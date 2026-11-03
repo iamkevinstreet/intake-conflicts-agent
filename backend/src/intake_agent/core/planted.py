@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #               backend/src/intake_agent/core/planted.py               #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Reads data/samples/firm.json: the clients and matters the evaluation's
 scenarios are written around, and the names the scenarios use for
@@ -13,7 +15,9 @@ it, so a matter cannot name a client the file does not plant.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -31,19 +35,25 @@ from pydantic import BaseModel, Field, model_validator
 from intake_agent.core.firm import ClientStatus, MatterStatus
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Matches a matter number")
 MATTER_NUMBER = r"^M-\d{4}$"
 
 
 ########################################################################
+#                                                                      #
 #                         Planted-records file                         #
+#                                                                      #
 ########################################################################
 # log.debug("Defines a planted client")
 class PlantedClient(BaseModel):

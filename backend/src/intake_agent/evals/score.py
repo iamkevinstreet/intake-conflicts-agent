@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #               backend/src/intake_agent/evals/score.py                #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Scores each run against its scenario and sums the measures the README
 reports. Every measure is a count a reader can repeat by hand from the
@@ -21,7 +23,9 @@ results JSON, with no model judging another:
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -43,14 +47,18 @@ from intake_agent.core.service import IntakeResult
 from intake_agent.evals.scenarios import Category, Scenario
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 # log.debug("Takes the verdict that sends a draft to a person, from the config")
 REVIEW: Final = SETTINGS.verdicts_review
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the name score at which a drafted party counts as the expected one")
 SAME_PARTY = 92
@@ -71,7 +79,9 @@ FAILURE: Category = "failure"
 
 
 ########################################################################
+#                                                                      #
 #                               Scoring                                #
+#                                                                      #
 ########################################################################
 # log.debug("Defines one scenario's score")
 class ScenarioScore(BaseModel):

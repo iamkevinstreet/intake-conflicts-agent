@@ -1,9 +1,11 @@
 ########################################################################
+#                                                                      #
 #                   .github/workflows/eval-live.yml                    #
+#                                                                      #
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-29
-# Last modified on:  2026-10-29
+# Last modified on:  2026-11-03
 #
 # Runs the twenty scenarios with a real model as the agent when started
 # by hand, and commits the results to a branch.

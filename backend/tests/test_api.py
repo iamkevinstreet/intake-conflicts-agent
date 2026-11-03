@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                      backend/tests/test_api.py                       #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the HTTP service: roles, the gate's routes, what each caller may
 see, the limits, the hosts and the headers.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -32,12 +36,16 @@ from intake_agent.config import AppSettings
 from support import CONFLICT_EMAIL, good_turns, scripted, submit
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the headers of the requester")
 AVERY = {"X-Dev-User": "Avery Stone", "X-Dev-Role": "requester"}
@@ -50,7 +58,9 @@ REASON = {"decision": "approved", "note": "Waiver signed by both clients, on fil
 
 
 ########################################################################
+#                                                                      #
 #                              HTTP tests                              #
+#                                                                      #
 ########################################################################
 # log.debug("Defines a client around an app with a scripted model")
 def _client(

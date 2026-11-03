@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                     backend/tests/test_agent.py                      #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the agent loop and the intake service: the limits, outages and
 timeouts, and what each run records.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -43,12 +47,16 @@ from support import (
 )
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists the outages to try: the fakes' kind, and a real SDK's after its retries")
 OUTAGES = (
@@ -58,7 +66,9 @@ OUTAGES = (
 
 
 ########################################################################
+#                                                                      #
 #                           Agent loop tests                           #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the happy path")
 def test_a_good_run_is_submitted_and_audited(settings: AppSettings, store: Store) -> None:

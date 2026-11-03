@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                backend/src/intake_agent/core/audit.py                #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Writes and reads the audit log: one record per run, model call and tool
 call, the email only as a hash. Each tool call is written with its
@@ -18,7 +20,9 @@ approver sees. The database refuses any edit to a finished record
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -46,12 +50,16 @@ from intake_agent.core.records import (
 from intake_agent.core.store import Store, utc_now
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Names the column that holds a tool call's arguments")
 ARGUMENTS = "arguments"
@@ -65,7 +73,9 @@ RUN_MANY = (
 
 
 ########################################################################
+#                                                                      #
 #                              Audit log                               #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the fingerprint of any JSON value")
 def digest(value: Any = None) -> str:

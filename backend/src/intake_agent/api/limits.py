@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                backend/src/intake_agent/api/limits.py                #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Limits each person's intakes over a rolling minute. It keeps recent
 request times in memory, per person, so it holds for one server process.
@@ -14,7 +16,9 @@ questions.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -29,19 +33,25 @@ from kds.args import required
 from kds.logs import get_logger
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = get_logger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the window the limit counts over, in seconds")
 WINDOW_S = 60.0
 
 
 ########################################################################
+#                                                                      #
 #                              Rate limit                              #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the limiter")
 class RateLimiter:
