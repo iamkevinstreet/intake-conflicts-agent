@@ -1,14 +1,17 @@
 # backend
 
-The intake service and its evaluation, in Python 3.12, managed with [uv](https://docs.astral.sh/uv/).
-Run every command from the repository root, where `config/` and `data/` are.
+The intake service, its evaluation and the evaluation dashboard, in Python 3.12, managed with
+[uv](https://docs.astral.sh/uv/). Run every command from the repository root, where `config/` and
+`data/` are.
 
 ```sh
-make install          # the locked dependencies, hashes checked
+make install          # the locked dependencies with the dashboard, hashes checked
 make api              # the service on http://127.0.0.1:8000
 make check-backend    # ruff, mypy (strict), kds-standards
-make test-backend     # 153 tests, offline
+make test-backend     # 169 tests, offline
 make eval             # the 20 scenarios with the offline stand-in
+make dashboard        # the evaluation dashboard on http://127.0.0.1:8050
+make publish          # the figures, the Tableau CSV files and the index, from the saved runs
 ```
 
 ## The package
@@ -36,9 +39,25 @@ make eval             # the 20 scenarios with the offline stand-in
 | `core/guard.py` | Finds order-giving lines in an email for the approver |
 | `core/offline.py` | Fixed rules that play the agent with no model |
 | `api/` | FastAPI: sign-in (`identity.py`), routes, limits, the app factory |
-| `evals/` | The scenarios, the scorers and the runner |
+| `evals/scenarios.py`, `evals/score.py`, `evals/run.py` | The scenarios, the scorers and the runner |
+| `evals/shares.py` | How a number and a share are written, by the same rules as the case study |
+| `evals/export.py`, `evals/index.py` | The Tableau CSV files and the index the case study reads |
+| `dashboard/` | The Dash dashboard over the saved runs, and the Plotly figures the case study draws: `data.py` (run files to tables), `views.py`, `theme.py`, `verdict_chart.py`, `steps_chart.py`, `run_charts.py`, `tiles.py`, `layout.py`, `page.py`, `app.py`, `export.py` |
 
-Core logic never imports the web framework, so every rule is tested without HTTP.
+Core logic never imports the web framework, so every rule is tested without HTTP. The dashboard is
+an optional extra (`dash`, `plotly`, `pandas`); `make install` includes it.
+
+## Commands
+
+| Command | What it does |
+| --- | --- |
+| `python -m intake_agent.api` | Serves the API; it builds the made-up firm database on first start |
+| `python -m intake_agent.evals.run --name <name>` | Runs the evaluation; offline with the fake provider, live otherwise; `--only` picks scenarios |
+| `python -m intake_agent.dashboard` | Serves the dashboard; `--export-figures` writes the case study's figures instead |
+| `python -m intake_agent.evals.export` | Writes the three Tableau CSV files |
+| `python -m intake_agent.evals.index` | Writes the index of committed live results |
+
+Run them as `uv run --project backend --no-sync python -m ...`, or through the Makefile.
 
 ## Conventions
 
@@ -51,6 +70,7 @@ Core logic never imports the web framework, so every rule is tested without HTTP
   lists each argument and what comes back. No function runs past 60 lines below its doc block and no
   file past 500 lines; `kds-standards check` reports both.
 - Tests run in an empty temporary folder, offline, with fresh settings (`tests/conftest.py`);
-  shared helpers are in `tests/support.py`.
+  shared helpers are in `tests/support.py`, and the made-up evaluation runs the dashboard tests
+  draw in `tests/runs.py`.
 - Our own packages (`kds-*`) install from the utils repository at one commit, pinned in
   `pyproject.toml`; nothing installs from `main`.

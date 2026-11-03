@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+- **Dashboard:** `make dashboard` serves a Plotly Dash dashboard over the saved runs, in the design
+  of kevindstreet.com (Geist, light and dark): pick up to three runs, the first in focus, and see
+  seven headline numbers and how each moved against the second run, how each kind of scenario ended
+  (as expected or not, stacked, with the count of scenarios in each kind), the model calls and tool
+  calls each scenario took, seconds per scenario as a dot per scenario over each run's box, cost
+  per scenario at list prices, every run's summary, and the scenarios that did not end as expected.
+  The offline run, where fixed rules play the agent, is shown beside the live runs as the baseline
+  and marked offline. The dashboard has no sign-in, so the settings refuse any address but this
+  machine's.
+- **Figures and exports:** `make publish` writes `data/evals/results/figures.json`, the four
+  figures of the latest three live runs as Plotly JSON, each trace naming its part in `meta.role`
+  so the case study can draw them in its own palette; `data/export/runs.csv`, `scenarios.csv` and
+  `steps.csv`, tidy files for Tableau from the same tables as the dashboard; and
+  `data/evals/results/index.json`, the live run files, newest first, and the figures file, which
+  the site syncs from. The live workflow runs it after every live evaluation and commits the three
+  with the results. `data/README.md` describes the files and the Tableau sheets to build from
+  them.
+- **Settings:** `config/config.toml` gains the dashboard's address and part ids, the tables' column
+  names, the charts' settings and titles, the name of each kind of scenario, where the CSV files
+  and the figures go, the encoding every file is written in and the provider that marks a run
+  offline; the dashboard is an optional extra (`dash`, `plotly`, `pandas`) that `make install`
+  includes. The service, the API and the evaluation's numbers are unchanged.
+- 169 backend tests (15 of them the dashboard's) and 8 web app tests, all offline.
 - **The box:** every file's header box and every section banner is five lines now: a border, a
   blank walled line, the title, another blank walled line and a border. The shared packages are
   pinned to utils v0.5.0, commit `fcac0477e1caadccf1e2d7580ce648258c5a79fa`, whose checker asks for

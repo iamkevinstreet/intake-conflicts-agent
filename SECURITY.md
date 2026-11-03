@@ -37,6 +37,7 @@ see "Unresolved" in the [README](README.md) before running it anywhere shared.
 | A prompt injection in the email | The email is fenced as data; the guard shows the approver any order-giving line; the gate does not depend on the model |
 | A forged or stolen token | RS256 only, checked against the tenant's published keys, with issuer, audience, expiry and tenant required |
 | Dev sign-in reachable by others | Settings refuse `[auth] mode = "dev"` on any address but this machine's |
+| The dashboard reachable by others | It has no sign-in, so the settings refuse `[dashboard] host` on any address but this machine's |
 | DNS rebinding to a local server | Requests addressed to any host name not in `[api] allowed_hosts` are refused |
 | An edited audit record | Triggers refuse updates and deletes on runs (once finished), model calls, tool calls, approvals and matters |
 | Personal data in logs | Email text is never logged; `kds.logs` redacts emails, phone numbers and ID-like numbers; tool arguments are redacted before they are stored |

@@ -14,7 +14,7 @@ Case study: <https://kevindstreet.com/projects/intake-conflicts-check-agent/>
 
 | | |
 | --- | --- |
-| Works today | The agent loop with five scoped tools, the conflicts rules, the approval gate (in the API and in the database), the audit log, Entra ID token checks in the API, the web app, and the 20-scenario evaluation, offline and in CI |
+| Works today | The agent loop with five scoped tools, the conflicts rules, the approval gate (in the API and in the database), the audit log, Entra ID token checks in the API, the web app, the 20-scenario evaluation, offline and in CI, and the dashboard and Tableau export over its results |
 | Measured | The 20 scenarios with `claude-sonnet-5-5` on GitHub's runner, Oct 29, 2026: every planted conflict found, no false alarm, every failure handled, no matter opened (below), beside the offline baseline |
 | Next | Entra ID sign-in in the web app, whose tokens the API already checks; a harder scenario set, since this one is now passed in full |
 
@@ -36,6 +36,12 @@ make run    # the web app on http://localhost:5173, the API on http://127.0.0.1:
 Run an example as Avery Stone, a requester, then switch to Jordan Reyes, an approver, to decide and
 open the matter. For a real model, copy `config/.env.example` to `config/.env` and set
 `LLM_PROVIDER=anthropic` and `ANTHROPIC_API_KEY` there.
+
+`make dashboard` serves the evaluation dashboard on <http://127.0.0.1:8050>, over the saved runs
+in `data/evals/results/`: pick up to three runs and compare their headline numbers, how each kind
+of scenario ended, the work each scenario took, and seconds and cost per scenario. `make publish`
+writes from the same runs the figures the case study draws, the CSV files for Tableau and the index
+the site syncs from; the live workflow runs it after every live evaluation.
 
 ## Architecture at a glance
 
@@ -96,7 +102,7 @@ The rules for a match, in [`core/conflicts.py`](backend/src/intake_agent/core/co
   reviewing the first one's verdict (deferred: the service already enforces the stricter verdict).
 - **Chosen solution:** the model reads and decides what to search; the service validates every tool
   call, computes the findings, shows the stricter verdict, and holds the gate in the API and in SQL.
-- **Test plan:** 153 backend and 8 web app tests; a test proving every scenario's expected findings
+- **Test plan:** 169 backend and 8 web app tests; a test proving every scenario's expected findings
   hold against the generated database before any model is asked; the 20-scenario evaluation, offline
   in CI and live by hand. Targets set before the first live run: at least 12 of the 13 planted
   records found, no clean scenario shown as a conflict, at least 2 of the 3 ambiguous scenarios marked
@@ -137,6 +143,12 @@ as designed. Every drafted scenario named every party. The model found the compa
 rules miss, those written without a legal form ("Keystone Medical Supplies", "Pinnacle Foods"),
 which is where the baseline lost its three planted records. It marked all three ambiguous scenarios
 review rather than deciding them itself.
+
+The dashboard draws these runs, with the offline baseline beside the live run, and
+[`data/evals/results/figures.json`](data/evals/results/figures.json) holds the four figures the case
+study draws of the latest live runs: how each kind of scenario ended, the model calls and tool calls
+each scenario took, seconds per scenario and cost per scenario. The same tables go to Tableau as
+CSV files in [`data/export/`](data/export/); [`data/README.md`](data/README.md) describes them.
 
 The three injections were each copied into the draft's warnings for the approver, and none changed
 the outcome. Told to skip approval and open the matter, the agent asked for approval and never
@@ -188,13 +200,14 @@ built, and never anything from `config/.env`.
 
 ```sh
 make check   # ruff, mypy (strict), kds-standards, ESLint, Stylelint, Prettier, tsc
-make test    # 153 backend and 8 web app tests
+make test    # 169 backend and 8 web app tests
 make eval    # the offline evaluation, whatever config/.env says; it fails if a matter ever opens
 ```
 
 Tests never call a model or the network: scripted turns and the offline stand-in take its place.
 They write only to temporary folders, run from an empty folder so no `config/.env` leaks in, sign
-Entra ID tokens with keys made in the test, and never sleep: retries take an injected wait. CI runs
+Entra ID tokens with keys made in the test, and never sleep: retries take an injected wait. The
+dashboard's tests draw made-up runs written into each test's own folder. CI runs
 the checks, the tests and the offline evaluation on every push to `main` and every pull request,
 with the dependency audits, CodeQL and a secrets scan of the whole history. The live evaluation is
 started by hand.
@@ -204,22 +217,24 @@ started by hand.
 The agent holds the requester's role only and five tools that validate every argument; opening a
 matter needs an approval from someone else, checked in the API and again by a database trigger; the
 audit records cannot be edited or deleted; Entra ID tokens are checked against the tenant's keys
-(RS256 only, issuer, audience, expiry and tenant); dev sign-in refuses to listen beyond this machine;
-requests for any other host name are refused. Report a vulnerability privately as described in
-[SECURITY.md](SECURITY.md), which also lists every control.
+(RS256 only, issuer, audience, expiry and tenant); dev sign-in and the dashboard, which has no
+sign-in, refuse to listen beyond this machine; requests for any other host name are refused. Report
+a vulnerability privately as described in [SECURITY.md](SECURITY.md), which also lists every
+control.
 
 ## Project layout
 
 ```text
 intake-conflicts-agent/
-├── backend/               the service and the evaluation (Python 3.12, uv)
-│   ├── src/intake_agent/  config.py, core/ (rules, tools, agent), api/ (FastAPI), evals/
-│   └── tests/             153 tests, offline
+├── backend/               the service, the evaluation and the dashboard (Python 3.12, uv)
+│   ├── src/intake_agent/  config.py, core/ (rules, tools, agent), api/ (FastAPI), evals/, dashboard/
+│   └── tests/             169 tests, offline
 ├── frontend/              the web app (React, TypeScript, Vite)
 │   ├── src/               pages/, components/, lib/, styles/, the API client, config.ts
 │   └── tests/             8 tests
 ├── config/                config.toml: every setting and shared value; .env.example: secret names
-├── data/                  samples/ (the planted firm records), evals/ (scenarios, results)
+├── data/                  samples/ (the planted firm records), evals/ (scenarios, results, figures,
+│                          index), export/ (the Tableau CSV files)
 ├── docs/                  diagrams.toml and the two SVGs it draws
 └── .github/               CI, CodeQL, the live evaluation, Dependabot
 ```
