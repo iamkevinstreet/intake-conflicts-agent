@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.2, Nov 5, 2026
+
+- **Dependencies:** the web app moves to ESLint 10.14.0, eslint-plugin-jsdoc 65.4.2 and globals
+  17.14.0. The plugin is two major versions on, with the same rules. Nothing had to change: lint,
+  the types, the tests, the build and the audits pass as they were. The health report and the API
+  schema say 0.2.2.
+
 ## v0.2.1, Nov 5, 2026
 
 - **Dashboard:** `make dashboard` serves a Plotly Dash dashboard over the saved runs, in the design
