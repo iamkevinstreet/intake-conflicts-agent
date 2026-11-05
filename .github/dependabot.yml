@@ -5,10 +5,12 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-29
-# Last modified on:  2026-11-03
+# Last modified on:  2026-11-05
 #
 # Opens weekly pull requests that update the pinned Actions, the uv
-# lockfile and the npm lockfile.
+# lockfile and the npm lockfile, each kind's updates grouped into one
+# pull request, which the dependency-updates workflow lands once CI
+# passes.
 
 version: 2
 updates:
@@ -16,14 +18,23 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
   - package-ecosystem: uv
     directory: /backend
     schedule:
       interval: weekly
+    groups:
+      backend:
+        patterns: ["*"]
   - package-ecosystem: npm
     directory: /frontend
     schedule:
       interval: weekly
+    groups:
+      frontend:
+        patterns: ["*"]
     ignore:
       # typescript-eslint supports TypeScript below 6.1, and its strict rules are required;
       # raise this when a typescript-eslint release supports a newer TypeScript.
