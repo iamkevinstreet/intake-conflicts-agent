@@ -241,5 +241,5 @@ intake-conflicts-agent/
 
 ## Changelog and license
 
-Changes by release are in [CHANGELOG.md](CHANGELOG.md); this is v0.2.0. Licensed under Apache 2.0
+Changes by release are in [CHANGELOG.md](CHANGELOG.md); this is v0.2.1. Licensed under Apache 2.0
 ([LICENSE](LICENSE), [NOTICE](NOTICE)).

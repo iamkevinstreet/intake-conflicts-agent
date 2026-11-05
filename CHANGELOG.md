@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.2.1, Nov 5, 2026
 
 - **Dashboard:** `make dashboard` serves a Plotly Dash dashboard over the saved runs, in the design
   of kevindstreet.com (Geist, light and dark): pick up to three runs, the first in focus, and see
@@ -30,6 +30,10 @@
   pinned to utils v0.5.0, commit `fcac0477e1caadccf1e2d7580ce648258c5a79fa`, whose checker asks for
   that form and whose `stamp` brought every file to it. The dotfiles that take `#` comments carry
   a header like the Makefile. No code changed.
+- **Utils v0.5.1:** the shared packages then move to utils v0.5.1, commit
+  `e57de0e97d1c41616af1a98873f6beeecc74c99f`, whose checker also reads the statements inside a
+  function whose signature wraps and inside a bare `catch`. Each of them in the web app already
+  had its logger line, so no code changed; the health report and the API schema say 0.2.1.
 
 ## v0.2.0, Oct 29, 2026
 
