@@ -236,7 +236,7 @@ intake-conflicts-agent/
 ├── data/                  samples/ (the planted firm records), evals/ (scenarios, results, figures,
 │                          index), export/ (the Tableau CSV files)
 ├── docs/                  diagrams.toml and the two SVGs it draws
-└── .github/               CI, CodeQL, the live evaluation, Dependabot
+└── .github/               CI, CodeQL, the live evaluation, Dependabot and the workflow that lands its updates
 ```
 
 ## Changelog and license

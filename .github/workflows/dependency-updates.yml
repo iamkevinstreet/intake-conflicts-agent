@@ -1,0 +1,190 @@
+########################################################################
+#                                                                      #
+#               .github/workflows/dependency-updates.yml               #
+#                                                                      #
+########################################################################
+# Author:            Kevin Street
+# Created on:        2026-11-05
+# Last modified on:  2026-11-05
+#
+# Lands Dependabot's updates as Kevin's own commits, one pull request a
+# run, every weekday. It applies the oldest open one to main, refreshes
+# the dates in the headers it changes, runs the whole of CI on the
+# result, and moves main to that exact commit only when every check
+# passes; Dependabot then closes its pull request. One whose checks fail
+# is labelled "needs a person" and waits until the label is removed. One
+# that changes a workflow waits for the DEPENDENCY_UPDATES_TOKEN secret,
+# a token allowed to push workflows.
+
+name: dependency-updates
+
+on:
+  schedule:
+    - cron: "17 9 * * 1-5"  # weekdays, 09:17 UTC
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Land this pull request, whoever opened it; blank for the oldest open Dependabot one"
+        required: false
+        default: ""
+      dry_run:
+        description: "Apply and check it, but leave main as it is"
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: dependency-updates
+  cancel-in-progress: false
+
+env:
+  AUTHOR_NAME: Kevin Street
+  AUTHOR_EMAIL: 747156+iamkevinstreet@users.noreply.github.com
+  BRANCH: automation/dependency-updates
+  LABEL: needs a person
+
+jobs:
+  # Applies one pull request to main as Kevin's commit and pushes it to a scratch branch. It can
+  # write to the repository, so it runs git and the GitHub CLI only, never the updated packages.
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: read
+    outputs:
+      pr: ${{ steps.apply.outputs.pr }}
+      sha: ${{ steps.apply.outputs.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.DEPENDENCY_UPDATES_TOKEN || github.token }}
+
+      - name: Apply the oldest open update as Kevin's commit
+        id: apply
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ONE_PR: ${{ inputs.pr }}
+          CAN_PUSH_WORKFLOWS: ${{ secrets.DEPENDENCY_UPDATES_TOKEN != '' }}
+        run: |
+          set -euo pipefail
+          git config user.name "$AUTHOR_NAME"
+          git config user.email "$AUTHOR_EMAIL"
+          if [ -n "$ONE_PR" ]; then
+            [[ "$ONE_PR" =~ ^[0-9]+$ ]] || { echo "::error::pr must be a pull request number"; exit 1; }
+            candidates="$ONE_PR"
+          else
+            candidates=$(gh pr list --author app/dependabot --state open --limit 100 \
+              --json number,labels \
+              --jq '[.[] | select(all(.labels[]; .name != env.LABEL))] | sort_by(.number) | .[].number')
+          fi
+          for pr in $candidates; do
+            files=$(gh pr diff "$pr" --name-only)
+            if grep -q '^\.github/workflows/' <<<"$files" && [ "$CAN_PUSH_WORKFLOWS" != "true" ]; then
+              echo "::notice::#$pr changes a workflow, so it waits for the DEPENDENCY_UPDATES_TOKEN secret"
+              continue
+            fi
+            head=$(gh pr view "$pr" --json headRefName --jq .headRefName)
+            git fetch --quiet --no-tags origin "refs/heads/$head"
+            if ! git merge --squash FETCH_HEAD >/dev/null 2>&1; then
+              git reset --quiet --hard HEAD
+              echo "::notice::#$pr does not apply to main as it stands; Dependabot rebases it"
+              continue
+            fi
+            if git diff --cached --quiet; then
+              echo "::notice::#$pr changes nothing main does not already have"
+              continue
+            fi
+            today=$(date -u +%F)
+            git diff --cached --name-only --diff-filter=M | while read -r file; do
+              sed -E -i "0,/(Last modified on:[[:space:]]+)[0-9]{4}-[0-9]{2}-[0-9]{2}/s//\1${today}/" "$file"
+            done
+            git add --all
+            title=$(gh pr view "$pr" --json title --jq .title)
+            body=$(git log -1 --format=%B FETCH_HEAD | grep -E '^(Bumps|Updates) ' \
+              | sed -E 's/\[([^]]+)\]\([^)]*\)/\1/g; s/`//g' || true)
+            message=(-m "${title/#Bump /Update }")
+            [ -n "$body" ] && message+=(-m "$body")
+            git commit --quiet "${message[@]}"
+            git push --quiet --force origin "HEAD:refs/heads/$BRANCH"
+            echo "pr=$pr" >> "$GITHUB_OUTPUT"
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            echo "Applied #$pr as $(git rev-parse --short HEAD): $(git log -1 --format=%s)" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          done
+          echo "Nothing to land." >> "$GITHUB_STEP_SUMMARY"
+
+  # The whole of CI on the commit about to land, with no write access and no secrets.
+  check:
+    needs: prepare
+    if: needs.prepare.outputs.sha != ''
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+
+  # Moves main to the exact commit CI passed, only as a fast-forward.
+  land:
+    needs: [prepare, check]
+    if: needs.prepare.outputs.sha != '' && needs.check.result == 'success' && inputs.dry_run != true
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.DEPENDENCY_UPDATES_TOKEN || github.token }}
+
+      - name: Move main to the checked commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ needs.prepare.outputs.pr }}
+          SHA: ${{ needs.prepare.outputs.sha }}
+        run: |
+          set -euo pipefail
+          git fetch --quiet --no-tags origin "refs/heads/$BRANCH"
+          if [ "$(git rev-parse FETCH_HEAD)" != "$SHA" ]; then
+            echo "::error::the scratch branch no longer holds the commit CI checked"
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor origin/main "$SHA"; then
+            echo "::warning::main moved while the update was checked; the next run applies it again"
+            exit 0
+          fi
+          git push --quiet origin "$SHA:refs/heads/main"
+          git push --quiet origin --delete "$BRANCH"
+          if [ "$(gh pr view "$PR" --json author --jq .author.is_bot)" != "true" ]; then
+            gh pr close "$PR" --delete-branch --comment "Landed on main as $SHA."
+          fi
+          echo "Landed #$PR on main as $SHA." >> "$GITHUB_STEP_SUMMARY"
+
+  # Marks a pull request whose checks failed, so the next runs pass it by until a person fixes it.
+  report:
+    needs: [prepare, check]
+    if: always() && needs.check.result == 'failure' && inputs.dry_run != true
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Label the pull request for a person
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ needs.prepare.outputs.pr }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          gh label create "$LABEL" --color D93F0B \
+            --description "The checks failed with this update; a person has to fix it" 2>/dev/null || true
+          gh pr edit "$PR" --add-label "$LABEL"
+          gh pr comment "$PR" --body "The checks failed with this update applied to main, so it was not landed: $RUN_URL. Fix it, then remove the \"$LABEL\" label and the next run tries again."

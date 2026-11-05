@@ -5,10 +5,12 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-14
-# Last modified on:  2026-11-03
+# Last modified on:  2026-11-05
 #
 # Runs on every push and pull request: the secrets scan, lint, types,
 # the code standard, the tests, the offline evaluation and the audits.
+# The dependency-updates workflow runs the same checks on the commit
+# it is about to land.
 
 name: ci
 
@@ -16,12 +18,18 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_call:
+    inputs:
+      ref:
+        description: The commit to check; blank checks the commit that started the run.
+        type: string
+        default: ""
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -34,6 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
+          ref: ${{ inputs.ref }}
           fetch-depth: 0  # the secrets scan and the header dates read all of history
           persist-credentials: false
 
@@ -77,6 +86,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
+          ref: ${{ inputs.ref }}
           persist-credentials: false
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0

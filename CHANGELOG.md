@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- **Dependency updates land by themselves.** Dependabot groups each week's updates into one pull
+  request per kind (Actions, the backend, the frontend), and the new `dependency-updates` workflow
+  lands them every weekday: it applies the oldest open one to `main` as an ordinary commit, refreshes
+  the dates in the headers it changes, runs the whole of CI on that commit, and moves `main` to it only
+  when every check passes. One whose checks fail is labelled "needs a person" and waits. CI can now
+  be called for a given commit, which is how the workflow checks one before it lands.
+
 ## v0.2.2, Nov 5, 2026
 
 - **Dependencies:** the web app moves to ESLint 10.14.0, eslint-plugin-jsdoc 65.4.2 and globals
