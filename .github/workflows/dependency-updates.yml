@@ -108,6 +108,7 @@ jobs:
               | sed -E 's/\[([^]]+)\]\([^)]*\)/\1/g; s/`//g' || true)
             message=(-m "${title/#Bump /Update }")
             [ -n "$body" ] && message+=(-m "$body")
+            message+=(-m "From pull request #$pr.")
             git commit --quiet "${message[@]}"
             git push --quiet --force origin "HEAD:refs/heads/$BRANCH"
             echo "pr=$pr" >> "$GITHUB_OUTPUT"
