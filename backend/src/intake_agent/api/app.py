@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-07
 
 Builds the HTTP app: startup, request ids, security headers, hosts, size
 limits and CORS. Every response carries the request id and security
@@ -39,7 +39,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from kds.args import required
 from kds.llm import ModelAdapter
-from kds.logs import get_logger, log_event, new_request_id, setup_logging
+from kds.logs import get_logger, log_event, new_request_id, setup_logging, setup_spans
 from kds.settings import describe
 
 # Local
@@ -173,11 +173,13 @@ def create_app(
         app = required(app=app)
         # log.debug("Sets up JSON logging")
         setup_logging(config)
+        # log.debug("Turns spans on, when they have somewhere to go")
+        setup_spans(config, service=config.spans_service, version=__version__)
         # log.debug("Logs the version and every setting, secrets masked")
         log_event(log, "service.start", version=__version__, settings=describe(config))
         # log.debug("Builds the database, drafts, audit log and agent")
         app.state.services = build_services(config, adapter)
-        # log.debug("Serves requests until shutdown")
+        # log.debug("Serves requests until shutdown; spans left are sent at exit")
         yield
 
     # log.debug("Creates the app, with its schema under the API prefix")

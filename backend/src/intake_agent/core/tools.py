@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-07
 
 Holds the five tools for one run: read-only searches, one checked draft,
 and a gated open.
@@ -42,7 +42,8 @@ from typing import Any, Final
 
 # Third-party
 from kds.args import required
-from kds.logs import get_logger
+from kds.llm.spans import tool, tool_result
+from kds.logs import get_logger, set_values
 from pydantic import ValidationError
 
 # Local
@@ -153,14 +154,20 @@ class Toolbox(SearchTools):
         arguments: dict[str, Any] | None = None,
         *,
         step: int | None = None,
+        call_id: str | None = None,
     ) -> ToolReply:
         """Runs one tool call and records it; never raises.
+
+        The call runs in an execute_tool span that records whether it
+        worked and, when it did not, the audit code, such as the gate's
+        refusal.
 
         Args:
             name: The tool the model asked for. Required.
             arguments: The arguments the model gave, not yet
                 validated. Required.
             step: The model call that asked for it, from 1. Required.
+            call_id: The model's id for the call.
 
         Returns:
             What the tool did, which the model reads, with the audit
@@ -176,8 +183,14 @@ class Toolbox(SearchTools):
         self.calls += 1
         # log.debug("Starts the clock")
         started = time.perf_counter()
-        # log.debug("Runs the tool, turning refusals into replies")
-        reply = self._dispatch(name, arguments)
+        # log.debug("Runs the call in a tool span")
+        with tool(name, call_id=call_id, arguments=arguments) as span:
+            # log.debug("Runs the tool, turning refusals into replies")
+            reply = self._dispatch(name, arguments)
+            # log.debug("Records whether it worked, and the audit code if not")
+            set_values(span, {"tool.ok": reply.ok, "tool.code": reply.code or None})
+            # log.debug("Records what the model is told, when content is on")
+            tool_result(span, reply.payload)
         # log.debug("Writes the call to the audit log")
         self.runlog.tool_call(
             self.run_id,

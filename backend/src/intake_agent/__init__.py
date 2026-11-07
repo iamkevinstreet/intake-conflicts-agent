@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-05
+Last modified on:  2026-11-07
 
 Marks the intake agent package and holds its version, which the health
 check reports.
@@ -36,4 +36,4 @@ log = get_logger(__name__)
 #                                                                      #
 ########################################################################
 # log.debug("Sets the release, reported by the health check")
-__version__ = "0.2.2"
+__version__ = "0.3.0"

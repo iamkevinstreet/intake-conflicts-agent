@@ -5,7 +5,7 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-29
-# Last modified on:  2026-11-03
+# Last modified on:  2026-11-07
 #
 # Holds every setting the service, the evaluation and the dashboard
 # read, and every value two files share, at its default. No secrets:
@@ -41,6 +41,18 @@ dir = "logs"                              # one YYYY-MM-DD.jsonl file per day
 level = "INFO"                            # DEBUG | INFO | WARNING | ERROR
 redact = true                             # remove emails, phone numbers and IDs from logs
 trace = false                             # print logger lines as HH:MM:SS traces
+
+# Spans: the timed steps of each intake run, for Langfuse or any tracing
+# tool (shared kds settings, but service)
+[spans]
+keep = false                              # write each evaluation's spans beside its results
+content = false                           # put intake emails, prompts and tool text on spans
+public = false                            # let anyone with a trace's link open it in Langfuse
+service = "intake-conflicts-agent"        # the name spans are recorded under
+
+# Where spans go once the two Langfuse keys are in config/.env
+[langfuse]
+base_url = "https://cloud.langfuse.com"   # https://us.cloud.langfuse.com for US data
 
 [data]
 firm = "data/samples/firm.json"           # the planted records the database is built around

@@ -5,7 +5,7 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-29
-# Last modified on:  2026-11-03
+# Last modified on:  2026-11-07
 #
 # Runs the twenty scenarios with a real model as the agent when started
 # by hand, then its figures, CSV files and index, and commits them to a
@@ -18,6 +18,10 @@ name: eval-live
 # figures, the Tableau CSV files and the index the case study reads are built from the results.
 # Results are committed to the eval-results branch and uploaded as an artifact; merging that branch
 # into main publishes them.
+#
+# Each run also keeps its spans beside its results (<run>-<time>.spans.jsonl), and sends them to
+# Langfuse when the LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY repository secrets are set
+# (Langfuse's US region: set LANGFUSE_BASE_URL as a repository variable or secret).
 
 on:
   workflow_dispatch:
@@ -30,6 +34,14 @@ on:
         description: Stop calling the model once this much has been spent
         type: string
         default: "5"
+      trace_content:
+        description: Put the made-up emails, prompts and tool text on the spans
+        type: boolean
+        default: false
+      public_traces:
+        description: Let anyone with a trace's link open it in Langfuse
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -48,6 +60,12 @@ jobs:
       EVAL_BUDGET_USD: ${{ inputs.budget_usd }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       LOG_REDACT: "true"
+      LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+      LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+      LANGFUSE_BASE_URL: ${{ vars.LANGFUSE_BASE_URL || secrets.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com' }}
+      SPANS_KEEP: "true"
+      SPANS_CONTENT: ${{ inputs.trace_content }}
+      SPANS_PUBLIC: ${{ inputs.public_traces }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
