@@ -9,6 +9,22 @@
   when every check passes. One whose checks fail is labelled "needs a person" and waits. CI can now
   be called for a given commit, which is how the workflow checks one before it lands.
 
+## v0.4.0, Nov 7, 2026
+
+- **An MCP server:** Claude Desktop, Claude Code or any MCP client can play the agent over stdio:
+  `start_intake`, `search_clients`, `search_adverse_parties`, `draft_matter`, `request_approval`
+  and `end_intake`, built on the MCP Python SDK 2.3. Every call goes through the agent's own
+  toolbox, so a draft names only parties searched in its run and its findings come from those
+  searches, and every call is written to the audit log. There is no `open_matter`: the client acts
+  as a requester only (`[mcp] requester_id` and `requester_name`), and the database refuses to
+  open a matter without an approver's record. A client may keep `[mcp] max_open_runs` intakes
+  open, and a run left open ends as incomplete when the client disconnects. Six tests drive the
+  server through a real MCP client.
+- **Shared pieces:** the database and its views open in one place, `open_records()`, for the API
+  and the MCP server alike, and the email's length check is `check_email()`. The outcome name
+  `incomplete` moves to `config.py`, where both use it.
+- 177 backend tests. The health report and the API schema say 0.4.0.
+
 ## v0.3.1, Nov 7, 2026
 
 - **Spans:** the Anthropic SDK no longer adds a span of its own to each model call. That span

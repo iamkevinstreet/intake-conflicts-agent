@@ -14,7 +14,7 @@ Case study: <https://kevindstreet.com/projects/intake-conflicts-check-agent/>
 
 | | |
 | --- | --- |
-| Works today | The agent loop with five scoped tools, the conflicts rules, the approval gate (in the API and in the database), the audit log, Entra ID token checks in the API, the web app, the 20-scenario evaluation, offline and in CI, the dashboard and Tableau export over its results, and spans of every run for Langfuse |
+| Works today | The agent loop with five scoped tools, the conflicts rules, the approval gate (in the API and in the database), the audit log, Entra ID token checks in the API, the web app, the 20-scenario evaluation, offline and in CI, the dashboard and Tableau export over its results, spans of every run for Langfuse, and an MCP server that lets Claude Desktop or Claude Code play the agent behind the same gate |
 | Measured | The 20 scenarios with `claude-sonnet-5-5` on GitHub's runner, Oct 29, 2026, rerun with its trace on Nov 7: every planted conflict found, no false alarm, every failure handled, no matter opened (below), beside the offline baseline |
 | Next | Entra ID sign-in in the web app, whose tokens the API already checks; a harder scenario set, since this one is now passed in full |
 
@@ -42,6 +42,44 @@ in `data/evals/results/`: pick up to three runs and compare their headline numbe
 of scenario ended, the work each scenario took, and seconds and cost per scenario. `make publish`
 writes from the same runs the figures the case study draws, the CSV files for Tableau and the index
 the site syncs from; the live workflow runs it after every live evaluation.
+
+## Let Claude play the agent (MCP)
+
+The agent's tools are also an MCP server, so Claude Desktop, Claude Code or any MCP client can do
+the agent's work: start a run on an intake email, search every party, draft the matter and send it
+for approval. Each call goes through the same toolbox the agent uses, so the same checks hold, and
+each is written to the audit log, where the web app's Audit log view shows it.
+
+| Tool | What it does |
+| --- | --- |
+| `start_intake` | Opens a run on an intake email and returns its id, with the lines that read like orders |
+| `search_clients` | Searches the firm's clients for a name (read-only) |
+| `search_adverse_parties` | Searches the parties the firm has opposed for a name (read-only) |
+| `draft_matter` | Saves the run's draft; every party on it must have been searched in the run, and the findings come from those searches |
+| `request_approval` | Sends the run's draft to an approver, which ends the run |
+| `end_intake` | Ends a run without sending a draft, saying why |
+
+There is no `open_matter`. The client acts as `[mcp] requester_name`, a requester only, and the
+database refuses to open a matter without an approver's record, so a draft it sends waits for an
+approver in the web app like any other. The server runs over stdio only, for the person who starts
+it: the API's sign-in does not reach it, so it is not served over HTTP. A run the client leaves open
+is ended as incomplete when it disconnects. In Claude Desktop's `claude_desktop_config.json`, with
+the path to your clone:
+
+```json
+{
+  "mcpServers": {
+    "intake-conflicts-agent": {
+      "command": "uv",
+      "args": ["run", "--directory", "/path/to/intake-conflicts-agent", "--project", "backend",
+               "python", "-m", "intake_agent.mcp_server"]
+    }
+  }
+}
+```
+
+For Claude Code: `claude mcp add intake-conflicts-agent -- uv run --directory
+/path/to/intake-conflicts-agent --project backend python -m intake_agent.mcp_server`.
 
 ## Architecture at a glance
 
@@ -215,7 +253,7 @@ built, and never anything from `config/.env`.
 
 ```sh
 make check   # ruff, mypy (strict), kds-standards, ESLint, Stylelint, Prettier, tsc
-make test    # 171 backend and 8 web app tests
+make test    # 177 backend and 8 web app tests
 make eval    # the offline evaluation, whatever config/.env says; it fails if a matter ever opens
 ```
 
@@ -242,8 +280,8 @@ control.
 ```text
 intake-conflicts-agent/
 ├── backend/               the service, the evaluation and the dashboard (Python 3.12, uv)
-│   ├── src/intake_agent/  config.py, core/ (rules, tools, agent), api/ (FastAPI), evals/, dashboard/
-│   └── tests/             171 tests, offline
+│   ├── src/intake_agent/  config.py, core/ (rules, tools, agent), api/ (FastAPI), mcp_server/, evals/, dashboard/
+│   └── tests/             177 tests, offline
 ├── frontend/              the web app (React, TypeScript, Vite)
 │   ├── src/               pages/, components/, lib/, styles/, the API client, config.ts
 │   └── tests/             8 tests

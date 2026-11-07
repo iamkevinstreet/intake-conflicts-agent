@@ -52,6 +52,10 @@ more than one file uses them.
 | `[spans] content` | `false` | Puts intake emails, prompts and tool text on spans; for made-up data only |
 | `[spans] public` | `false` | Lets anyone with a trace's link open it in Langfuse |
 | `[spans] service` | `intake-conflicts-agent` | The name spans are recorded under |
+| `[mcp] name` | `intake-conflicts-agent` | The name the MCP server gives its clients |
+| `[mcp] requester_id`, `[mcp] requester_name` | `mcp-client`, `MCP client` | Who an MCP client acts as: a requester only, so it can draft and ask for approval but never approve or open |
+| `[mcp] model` | `mcp-client` | What an MCP run records in place of a model; the client's own model is not known to the server |
+| `[mcp] max_open_runs` | `3` | How many intakes one MCP client may have open at once |
 | `[langfuse] base_url` | `https://cloud.langfuse.com` | Where spans go once `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` are in `config/.env`; `https://us.cloud.langfuse.com` for US data |
 | `[data] firm` | `data/samples/firm.json` | The planted records the database is built around |
 | `[data] database` | `data/generated/firm.sqlite` | The made-up firm database, built on first start |

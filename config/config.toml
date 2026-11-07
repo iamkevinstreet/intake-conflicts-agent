@@ -50,6 +50,14 @@ content = false                           # put intake emails, prompts and tool 
 public = false                            # let anyone with a trace's link open it in Langfuse
 service = "intake-conflicts-agent"        # the name spans are recorded under
 
+# The MCP server, over stdio: its client plays the agent, as a requester
+[mcp]
+name = "intake-conflicts-agent"          # the name the server gives clients
+requester_id = "mcp-client"              # the id an MCP client acts under, as a requester only
+requester_name = "MCP client"            # the name an approver sees on its drafts
+model = "mcp-client"                     # recorded on an MCP run in place of a model
+max_open_runs = 3                        # intakes one MCP client may have open at once
+
 # Where spans go once the two Langfuse keys are in config/.env
 [langfuse]
 base_url = "https://cloud.langfuse.com"   # https://us.cloud.langfuse.com for US data

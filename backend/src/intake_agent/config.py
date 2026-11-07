@@ -122,6 +122,14 @@ CONFLICT: Final = "conflict"
 MS_PER_SECOND: Final = 1000
 # log.debug("Sets the percent a share of one is")
 PERCENT: Final = 100
+# log.debug("Names the outcome of a run that stopped short of an approver")
+INCOMPLETE: Final = "incomplete"
+# log.debug("Names the service, in spans and to MCP clients")
+NAME = "intake-conflicts-agent"
+# log.debug("Names the MCP client, as the requester it acts as and in place of a model")
+MCP_CLIENT = "mcp-client"
+# log.debug("Sets the most intakes an MCP client may be allowed to keep open")
+MAX_MCP_RUNS = 10
 # log.debug("Names the provider of the offline stand-in, whose runs are the baseline")
 OFFLINE_PROVIDER: Final = "fake"
 # log.debug("Sets the default port the dashboard listens on")
@@ -160,7 +168,18 @@ class AppSettings(Settings):
     eval_offline_provider: Provider = OFFLINE_PROVIDER
 
     # log.debug("Holds the name spans are recorded under")
-    spans_service: str = "intake-conflicts-agent"
+    spans_service: str = NAME
+
+    # log.debug("Holds the name the MCP server gives clients")
+    mcp_name: str = NAME
+    # log.debug("Holds the id the MCP server's client acts under, as a requester only")
+    mcp_requester_id: str = MCP_CLIENT
+    # log.debug("Holds the name an approver sees on an intake an MCP client drafted")
+    mcp_requester_name: str = "MCP client"
+    # log.debug("Holds what an MCP run records in place of a model, since the client's is unknown")
+    mcp_model: str = MCP_CLIENT
+    # log.debug("Holds how many intakes an MCP client may have open at once")
+    mcp_max_open_runs: int = Field(default=3, ge=1, le=MAX_MCP_RUNS)
 
     # log.debug("Holds the planted firm records the database is built around")
     data_firm: Path = Path("data/samples/firm.json")

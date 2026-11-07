@@ -41,6 +41,7 @@ see "Unresolved" in the [README](README.md) before running it anywhere shared.
 | DNS rebinding to a local server | Requests addressed to any host name not in `[api] allowed_hosts` are refused |
 | An edited audit record | Triggers refuse updates and deletes on runs (once finished), model calls, tool calls, approvals and matters |
 | Personal data in logs | Email text is never logged; `kds.logs` redacts emails, phone numbers and ID-like numbers; tool arguments are redacted before they are stored |
+| An MCP client acting beyond its role | The MCP server runs over stdio only, for the person who starts it, and acts as a requester; it offers no tool that opens a matter; every call goes through the agent's toolbox, with its checks, and into the audit log; a client may keep only `[mcp] max_open_runs` intakes open |
 | Personal data in spans | Spans hold no email text, prompt or tool argument unless `[spans] content` is on; text on a span is redacted as log lines are; a failure is recorded by its type, never its message; spans go only where the Langfuse keys or the standard OpenTelemetry endpoint say |
 | Abuse of the model | A per-person limit on intakes, step, tool-call and spending limits per run, a budget per process, and a size limit on every request body (a body that does not declare its length is refused) |
 | A committed secret | gitleaks before every commit and over the whole history in CI; secrets live only in `config/.env`, and the settings loader refuses one in `config/config.toml` |

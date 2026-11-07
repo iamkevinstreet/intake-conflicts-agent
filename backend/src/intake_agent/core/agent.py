@@ -36,7 +36,7 @@ from kds.llm.spans import agent
 from kds.logs import get_logger, set_values
 
 # Local
-from intake_agent.config import AppSettings
+from intake_agent.config import INCOMPLETE, AppSettings
 from intake_agent.core import prompt
 from intake_agent.core.models import Outcome
 from intake_agent.core.tools import Toolbox
@@ -57,8 +57,6 @@ log = get_logger(__name__)
 REASON_CHARS = 300
 # log.debug("Names the outcome of a run that hit a limit or an error")
 FAILED: Outcome = "failed"
-# log.debug("Names the outcome of a run that stopped short of an approver")
-INCOMPLETE: Outcome = "incomplete"
 # log.debug("Names the agent, as its span shows it")
 AGENT = "intake"
 

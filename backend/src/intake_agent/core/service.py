@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-07
 
 Runs one intake end to end, the path the API and the evaluation share.
 It opens the run's audit record, flags order-giving lines in the email,
@@ -126,7 +126,7 @@ class IntakeService:
         # log.debug("Takes the requester, which the caller must give")
         requester = required(requester=requester)
         # log.debug("Checks the email's length before anything is recorded")
-        self._check(email)
+        check_email(email, self.settings)
         # log.debug("Names the run")
         run_id = new_id("R")
         # log.debug("Opens the run's audit record")
@@ -167,35 +167,6 @@ class IntakeService:
         # log.debug("Returns the result")
         return IntakeResult(record, draft, ending.text, toolbox.open_attempts)
 
-    # log.debug("Defines the length check")
-    def _check(self, email: str | None = None) -> None:
-        """Refuses an email outside the configured length.
-
-        Args:
-            email: The pasted intake email. Required.
-
-        Raises:
-            ValueError: Too short or too long; the message gives the
-                limits.
-        """
-        # log.debug("Takes the email, which the caller must give")
-        email = required(email=email)
-        # log.debug("Measures the email without surrounding space")
-        length = len(email.strip())
-        # log.debug("Refuses one outside the limits")
-        if (
-            not self.settings.agent_min_email_chars
-            <= length
-            <= self.settings.agent_max_email_chars
-        ):
-            # log.debug("Explains the limits")
-            msg = (
-                f"an intake email must be {self.settings.agent_min_email_chars} to "
-                f"{self.settings.agent_max_email_chars} characters; this one is {length}"
-            )
-            # log.debug("Raises the refusal")
-            raise ValueError(msg)
-
     # log.debug("Defines the guarded run of the agent")
     def _attempt(
         self, email: str | None = None, toolbox: Toolbox | None = None, meter: Meter | None = None
@@ -230,6 +201,38 @@ class IntakeService:
             reason = _failure(error)
         # log.debug("Returns the failed ending")
         return Ending("failed", reason)
+
+
+# log.debug("Defines the length check every intake email passes before a run")
+def check_email(email: str | None = None, settings: AppSettings | None = None) -> None:
+    """Refuses an email outside the configured length.
+
+    The service checks it before a run starts, and so does the MCP
+    server before it opens a run for its client.
+
+    Args:
+        email: The pasted intake email. Required.
+        settings: The settings that hold the limits. Required.
+
+    Raises:
+        ValueError: Too short or too long; the message gives the
+            limits.
+    """
+    # log.debug("Takes the email, which the caller must give")
+    email = required(email=email)
+    # log.debug("Takes the settings, which the caller must give")
+    settings = required(settings=settings)
+    # log.debug("Measures the email without surrounding space")
+    length = len(email.strip())
+    # log.debug("Refuses one outside the limits")
+    if not settings.agent_min_email_chars <= length <= settings.agent_max_email_chars:
+        # log.debug("Explains the limits")
+        msg = (
+            f"an intake email must be {settings.agent_min_email_chars} to "
+            f"{settings.agent_max_email_chars} characters; this one is {length}"
+        )
+        # log.debug("Raises the refusal")
+        raise ValueError(msg)
 
 
 # log.debug("Defines how a failed model call is explained")

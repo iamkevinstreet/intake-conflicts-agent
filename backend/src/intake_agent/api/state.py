@@ -6,11 +6,12 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-07
 
 Builds the services the routes share, once, when the app starts, and the
 Entra ID token check when sign-in needs one. Routes reach the services
-through the `services` dependency.
+through the `services` dependency. The MCP server opens the same
+records, the database and its views, with `open_records`.
 """
 
 ########################################################################
@@ -57,6 +58,43 @@ log = get_logger(__name__)
 #                             App services                             #
 #                                                                      #
 ########################################################################
+# log.debug("Defines the database's views every entry point works through")
+@dataclass(frozen=True)
+class Records:
+    """The firm's records, drafts and audit log, on one database."""
+
+    # log.debug("Holds the read-only view of the firm")
+    directory: SqliteDirectory
+    # log.debug("Holds the drafts and the approval gate")
+    drafts: DraftBook
+    # log.debug("Holds the audit log")
+    runlog: RunLog
+
+
+# log.debug("Defines opening the database and its views")
+def open_records(settings: AppSettings | None = None) -> Records:
+    """Opens and seeds the database and returns its views.
+
+    Args:
+        settings: The app's settings. Required.
+
+    Returns:
+        The firm's records, the drafts and the audit log.
+    """
+    # log.debug("Takes the settings, which the caller must give")
+    settings = required(settings=settings)
+    # log.debug("Opens the database")
+    store = Store(settings.data_database, timeout_s=settings.store_timeout_s)
+    # log.debug("Seeds it, when it is new")
+    seed(store, settings)
+    # log.debug("Returns its views")
+    return Records(
+        directory=SqliteDirectory(store),
+        drafts=DraftBook(store, min_reason_chars=settings.api_min_reason_chars),
+        runlog=RunLog(store),
+    )
+
+
 # log.debug("Defines the services the routes share")
 @dataclass(frozen=True)
 class Services:
@@ -96,16 +134,8 @@ def build_services(
     """
     # log.debug("Takes the settings, which the caller must give")
     settings = required(settings=settings)
-    # log.debug("Opens the database, migrating it")
-    store = Store(settings.data_database, timeout_s=settings.store_timeout_s)
-    # log.debug("Seeds it the first time")
-    seed(store, settings)
-    # log.debug("Builds the read-only view of the firm")
-    directory = SqliteDirectory(store)
-    # log.debug("Builds the drafts book")
-    drafts = DraftBook(store, min_reason_chars=settings.api_min_reason_chars)
-    # log.debug("Builds the audit log")
-    runlog = RunLog(store)
+    # log.debug("Opens the database, migrating and seeding it, and its views")
+    records = open_records(settings)
     # log.debug("Reads the examples named in settings")
     examples = tuple(
         Example(id=s.id, title=s.title, email=s.email)
@@ -115,14 +145,14 @@ def build_services(
     # log.debug("Returns the services")
     return Services(
         settings=settings,
-        directory=directory,
-        drafts=drafts,
-        runlog=runlog,
+        directory=records.directory,
+        drafts=records.drafts,
+        runlog=records.runlog,
         intake=IntakeService(
             settings=settings,
-            directory=directory,
-            drafts=drafts,
-            runlog=runlog,
+            directory=records.directory,
+            drafts=records.drafts,
+            runlog=records.runlog,
             adapter=adapter or adapter_for(settings),
         ),
         limiter=RateLimiter(settings.api_intakes_per_minute),
