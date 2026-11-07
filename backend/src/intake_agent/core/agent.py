@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-07
 
 Runs the agent loop: model calls and tool calls within step, tool-call
 and budget limits. Each step is one model call. The model may ask for
@@ -32,7 +32,8 @@ from dataclasses import dataclass
 # Third-party
 from kds.args import required
 from kds.llm import Completion, Message, ModelAdapter
-from kds.logs import get_logger
+from kds.llm.spans import agent
+from kds.logs import get_logger, set_values
 
 # Local
 from intake_agent.config import AppSettings
@@ -58,6 +59,8 @@ REASON_CHARS = 300
 FAILED: Outcome = "failed"
 # log.debug("Names the outcome of a run that stopped short of an approver")
 INCOMPLETE: Outcome = "incomplete"
+# log.debug("Names the agent, as its span shows it")
+AGENT = "intake"
 
 
 ########################################################################
@@ -155,8 +158,50 @@ class IntakeAgent:
         # log.debug("Keeps the settings")
         self.settings = settings
 
-    # log.debug("Defines one run")
+    # log.debug("Defines one run, in a span of its own")
     def run(
+        self, email: str | None = None, toolbox: Toolbox | None = None, meter: Meter | None = None
+    ) -> Ending:
+        """Runs in an invoke_agent span that records how the run ended.
+
+        The span holds every model call and tool call of the run, and
+        records the outcome, the steps, the tool calls and the cost.
+
+        Args:
+            email: The intake email, which the model reads fenced.
+                Required.
+            toolbox: The run's tools, which also record every call.
+                Required.
+            meter: Counts what the run spends. Required.
+
+        Returns:
+            How the run ended, why, and the model's last words.
+        """
+        # log.debug("Takes the email, which the caller must give")
+        email = required(email=email)
+        # log.debug("Takes the toolbox, which the caller must give")
+        toolbox = required(toolbox=toolbox)
+        # log.debug("Takes the meter, which the caller must give")
+        meter = required(meter=meter)
+        # log.debug("Runs the agent in its span")
+        with agent(AGENT, model=self.adapter.model) as span:
+            # log.debug("Runs the loop")
+            ending = self._run(email, toolbox, meter)
+            # log.debug("Records how the run ended and what it used")
+            set_values(
+                span,
+                {
+                    "agent.outcome": ending.outcome,
+                    "agent.steps": meter.steps,
+                    "agent.tool_calls": toolbox.calls,
+                    "agent.cost_usd": meter.cost,
+                },
+            )
+        # log.debug("Returns how the run ended")
+        return ending
+
+    # log.debug("Defines the loop of one run")
+    def _run(
         self, email: str | None = None, toolbox: Toolbox | None = None, meter: Meter | None = None
     ) -> Ending:
         """Runs until the draft is sent, the model stops, or a limit.
@@ -214,7 +259,7 @@ class IntakeAgent:
             # log.debug("Runs each tool call in order and adds its result")
             for call in completion.tool_calls:
                 # log.debug("Runs the call")
-                reply = toolbox.call(call.name, call.arguments, step=step)
+                reply = toolbox.call(call.name, call.arguments, step=step, call_id=call.id)
                 # log.debug("Adds the result for the model to read")
                 messages.append(
                     Message(role="tool", content=json.dumps(reply.payload), tool_call_id=call.id)

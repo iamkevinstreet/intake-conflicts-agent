@@ -14,7 +14,7 @@ Case study: <https://kevindstreet.com/projects/intake-conflicts-check-agent/>
 
 | | |
 | --- | --- |
-| Works today | The agent loop with five scoped tools, the conflicts rules, the approval gate (in the API and in the database), the audit log, Entra ID token checks in the API, the web app, the 20-scenario evaluation, offline and in CI, and the dashboard and Tableau export over its results |
+| Works today | The agent loop with five scoped tools, the conflicts rules, the approval gate (in the API and in the database), the audit log, Entra ID token checks in the API, the web app, the 20-scenario evaluation, offline and in CI, the dashboard and Tableau export over its results, and spans of every run for Langfuse |
 | Measured | The 20 scenarios with `claude-sonnet-5-5` on GitHub's runner, Oct 29, 2026: every planted conflict found, no false alarm, every failure handled, no matter opened (below), beside the offline baseline |
 | Next | Entra ID sign-in in the web app, whose tokens the API already checks; a harder scenario set, since this one is now passed in full |
 
@@ -171,6 +171,7 @@ are most likely to change:
 | `[agent] max_steps`, `[agent] run_budget_usd` | `10`, `0.5` | `config/config.toml` |
 | `[auth] mode`, `[entra] tenant_id`, `[entra] audience` | `dev`, empty, empty | `config/config.toml` |
 | `ANTHROPIC_API_KEY` | unset | `config/.env` only |
+| `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` | unset: spans stay off | `config/.env` only |
 
 Any setting can be overridden by an environment variable named for its section and key:
 `MATCH_LIKELY=90`. The same file also holds the values the service and the web app share, such as
@@ -187,6 +188,14 @@ built, and never anything from `config/.env`.
   a script tried before approving (the evaluation's gate check writes one for each drafted
   scenario).
 - **Request id:** on every log line and in the `X-Request-ID` header of every response.
+- **Spans:** each intake run is one `invoke_agent intake` span with its outcome, steps, tool calls
+  and cost, holding a `chat` span for every model call (tokens, cost, stop reason) and an
+  `execute_tool` span for every tool call, which says whether the tool worked and, when the gate
+  refused it, the audit code. The names follow the OpenTelemetry GenAI conventions, so Langfuse
+  shows the run as an agent with its generations and tools. Set `LANGFUSE_PUBLIC_KEY` and
+  `LANGFUSE_SECRET_KEY` in `config/.env` and the spans go to Langfuse; unset, they stay off. Email
+  text and tool arguments stay off spans unless `[spans] content` is on, and a log line written in
+  a span carries its `trace_id`.
 - **Audit log:** the web app's Audit log view, or `GET /api/v1/runs/{id}`: every model call and tool
   call of a run, with redacted arguments and a SHA-256 of each result.
 - **When something fails:** `GET /api/v1/health` shows the sign-in mode, the provider and model, and
@@ -200,7 +209,7 @@ built, and never anything from `config/.env`.
 
 ```sh
 make check   # ruff, mypy (strict), kds-standards, ESLint, Stylelint, Prettier, tsc
-make test    # 169 backend and 8 web app tests
+make test    # 171 backend and 8 web app tests
 make eval    # the offline evaluation, whatever config/.env says; it fails if a matter ever opens
 ```
 
@@ -228,7 +237,7 @@ control.
 intake-conflicts-agent/
 ├── backend/               the service, the evaluation and the dashboard (Python 3.12, uv)
 │   ├── src/intake_agent/  config.py, core/ (rules, tools, agent), api/ (FastAPI), evals/, dashboard/
-│   └── tests/             169 tests, offline
+│   └── tests/             171 tests, offline
 ├── frontend/              the web app (React, TypeScript, Vite)
 │   ├── src/               pages/, components/, lib/, styles/, the API client, config.ts
 │   └── tests/             8 tests

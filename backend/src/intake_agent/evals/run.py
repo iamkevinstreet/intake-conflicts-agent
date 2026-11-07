@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-07
 
 Runs the scenarios on a fresh database, checks the gate and writes the
 results:
@@ -40,11 +40,23 @@ from typing import Any, Final
 
 # Third-party
 from kds.args import required
+from kds.evals.spans import scored
 from kds.llm.pricing import prices_as_of
-from kds.logs import get_logger, log_event, setup_logging
+from kds.logs import (
+    collect,
+    flush_spans,
+    get_logger,
+    log_event,
+    session,
+    setup_logging,
+    setup_spans,
+    step,
+    write_spans,
+)
 from pydantic import BaseModel
 
 # Local
+from intake_agent import __version__
 from intake_agent.config import SETTINGS, AppSettings, get_app_settings
 from intake_agent.core.audit import RunLog
 from intake_agent.core.drafts import DraftBook
@@ -79,6 +91,24 @@ REQUESTER = Actor(user_id="eval:requester", name="Evaluation", roles=frozenset({
 GATE_CHECKER = Actor(user_id="eval:approver", name="Gate check", roles=frozenset({"approver"}))
 # log.debug("Leaves the email out of saved drafts: the scenarios file holds it")
 UNSAVED = frozenset({"email"})
+# log.debug("Sets the time stamp results files are named with")
+STAMP = "%Y%m%dT%H%M%SZ"
+# log.debug("Ends the name of the file a run's spans are kept in")
+SPANS_SUFFIX = ".spans.jsonl"
+# log.debug("Lists the scores a scenario's span records")
+SPAN_SCORES = frozenset(
+    {
+        "outcome",
+        "recommendation",
+        "expected_recommendation",
+        "handled",
+        "planted",
+        "found",
+        "warnings",
+        "open_attempts",
+        "opened_without_approval",
+    }
+)
 # log.debug("Lists the measures in the order the table shows them, with labels")
 ROWS = (
     ("conflict_recall", "Conflict recall: planted records in the findings"),
@@ -225,10 +255,16 @@ def _one(
     scenario = required(scenario=scenario)
     # log.debug("Starts the clock")
     started = time.perf_counter()
-    # log.debug("Runs the intake, with the scenario's fault if it has one")
-    result = service.run(scenario.email, REQUESTER, directory=directory_for(scenario))
-    # log.debug("Stops the clock")
-    seconds = time.perf_counter() - started
+    # log.debug("Runs the scenario in a span of its own, a trace in Langfuse")
+    with step(f"eval {scenario.id}", {"kds.eval.case": scenario.id}) as span:
+        # log.debug("Runs the intake, with the scenario's fault if it has one")
+        result = service.run(scenario.email, REQUESTER, directory=directory_for(scenario))
+        # log.debug("Checks the gate")
+        opened = _opens_unapproved(drafts, result)
+        # log.debug("Scores the run")
+        scored_run = score(scenario, result, seconds=time.perf_counter() - started, opened=opened)
+        # log.debug("Records the scores on the span")
+        scored(span, scored_run.model_dump(include=set(SPAN_SCORES)))
     # log.debug("Logs the scenario's ending")
     log_event(log, "eval.scenario", id=scenario.id, outcome=result.run.outcome)
     # log.debug("Keeps what the agent did, read back from the audit records")
@@ -240,10 +276,8 @@ def _one(
         else None,
         text=result.text,
     )
-    # log.debug("Checks the gate, then scores the run")
-    opened = _opens_unapproved(drafts, result)
     # log.debug("Returns the score and the trace")
-    return score(scenario, result, seconds=seconds, opened=opened), trace
+    return scored_run, trace
 
 
 # log.debug("Defines the gate check: may an approver open this draft before approval?")
@@ -358,7 +392,7 @@ def write(results: EvalResults | None = None, folder: Path | None = None) -> Pat
     # log.debug("Creates the folder")
     folder.mkdir(parents=True, exist_ok=True)
     # log.debug("Stamps the files with the time, UTC")
-    stem = f"{results.name}-{datetime.now(UTC):%Y%m%dT%H%M%SZ}"
+    stem = f"{results.name}-{datetime.now(UTC):{STAMP}}"
     # log.debug("Writes the JSON")
     (folder / f"{stem}.json").write_text(results.model_dump_json(indent=2) + "\n", ENCODING)
     # log.debug("Renders the Markdown once")
@@ -393,10 +427,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     settings = get_app_settings()
     # log.debug("Sets up logging")
     setup_logging(settings)
-    # log.debug("Runs the evaluation")
-    results = run_eval(settings, name=args.name, only=args.only)
+    # log.debug("Turns spans on, when they have somewhere to go")
+    setup_spans(settings, service=settings.spans_service, version=__version__)
+    # log.debug("Runs the scenarios as one session, keeping their spans if asked")
+    with session(f"{args.name}-{datetime.now(UTC):{STAMP}}"), collect() as kept:
+        # log.debug("Runs the evaluation")
+        results = run_eval(settings, name=args.name, only=args.only)
     # log.debug("Writes the results")
     path = write(results, settings.data_results)
+    # log.debug("Writes the spans beside the results, when the settings ask")
+    if settings.spans_keep and kept:
+        # log.debug("Writes one span per line")
+        write_spans(kept, path.with_suffix(SPANS_SUFFIX))
+    # log.debug("Sends any spans still waiting")
+    flush_spans()
     # log.debug("Prints the table")
     print(to_markdown(results))
     # log.debug("Logs where the results went")

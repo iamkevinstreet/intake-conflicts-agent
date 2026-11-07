@@ -9,6 +9,21 @@
   when every check passes. One whose checks fail is labelled "needs a person" and waits. CI can now
   be called for a given commit, which is how the workflow checks one before it lands.
 
+## v0.3.0, Nov 7, 2026
+
+- **Spans:** each intake run is one `invoke_agent intake` span recording its outcome, steps, tool
+  calls and cost, and holding a `chat` span for every model call and an `execute_tool` span for
+  every tool call, which records whether the tool worked and, when it did not, the audit code: the
+  gate's refusal of `open_matter` shows there. The names follow the OpenTelemetry GenAI conventions,
+  so Langfuse shows a run as an agent with its generations and tools. Each evaluation scenario runs
+  in its own `eval` span with its scores, and a run's scenarios share one session. With
+  `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` in `config/.env` the spans go to Langfuse; unset,
+  they stay off. The live workflow sends them when those two repository secrets are set and keeps
+  each run's spans beside its results. Two tests check the tree and the gate's refusal.
+- **The workbench:** utils v0.6.0 (spans), pinned at its new commit. The new settings, `[spans]`
+  and `[langfuse]`, are in `config/config.toml`.
+- 171 backend tests. The health report and the API schema say 0.3.0.
+
 ## v0.2.2, Nov 5, 2026
 
 - **Dependencies:** the web app moves to ESLint 10.14.0, eslint-plugin-jsdoc 65.4.2 and globals

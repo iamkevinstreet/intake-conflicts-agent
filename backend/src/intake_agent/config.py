@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-07
 
 Reads every setting the service, the evaluation and the dashboard use,
 typed and validated, with the checks that need more than one setting.
@@ -158,6 +158,9 @@ class AppSettings(Settings):
 
     # log.debug("Holds the provider of the offline stand-in, whose runs are the baseline")
     eval_offline_provider: Provider = OFFLINE_PROVIDER
+
+    # log.debug("Holds the name spans are recorded under")
+    spans_service: str = "intake-conflicts-agent"
 
     # log.debug("Holds the planted firm records the database is built around")
     data_firm: Path = Path("data/samples/firm.json")
