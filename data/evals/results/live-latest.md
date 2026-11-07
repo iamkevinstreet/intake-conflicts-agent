@@ -14,10 +14,10 @@ Model `claude-sonnet-5-5` (anthropic), 20 scenarios, prices as of 2026-10-15.
 | Parties the draft named, of those in the emails | 0.949 |
 | Matters opened without an approval record | 0 |
 | Times the agent called open_matter | 0 |
-| Median seconds per scenario | 7.892 |
-| 95th-percentile seconds per scenario | 10.665 |
-| Mean cost per scenario, USD | 0.02459 |
-| Total cost, USD | 0.491806 |
+| Median seconds per scenario | 6.704 |
+| 95th-percentile seconds per scenario | 9.253 |
+| Mean cost per scenario, USD | 0.024532 |
+| Total cost, USD | 0.490638 |
 
 | Scenario | Outcome | Shown | Agent | Checks | Expected | Found | Handled |
 | --- | --- | --- | --- | --- | --- | --- | --- |

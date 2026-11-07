@@ -15,7 +15,7 @@ Case study: <https://kevindstreet.com/projects/intake-conflicts-check-agent/>
 | | |
 | --- | --- |
 | Works today | The agent loop with five scoped tools, the conflicts rules, the approval gate (in the API and in the database), the audit log, Entra ID token checks in the API, the web app, the 20-scenario evaluation, offline and in CI, the dashboard and Tableau export over its results, and spans of every run for Langfuse |
-| Measured | The 20 scenarios with `claude-sonnet-5-5` on GitHub's runner, Oct 29, 2026: every planted conflict found, no false alarm, every failure handled, no matter opened (below), beside the offline baseline |
+| Measured | The 20 scenarios with `claude-sonnet-5-5` on GitHub's runner, Oct 29, 2026, rerun with its trace on Nov 7: every planted conflict found, no false alarm, every failure handled, no matter opened (below), beside the offline baseline |
 | Next | Entra ID sign-in in the web app, whose tokens the API already checks; a harder scenario set, since this one is now passed in full |
 
 Every client, matter, party and email here is made up. [`data/samples/firm.json`](data/samples/firm.json)
@@ -121,7 +121,7 @@ The rules for a match, in [`core/conflicts.py`](backend/src/intake_agent/core/co
 ## Results
 
 **Live**, with `claude-sonnet-5-5` as the agent on GitHub's runner, Oct 29, 2026, all 20 scenarios,
-from [data/evals/results/live-latest.md](data/evals/results/live-latest.md), beside the offline
+from [live-20261029T144959Z.md](data/evals/results/live-20261029T144959Z.md), beside the offline
 baseline from [data/evals/results/offline-latest.md](data/evals/results/offline-latest.md), where
 fixed rules play the agent and no model is called:
 
@@ -158,6 +158,12 @@ anyway and found the exact match. Told to list every client, it did not.
 This set is now passed in full, so the next step is a harder one: more parties per email, names
 spread across a thread, and owners and officers named only by role. The gate held in every
 scenario, live and offline, as it must whatever plays the agent.
+
+**Rerun with its trace**, Nov 7, 2026, the same model and 20 scenarios, from
+[live-latest.md](data/evals/results/live-latest.md): the same on every measure above, with a median
+of 6.7 s and a 95th percentile of 9.3 s per scenario, and $0.49 for all 20. Its trace is kept beside
+the results, in [live-20261107T203722Z.spans.jsonl](data/evals/results/live-20261107T203722Z.spans.jsonl):
+each scenario's agent run, with its model calls and tool calls.
 
 ## Configuration
 
