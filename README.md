@@ -140,7 +140,7 @@ The rules for a match, in [`core/conflicts.py`](backend/src/intake_agent/core/co
   reviewing the first one's verdict (deferred: the service already enforces the stricter verdict).
 - **Chosen solution:** the model reads and decides what to search; the service validates every tool
   call, computes the findings, shows the stricter verdict, and holds the gate in the API and in SQL.
-- **Test plan:** 169 backend and 8 web app tests; a test proving every scenario's expected findings
+- **Test plan:** 177 backend and 8 web app tests; a test proving every scenario's expected findings
   hold against the generated database before any model is asked; the 20-scenario evaluation, offline
   in CI and live by hand. Targets set before the first live run: at least 12 of the 13 planted
   records found, no clean scenario shown as a conflict, at least 2 of the 3 ambiguous scenarios marked
