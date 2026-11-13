@@ -44,7 +44,7 @@ dev = [
   "pandas-stubs>=2.2",
   "pip-audit>=2.7",
   "pytest>=8.3",
-  "ruff==0.17.3",
+  "ruff==0.17.4",
   "kds-standards>=0.6.0,<0.7",
   "kds-diagrams>=0.6.0,<0.7",
 ]
