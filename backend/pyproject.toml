@@ -5,7 +5,7 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-29
-# Last modified on:  2026-11-07
+# Last modified on:  2026-11-16
 #
 # Packages the intake service and sets ruff, mypy and pytest to the code
 # standard.
@@ -44,7 +44,7 @@ dev = [
   "pandas-stubs>=2.2",
   "pip-audit>=2.7",
   "pytest>=8.3",
-  "ruff==0.17.3",
+  "ruff==0.17.4",
   "kds-standards>=0.6.0,<0.7",
   "kds-diagrams>=0.6.0,<0.7",
 ]
